@@ -1,0 +1,15 @@
+[features]
+seeds = true
+
+[programs.devnet]
+staking_attempt_1 = "4vgptm7p9MkhuW1MEADupJmEjFQX2wRuW8SQaQxUsJcD"
+
+[registry]
+url = "https://api.apr.dev"
+
+[provider]
+cluster = "devnet"
+wallet = "/home/proto/.config/solana/id.json"
+
+[scripts]
+test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

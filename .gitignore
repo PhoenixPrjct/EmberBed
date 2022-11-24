@@ -1,0 +1,23 @@
+
+# Anchor
+.anchor
+
+.DS_Store
+.crates
+
+target
+
+**/*.rs.bk
+
+
+node_modules
+
+test-ledger
+
+# KeyPairs
+phoenixdev.json
+recovery.json
+
+test.js
+# ProgramIDs from DevNet Deploys Gone Wrong
+ProgramIDs.md
