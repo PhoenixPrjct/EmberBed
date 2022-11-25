@@ -14,11 +14,12 @@ pub mod staking_attempt_1 {
     use super::*;
 
     pub fn stake(ctx: Context<Stake>) -> Result<()> {
+        msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("Staking Program Invoked");
-        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-            msg!("NFT is already staked");
-            return Ok(());
-        }
+        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+        //     msg!("NFT is already staked");
+        //     return Ok(());
+        // }
         // Get Clock
         let timestamp = Clock::get().unwrap();
         // Cross Program Invocation to Approve Delegation
@@ -86,6 +87,70 @@ pub mod staking_attempt_1 {
         Ok(())
     }
 
+    pub fn redeem_fire(
+        ctx: Context<RedeemFire>,
+        bump_state: u8,
+        collection_name: String
+    ) -> Result<()> {
+        msg!("Collection Name: {:?}", ctx.accounts.collection_reward_info.collection_name);
+        msg!("Collection Name Argument {:?}", collection_name);
+        msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
+        // if !ctx.accounts.stake_status.is_initialized {
+        //     msg!("Account is not initialized");
+        //     return err!(StakeError::UnintializedAccount);
+        // }
+        if ctx.accounts.stake_status.stake_state != StakeState::Staked {
+            msg!("Stake account is not staking anything");
+            return err!(StakeError::InvalidStakeState);
+        }
+
+        // let bump_state = *ctx.bumps.get("state").unwrap();
+        // let bump_state = ctx.accounts.collection_reward_info.bump;
+        let user_reward_ata = ctx.accounts.user_reward_ata.key();
+        msg!("Bump State: {:?}", bump_state);
+        let timestamp = Clock::get().unwrap();
+        let stake_status = &ctx.accounts.stake_status;
+        let state = &ctx.accounts.collection_reward_info;
+        let reward_wallet = &ctx.accounts.reward_wallet.to_account_info();
+
+        let reward_mint = &ctx.accounts.reward_mint.to_account_info();
+        let seeds = &[
+            reward_mint.key.as_ref(),
+            collection_name.as_ref(),
+            b"state".as_ref(),
+            &[bump_state],
+        ];
+        let signer = &[&seeds[..]];
+        msg!("Reward Wallet: {:?}", reward_wallet.key());
+
+        let rate_per_day: u64 = (state.rate_per_day as u64) * LPS;
+        msg!("Rate Per Day x LAMPORTS_PER_SOL: {:?}", rate_per_day);
+        let raw_rate_per_second = (rate_per_day / 86400) as f32;
+        let rate_per_second: u64 = raw_rate_per_second.round() as u64;
+        let staked_duration =
+            (timestamp.unix_timestamp as u64) - (stake_status.last_stake_redeem as u64);
+        // 86400;
+        msg!("Seconds since last redeem: {}", staked_duration);
+        let rewards_earned: u64 = rate_per_second * staked_duration;
+        msg!("Rewards earned: {:?}", rewards_earned);
+        msg!("User Reward ATA {:?}", user_reward_ata);
+        let transfer_instruction = Transfer {
+            from: reward_wallet.to_account_info(),
+            to: ctx.accounts.user_reward_ata.to_account_info(),
+            authority: state.to_account_info(),
+        };
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            transfer_instruction
+        ).with_signer(signer);
+
+        msg!("Start transfer");
+        anchor_spl::token::transfer(cpi_ctx, rewards_earned)?;
+        msg!("Successfully Transferred");
+
+        Ok(())
+    }
+
     pub fn redeem_reward(
         ctx: Context<RedeemReward>,
         bump_state: u8,
@@ -93,10 +158,11 @@ pub mod staking_attempt_1 {
     ) -> Result<()> {
         msg!("Collection Name: {:?}", ctx.accounts.collection_reward_info.collection_name);
         msg!("Collection Name Argument {:?}", collection_name);
-        if !ctx.accounts.stake_status.is_initialized {
-            msg!("Account is not initialized");
-            return err!(StakeError::UnintializedAccount);
-        }
+        msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
+        // if !ctx.accounts.stake_status.is_initialized {
+        //     msg!("Account is not initialized");
+        //     return err!(StakeError::UnintializedAccount);
+        // }
         if ctx.accounts.stake_status.stake_state != StakeState::Staked {
             msg!("Stake account is not staking anything");
             return err!(StakeError::InvalidStakeState);
@@ -152,10 +218,10 @@ pub mod staking_attempt_1 {
     pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         msg!("Unstake Program Invoked");
         // Get Clock
-        if !ctx.accounts.stake_status.is_initialized {
-            msg!("Account is not initialized");
-            return err!(StakeError::UnintializedAccount);
-        }
+        // if !ctx.accounts.stake_status.is_initialized {
+        //     msg!("Account is not initialized");
+        //     return err!(StakeError::UnintializedAccount);
+        // }
 
         if ctx.accounts.stake_status.stake_state != StakeState::Staked {
             msg!("Stake account is not staking anything");
@@ -247,29 +313,14 @@ pub mod staking_attempt_1 {
         Ok(())
     }
  NOT USED */
-    pub fn deposit_to_reward_ata(
-        ctx: Context<DepositToTokenPda>,
-        _bump1: u8,
-        _bump2: u8,
-        _amount: u64
-    ) -> Result<()> {
+    pub fn deposit_to_reward_ata(ctx: Context<DepositToTokenPda>, amount: u64) -> Result<()> {
         msg!("Depositing to Token PDA: {}", ctx.accounts.state_pda.reward_wallet);
-        msg!("Program Owned Ata Owner: {}");
+        msg!("Program Owned Ata Owner: {}", ctx.accounts.token_poa.owner);
         let state = &mut ctx.accounts.state_pda;
-        msg!("{} Bump Before", state.bump);
-        state.bump = _bump1;
         msg!("{} Bump After", state.bump);
-
-        let bump_vector = _bump1.to_le_bytes();
+        let collection_name = &state.collection_name;
         let sender = &ctx.accounts.funder;
         let reward_mint = &ctx.accounts.mint.to_account_info();
-        let inner = vec![
-            reward_mint.key.as_ref(),
-            state.collection_name.as_ref(),
-            b"state".as_ref(),
-            bump_vector.as_ref()
-        ];
-        let outer = vec![inner.as_slice()];
 
         let transfer_instruction = Transfer {
             from: ctx.accounts.funder_ata.to_account_info(),
@@ -277,15 +328,14 @@ pub mod staking_attempt_1 {
             authority: sender.to_account_info(),
         };
 
-        let cpi_ctx = CpiContext::new_with_signer(
+        let cpi_ctx = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
-            transfer_instruction,
-            outer.as_slice()
+            transfer_instruction
         );
 
         msg!("transfer call start");
 
-        anchor_spl::token::transfer(cpi_ctx, _amount)?;
+        anchor_spl::token::transfer(cpi_ctx, amount)?;
         ctx.accounts.token_poa.reload()?;
         msg!("Token pda key {}", ctx.accounts.token_poa.key());
         msg!("Token after transfer to receiver in PDA {}", ctx.accounts.token_poa.amount);
@@ -298,7 +348,7 @@ pub mod staking_attempt_1 {
     pub fn manager_withdrawal(
         ctx: Context<ManagerWithdrawal>,
         bump_state: u8,
-        _close_ata: bool,
+        close_ata: bool,
         collection_name: String,
         amount: u64
     ) -> Result<()> {
@@ -313,11 +363,11 @@ pub mod staking_attempt_1 {
         if ctx.accounts.token_poa.amount < amount {
             return Err(AdminError::NotEnoughFunds.into());
         }
-        // let mut withdrawal_amount = amount;
-        // if close_ata == true {
-        //     msg!("Close Ata: {}", close_ata);
-        //     withdrawal_amount = ctx.accounts.token_poa.amount;
-        // }
+        let mut withdrawal_amount = amount;
+        if close_ata == true {
+            msg!("Close Ata: {}", close_ata);
+            withdrawal_amount = ctx.accounts.token_poa.amount;
+        }
 
         let reward_mint = &ctx.accounts.reward_mint.to_account_info();
         let seeds = &[
@@ -366,7 +416,7 @@ pub mod staking_attempt_1 {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64, bump_state:u8, collection_name: String)]
+#[instruction(bump_state:u8, close_ata:bool, collection_name: String, amount: u64,)]
 pub struct ManagerWithdrawal<'info> {
     #[account(mut)]
     pub token_poa: Account<'info, TokenAccount>,
@@ -405,7 +455,7 @@ pub struct State {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8 , _rate:u64, _reward_symbol: String, _collection_name: String, _fire_eligible: bool )]
+#[instruction(_bump : u8 , _rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool )]
 pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
@@ -428,13 +478,14 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(amount:u64)]
 pub struct DepositToTokenPda<'info> {
     #[account(
-        mut,
-        associated_token::authority = state_pda,
-        associated_token::mint = mint,
+        mut
     )]
     pub token_poa: Account<'info, TokenAccount>,
+
+    #[account(mut)]
     pub state_pda: Account<'info, State>,
     pub mint: Account<'info, Mint>,
     #[account(mut)]
@@ -483,17 +534,37 @@ pub struct Stake<'info> {
 
 #[derive(Accounts)]
 #[instruction(bump_state:u8, collection_name: String)]
+pub struct RedeemFire<'info> {
+    #[account(mut)]
+    pub user: Signer<'info>,
+    #[account(mut)]
+    pub user_fire_ata: Box<Account<'info, TokenAccount>>,
+    #[account(mut)]
+    pub stake_status: Account<'info, UserStakeInfo>,
+    #[account(mut)]
+    pub reward_wallet: Box<Account<'info, TokenAccount>>,
+    #[account(
+        mut,
+        seeds = [reward_mint.key.as_ref(), collection_name.as_ref(), b"state".as_ref()],
+        bump,)]
+    pub collection_reward_info: Account<'info, State>,
+    /// CHECK: This is not dangerous because we don't read or write to this account.
+    pub reward_mint: AccountInfo<'info>,
+    /// CHECK: Fire Token ATA for User
+    #[account(mut)]
+    pub fire_mint: AccountInfo<'info>,
+    pub token_program: Program<'info, Token>,
+    // pub metadata_program: UncheckedAccount<'info>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+#[instruction(bump_state:u8, collection_name: String)]
 pub struct RedeemReward<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(mut)]
     pub user_reward_ata: Box<Account<'info, TokenAccount>>,
-    // #[account(
-    //     mut,
-    //     associated_token::mint = nft_mint_address,
-    //     associated_token::authority = user,)]
-    // pub nft_ata: Account<'info, TokenAccount>,
-    // pub nft_mint_address: Account<'info, Mint>,
     #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
     #[account(mut)]
@@ -525,11 +596,7 @@ pub struct Unstake<'info> {
     pub nft_mint_address: Account<'info, Mint>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub nft_edition: AccountInfo<'info>,
-    #[account(
-        mut,
-        seeds = [user.key().as_ref(), nft_ata.key().as_ref()],
-        bump
-    )]
+    #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
     /// CHECK: Only using as a signing PDA
     #[account(mut, seeds=[b"authority".as_ref()],bump)]
