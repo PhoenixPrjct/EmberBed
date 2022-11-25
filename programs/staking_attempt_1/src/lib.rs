@@ -14,11 +14,12 @@ pub mod staking_attempt_1 {
     use super::*;
 
     pub fn stake(ctx: Context<Stake>) -> Result<()> {
+        msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("Staking Program Invoked");
-        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-            msg!("NFT is already staked");
-            return Ok(());
-        }
+        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+        //     msg!("NFT is already staked");
+        //     return Ok(());
+        // }
         // Get Clock
         let timestamp = Clock::get().unwrap();
         // Cross Program Invocation to Approve Delegation
@@ -56,26 +57,18 @@ pub mod staking_attempt_1 {
             &[&[b"authority", &[auth_bump]]]
         )?;
 
-        // if ctx.accounts.stake_status.is_initialized{
-        //     msg!("Account is already initialized");
-        //     return err!(StakeError::AccountAlreadyInitialized);
-        // }
-        // let program_id = &ctx.program_id.key();
-        // let (collection_reward_state, _bump) = Pubkey::find_program_address(
-        //     &[ctx.accounts.reward_mint.key.as_ref(), b"state".as_ref()],
-        //     program_id
-        // );
-        // msg!("Reward State Key: {:?}", collection_reward_state.key());
-        // ctx.accounts.user_reward_info.user_reward_ata = ctx.accounts.user_reward_ata.key();
-        ctx.accounts.stake_status.collection_reward_state =
-            ctx.accounts.collection_reward_info.key();
-        ctx.accounts.stake_status.user_nft_ata = ctx.accounts.nft_ata.key();
         ctx.accounts.stake_status.stake_start_time = timestamp.unix_timestamp;
         ctx.accounts.stake_status.last_stake_redeem = timestamp.unix_timestamp;
-        ctx.accounts.stake_status.user_pubkey = ctx.accounts.user.key();
-        ctx.accounts.stake_status.stake_state = StakeState::Staked;
-        ctx.accounts.stake_status.is_initialized = true;
 
+        if !ctx.accounts.stake_status.is_initialized {
+            ctx.accounts.stake_status.user_pubkey = ctx.accounts.user.key();
+            ctx.accounts.stake_status.collection_reward_state =
+                ctx.accounts.collection_reward_info.key();
+            ctx.accounts.stake_status.user_nft_ata = ctx.accounts.nft_ata.key();
+            ctx.accounts.stake_status.is_initialized = true;
+        }
+
+        ctx.accounts.stake_status.stake_state = StakeState::Staked;
         // Messages to confirm info passed to program
         msg!("NFT token account: {:?}", ctx.accounts.stake_status.user_nft_ata);
         msg!("User pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
@@ -247,29 +240,14 @@ pub mod staking_attempt_1 {
         Ok(())
     }
  NOT USED */
-    pub fn deposit_to_reward_ata(
-        ctx: Context<DepositToTokenPda>,
-        _bump1: u8,
-        _bump2: u8,
-        _amount: u64
-    ) -> Result<()> {
+    pub fn deposit_to_reward_ata(ctx: Context<DepositToTokenPda>, amount: u64) -> Result<()> {
         msg!("Depositing to Token PDA: {}", ctx.accounts.state_pda.reward_wallet);
-        msg!("Program Owned Ata Owner: {}");
+        msg!("Program Owned Ata Owner: {}", ctx.accounts.token_poa.owner);
         let state = &mut ctx.accounts.state_pda;
-        msg!("{} Bump Before", state.bump);
-        state.bump = _bump1;
         msg!("{} Bump After", state.bump);
-
-        let bump_vector = _bump1.to_le_bytes();
+        let collection_name = &state.collection_name;
         let sender = &ctx.accounts.funder;
         let reward_mint = &ctx.accounts.mint.to_account_info();
-        let inner = vec![
-            reward_mint.key.as_ref(),
-            state.collection_name.as_ref(),
-            b"state".as_ref(),
-            bump_vector.as_ref()
-        ];
-        let outer = vec![inner.as_slice()];
 
         let transfer_instruction = Transfer {
             from: ctx.accounts.funder_ata.to_account_info(),
@@ -277,15 +255,14 @@ pub mod staking_attempt_1 {
             authority: sender.to_account_info(),
         };
 
-        let cpi_ctx = CpiContext::new_with_signer(
+        let cpi_ctx = CpiContext::new(
             ctx.accounts.token_program.to_account_info(),
-            transfer_instruction,
-            outer.as_slice()
+            transfer_instruction
         );
 
         msg!("transfer call start");
 
-        anchor_spl::token::transfer(cpi_ctx, _amount)?;
+        anchor_spl::token::transfer(cpi_ctx, amount)?;
         ctx.accounts.token_poa.reload()?;
         msg!("Token pda key {}", ctx.accounts.token_poa.key());
         msg!("Token after transfer to receiver in PDA {}", ctx.accounts.token_poa.amount);
@@ -298,7 +275,7 @@ pub mod staking_attempt_1 {
     pub fn manager_withdrawal(
         ctx: Context<ManagerWithdrawal>,
         bump_state: u8,
-        _close_ata: bool,
+        close_ata: bool,
         collection_name: String,
         amount: u64
     ) -> Result<()> {
@@ -366,7 +343,7 @@ pub mod staking_attempt_1 {
 }
 
 #[derive(Accounts)]
-#[instruction(amount: u64, bump_state:u8, collection_name: String)]
+#[instruction(bump_state:u8, close_ata:bool, collection_name: String, amount: u64,)]
 pub struct ManagerWithdrawal<'info> {
     #[account(mut)]
     pub token_poa: Account<'info, TokenAccount>,
@@ -405,7 +382,7 @@ pub struct State {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8 , _rate:u64, _reward_symbol: String, _collection_name: String, _fire_eligible: bool )]
+#[instruction(_bump : u8 , _rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool )]
 pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
@@ -428,13 +405,14 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(amount:u64)]
 pub struct DepositToTokenPda<'info> {
     #[account(
-        mut,
-        associated_token::authority = state_pda,
-        associated_token::mint = mint,
+        mut
     )]
     pub token_poa: Account<'info, TokenAccount>,
+
+    #[account(mut)]
     pub state_pda: Account<'info, State>,
     pub mint: Account<'info, Mint>,
     #[account(mut)]
@@ -525,11 +503,7 @@ pub struct Unstake<'info> {
     pub nft_mint_address: Account<'info, Mint>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub nft_edition: AccountInfo<'info>,
-    #[account(
-        mut,
-        seeds = [user.key().as_ref(), nft_ata.key().as_ref()],
-        bump
-    )]
+    #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
     /// CHECK: Only using as a signing PDA
     #[account(mut, seeds=[b"authority".as_ref()],bump)]
