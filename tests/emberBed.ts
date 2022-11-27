@@ -1,6 +1,6 @@
 import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
-import { StakingAttempt1 } from "../target/types/staking_attempt_1";
+import { EmberBed } from "../target/types/ember_bed";
 import { PublicKey, Keypair, SystemProgram, AccountInfo } from "@solana/web3.js"
 import {
   Metaplex,
@@ -40,11 +40,11 @@ const AdminWallet = Keypair.fromSecretKey(AdminSecret as Uint8Array)
 // const connection = anchor.getProvider().connection
 const withdrawing = false;
 const makeDeposit = false;
-describe("staking_attempt_1", async () => {
+describe("EmberBed", async () => {
   anchor.setProvider(anchor.AnchorProvider.env());
   const connection = anchor.getProvider().connection
 
-  const program = await anchor.workspace.StakingAttempt1 as Program<StakingAttempt1>;
+  const program = await anchor.workspace.EmberBed as Program<EmberBed>;
   const FireTOK = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
 
   // Admin Variables
@@ -91,7 +91,7 @@ describe("staking_attempt_1", async () => {
     rewardWallet = await getOrCreateAssociatedTokenAccount(
       connection, AdminWallet, RewTok, statePDA, true);
 
-    ratePerDay = 1000
+    ratePerDay = 10
     //* Staking
     const mintAddress: PublicKey = new PublicKey("GjFaTy4irZQ1LHev9NE6mHNnbFZYUtYEuYws88ZWZEua")
     nftTokenAddress = await getAssociatedTokenAddress(mintAddress, UserWallet.publicKey)
@@ -136,80 +136,80 @@ describe("staking_attempt_1", async () => {
     console.log("systemProgram:", SystemProgram.programId.toBase58());
   })
 
-  // it("Initializes State PDA If Needed", async () => {
+  it("Initializes State PDA If Needed", async () => {
 
-  //   const rewardWalletBalance = Number(rewardWallet.amount)
-  //   console.log("Admin Wallet:", AdminWallet.publicKey.toBase58());
-  //   console.log("StatePDA :", statePDA.toBase58())
+    const rewardWalletBalance = Number(rewardWallet.amount)
+    console.log("Admin Wallet:", AdminWallet.publicKey.toBase58());
+    console.log("StatePDA :", statePDA.toBase58())
 
-  //   let stateExists = await program.account.state.getAccountInfo(statePDA.toBase58())
-  //   const stateStatus = stateExists ? await program.account.state.fetch(statePDA) : <any>{};
-  //   console.log("Stake State Initialized:", !!stateStatus)
-  //   console.log("Manager:", stateStatus.manager?.toBase58())
-  //   console.log("RewardSymbol:", stateStatus?.rewardSymbol)
-  //   console.log("Balance:", rewardWalletBalance / anchor.web3.LAMPORTS_PER_SOL)
-  //   console.log("Funder ATA:", funderTokenAta.toBase58())
-  //   console.log("Reward Wallet:", rewardWallet.address.toBase58())
-  //   console.log("nftCollectionAddress:", nftCollectionAddress.toBase58())
-  //   console.log({ bumpToken: bumpToken, bumpState: bumpState, bumpAuth: bumpAuth })
-  //   if (stateStatus.isInitialized) {
-  //     console.log("State Account", statePDA.toBase58(), "Already Initialized")
-  //     return true;
-  //   }
-  //   const tx = await program.methods.initializeStatePda(bumpState, ratePerDay, rewardSymbol, collectionName, fireEligible).accounts({
-  //     statePda: statePDA,
-  //     tokenPoa: rewardWallet.address,
-  //     rewardMint: RewTok,
-  //     // authPda: authPDA,
-  //     nftCollectionAddress: nftCollectionAddress,
-  //     funder: AdminWallet.publicKey,
-  //     funderAta: funderTokenAta,
-  //     systemProgram: SystemProgram.programId,
-  //   }).signers([AdminWallet]).rpc();
-  //   console.log("Stake tx:")
-  //   console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
-  // });
-  // it("Allows Manager to Deposit to Program Owned Account", async () => {
-  //   if (!makeDeposit) {
-  //     console.log("Skipping the Manager Deposit Test")
-  //     return true
-  //   }
-  //   amount = new anchor.BN(1000 * anchor.web3.LAMPORTS_PER_SOL)
-  //   const tx2 = await program.methods.depositToRewardAta(amount).accounts({
-  //     tokenPoa: rewardWallet.address,
-  //     statePda: statePDA,
-  //     mint: RewTok,
-  //     funder: AdminWallet.publicKey,
-  //     funderAta: funderTokenAta,
-  //     systemProgram: SystemProgram.programId,
-  //     rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-  //     tokenProgram: TOKEN_PROGRAM_ID
-  //   }).signers([AdminWallet]).rpc();
-  //   console.log("Deposit tx:")
-  //   console.log(`https://explorer.solana.com/tx/${tx2}?cluster=devnet`)
+    let stateExists = await program.account.collectionRewardInfo.getAccountInfo(statePDA.toBase58())
+    const stateStatus = stateExists ? await program.account.collectionRewardInfo.fetch(statePDA) : <any>{};
+    console.log("Stake State Initialized:", !!stateStatus)
+    console.log("Manager:", stateStatus.manager?.toBase58())
+    console.log("RewardSymbol:", stateStatus?.rewardSymbol)
+    console.log("Balance:", rewardWalletBalance / anchor.web3.LAMPORTS_PER_SOL)
+    console.log("Funder ATA:", funderTokenAta.toBase58())
+    console.log("Reward Wallet:", rewardWallet.address.toBase58())
+    console.log("nftCollectionAddress:", nftCollectionAddress.toBase58())
+    console.log({ bumpToken: bumpToken, bumpState: bumpState, bumpAuth: bumpAuth })
+    if (stateStatus.isInitialized) {
+      console.log("State Account", statePDA.toBase58(), "Already Initialized")
+      return true;
+    }
+    const tx = await program.methods.initializeStatePda(bumpState, ratePerDay, rewardSymbol, collectionName, fireEligible).accounts({
+      statePda: statePDA,
+      tokenPoa: rewardWallet.address,
+      rewardMint: RewTok,
+      // authPda: authPDA,
+      nftCollectionAddress: nftCollectionAddress,
+      funder: AdminWallet.publicKey,
+      funderAta: funderTokenAta,
+      systemProgram: SystemProgram.programId,
+    }).signers([AdminWallet]).rpc();
+    console.log("Stake tx:")
+    console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+  });
+  it("Allows Manager to Deposit to Program Owned Account", async () => {
+    if (!makeDeposit) {
+      console.log("Skipping the Manager Deposit Test")
+      return true
+    }
+    amount = new anchor.BN(100000 * anchor.web3.LAMPORTS_PER_SOL)
+    const tx2 = await program.methods.depositToRewardAta(amount).accounts({
+      tokenPoa: rewardWallet.address,
+      statePda: statePDA,
+      mint: RewTok,
+      funder: AdminWallet.publicKey,
+      funderAta: funderTokenAta,
+      systemProgram: SystemProgram.programId,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      tokenProgram: TOKEN_PROGRAM_ID
+    }).signers([AdminWallet]).rpc();
+    console.log("Deposit tx:")
+    console.log(`https://explorer.solana.com/tx/${tx2}?cluster=devnet`)
 
-  // });
+  });
 
-  // it(" Allows Manager to withdraw tokens", async () => {
-  //   if (!withdrawing) {
-  //     console.log("Skipping the Manager Withdrawal Test")
-  //     return true
-  //   };
-  //   amount = new anchor.BN(3 * anchor.web3.LAMPORTS_PER_SOL)
-  //   const closeAta = false;
-  //   const tx = await program.methods.managerWithdrawal(bumpState, closeAta, collectionName, amount).accounts({
-  //     manager: AdminWallet.publicKey,
-  //     statePda: statePDA,
-  //     tokenPoa: rewardWallet.address,
-  //     rewardMint: RewTok,
-  //     managerAta: funderTokenAta,
-  //     tokenProgram: TOKEN_PROGRAM_ID,
-  //     systemProgram: SystemProgram.programId,
-  //   }).signers([AdminWallet]).rpc();
-  //   console.log("Deposit tx:")
-  //   console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+  it(" Allows Manager to withdraw tokens", async () => {
+    if (!withdrawing) {
+      console.log("Skipping the Manager Withdrawal Test")
+      return true
+    };
+    amount = new anchor.BN(3 * anchor.web3.LAMPORTS_PER_SOL)
+    const closeAta = false;
+    const tx = await program.methods.managerWithdrawal(bumpState, closeAta, collectionName, amount).accounts({
+      manager: AdminWallet.publicKey,
+      statePda: statePDA,
+      tokenPoa: rewardWallet.address,
+      rewardMint: RewTok,
+      managerAta: funderTokenAta,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+    }).signers([AdminWallet]).rpc();
+    console.log("Deposit tx:")
+    console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
 
-  // })
+  })
 
   it("Stakes NFT", async () => {
     console.log('Staking NFT:', nft.address.toBase58());
@@ -268,6 +268,7 @@ describe("staking_attempt_1", async () => {
     console.log("Waiting For 5 Seconds to Unstake");
     await new Promise((resolve) => setTimeout(resolve, 5000))
   })
+
   it("Unstakes NFT", async () => {
     console.log('Unstaking NFT:', nft.address.toBase58());
     console.log("Delegated Authority:", delegatedAuthPda.toBase58());

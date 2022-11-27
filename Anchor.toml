@@ -2,7 +2,7 @@
 seeds = true
 
 [programs.devnet]
-staking_attempt_1 = "4vgptm7p9MkhuW1MEADupJmEjFQX2wRuW8SQaQxUsJcD"
+ember_bed = "BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z"
 
 [registry]
 url = "https://api.apr.dev"
