@@ -30,8 +30,16 @@ pub struct Stake<'info> {
         space = std::mem::size_of::<UserStakeInfo>() + 8
     )]
     pub stake_status: Box<Account<'info, UserStakeInfo>>,
+    #[account(
+        init_if_needed,
+        payer = user,
+        seeds = [user.key.as_ref()],
+        bump,
+        space = std::mem::size_of::<UserAccount>() + 40
+    )]
+    pub user_account_pda: Account<'info, UserAccount>,
     #[account(mut)]
-    pub collection_reward_info: Account<'info, CollectionRewardInfo>,
+    pub collection_reward_info: Box<Account<'info, CollectionRewardInfo>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub reward_mint: AccountInfo<'info>,
     /// CHECK: Only using as a signing PDA
@@ -84,6 +92,8 @@ pub struct Unstake<'info> {
     pub nft_edition: AccountInfo<'info>,
     #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
+    #[account(mut)]
+    pub user_account_pda: Box<Account<'info, UserAccount>>,
     /// CHECK: Only using as a signing PDA
     #[account(mut, seeds=[b"authority".as_ref()],bump)]
     pub program_authority: AccountInfo<'info>,
@@ -275,4 +285,11 @@ pub struct RedeemFire<'info> {
     pub collection_info: Account<'info, CollectionRewardInfo>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
+}
+
+#[account]
+#[derive(Default)]
+pub struct UserAccount {
+    pub user: Pubkey,
+    pub stake_status_pks: Vec<Pubkey>,
 }

@@ -5,6 +5,7 @@ use anchor_spl::{
     // associated_token::{ AssociatedToken, create },
     token::{ Approve, Mint, Revoke, Token, TokenAccount, Transfer, CloseAccount, close_account },
 };
+
 use crate::constants::{ LPS, FIRE_MINT, BASE_RATE, FIRE_COLLECTION_NAME, FIRE_SYMBOL };
 use crate::structs::*;
 use crate::errors::{ StakeError, AdminError, RedeemError };
@@ -24,10 +25,11 @@ pub mod ember_bed {
     pub fn stake(ctx: Context<Stake>) -> Result<()> {
         msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("Staking Program Invoked");
-        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-        //     msg!("NFT is already staked");
-        //     return Ok(());
-        // }
+        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+            msg!("NFT is already staked");
+            return Ok(());
+        }
+
         // Get Clock
         let timestamp = Clock::get().unwrap();
         // Cross Program Invocation to Approve Delegation
@@ -69,6 +71,7 @@ pub mod ember_bed {
         ctx.accounts.stake_status.last_stake_redeem = timestamp.unix_timestamp;
 
         // if !ctx.accounts.stake_status.is_initialized {
+        ctx.accounts.user_account_pda.user = ctx.accounts.user.key();
         ctx.accounts.stake_status.user_pubkey = ctx.accounts.user.key();
         ctx.accounts.stake_status.collection_reward_state =
             ctx.accounts.collection_reward_info.key();
@@ -77,6 +80,17 @@ pub mod ember_bed {
         // }
 
         ctx.accounts.stake_status.stake_state = StakeState::Staked;
+        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+            let pubkey = ctx.accounts.nft_mint_address.key();
+            let nft_pks = &mut ctx.accounts.user_account_pda.stake_status_pks;
+            if !nft_pks.contains(&pubkey) {
+                nft_pks.push(pubkey);
+            }
+            msg!("NFTs staked by user: {}", nft_pks.len());
+            for item in nft_pks {
+                msg!("{}", item);
+            }
+        }
         // Messages to confirm info passed to program
         msg!("NFT token account: {:?}", ctx.accounts.stake_status.user_nft_ata);
         msg!("User pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
@@ -208,7 +222,15 @@ pub mod ember_bed {
         token::revoke(revoke_cpi_ctx)?;
 
         ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
-
+        if ctx.accounts.stake_status.stake_state == StakeState::Unstaked {
+            let pubkey = ctx.accounts.nft_mint_address.key();
+            let mut nft_pks = ctx.accounts.user_account_pda.stake_status_pks.clone();
+            nft_pks.retain(|item| item != &pubkey);
+            msg!("NFTs staked by user: {}", nft_pks.len());
+            for item in nft_pks {
+                msg!("{}", item);
+            }
+        }
         // Messages Confirming Information
         msg!("NFT ATA: {:?}", ctx.accounts.stake_status.user_nft_ata);
         msg!("User Pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
@@ -439,7 +461,14 @@ pub mod ember_bed {
         let fire_poa = &ctx.accounts.fire_poa;
         // let fire_collection_name = &fire_info.collection_name;
         let fire_mint = get_fire_token();
-
+        if !ctx.accounts.stake_status.is_initialized {
+            msg!("Account is not initialized");
+            return err!(StakeError::UnintializedAccount);
+        }
+        if ctx.accounts.stake_status.stake_state != StakeState::Staked {
+            msg!("Stake account is not staking anything");
+            return err!(StakeError::InvalidStakeState);
+        }
         // Check if Collection is $Fire Eligble and return value
         let stored_relation = &ctx.accounts.collection_info._phoenix_relation;
         let mut relation_value = phoenix_relation_value(stored_relation);
@@ -503,10 +532,4 @@ pub mod ember_bed {
         msg!("Last Redeem Set to {}", ctx.accounts.stake_status.last_stake_redeem);
         Ok(())
     }
-    // pub fn initialize_fire_info_pda(ctx: Context<InitializeFireInfo>) -> Result<()> {
-    //     msg!(" {} Initializing Fire Token", ctx.accounts.user.key());
-    //     let fire_mint = utils::get_fire_token();
-    //     msg!("Fire Token {}", fire_mint);
-    //     Ok(())
-    // }
 }

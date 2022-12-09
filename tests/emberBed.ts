@@ -57,9 +57,11 @@ describe("EmberBed", async () => {
     firePDA: PublicKey,
     ratePerDay: number,
     authPDA: PublicKey,
+    userAccountPDA: PublicKey,
     bumpState: number,
     bumpToken: number,
     bumpAuth: number,
+    bumpAccount: number,
     bumpFire: number,
     tokenPDA: PublicKey,
     amount: beet.bignum,
@@ -141,6 +143,12 @@ describe("EmberBed", async () => {
       [Buffer.from("authority")],
       program.programId
     );
+
+    [userAccountPDA, bumpAccount] = await anchor.web3.PublicKey.findProgramAddress(
+      [UserWallet.publicKey.toBuffer()],
+      program.programId
+    );
+
     [userRewardInfoPda] = await anchor.web3.PublicKey.findProgramAddress(
       [UserWallet.publicKey.toBuffer(), RewTok.toBuffer()],
       program.programId
@@ -150,6 +158,7 @@ describe("EmberBed", async () => {
       program.programId
     );
     console.log("Stake Status PDA", stakeStatusPda.toBase58());
+    console.log("User Account PDA", userAccountPDA.toBase58());
   })
 
   it("Initializes FIRE COLLECTION PDA If Needed", async () => {
@@ -280,18 +289,24 @@ describe("EmberBed", async () => {
   // })
   it("Stakes NFT", async () => {
     console.log('Staking NFT:', nft.address.toBase58());
-    // let stakeStatus
-    // let stakeStateExists = await program.account.userStakeInfo.getAccountInfo(stakeStatusPda.toBase58());
-    // if (!stakeStateExists) {
-    //   console.log('User Stake info not found');
-    // } else {
-    //   stakeStatus = stakeStateExists ? await program.account.userStakeInfo.fetch(stakeStatusPda) : { stakeState: { unstaked: {} } };
-    //   console.log(stakeStatus)
-    //   // if (Object.keys(stakeStatus.stakeState)?.includes('staked')) {
-    //   //   console.log('NFT already staked')
-    //   //   return true;
-    //   // }
-    // }
+    let stakeStatus
+    let userAccount, userAccountExists
+    userAccountExists = await program.account.userAccount.getAccountInfo(userAccountPDA.toBase58());
+    if (userAccountExists) {
+      userAccount = await program.account.userAccount.fetch(userAccountPDA.toBase58());
+      console.log("User Account PDA Contents", userAccount)
+    }
+    let stakeStateExists = await program.account.userStakeInfo.getAccountInfo(stakeStatusPda.toBase58());
+    if (!stakeStateExists) {
+      console.log('User Stake info not found');
+    } else {
+      stakeStatus = stakeStateExists ? await program.account.userStakeInfo.fetch(stakeStatusPda) : { stakeState: { unstaked: {} } };
+      console.log(stakeStatus)
+      if (Object.keys(stakeStatus.stakeState)?.includes(' staked')) {
+        console.log('NFT already staked')
+        return true;
+      }
+    }
     const tx = await program.methods.stake()
       .accounts({
         user: UserWallet.publicKey,
@@ -300,6 +315,7 @@ describe("EmberBed", async () => {
         nftMintAddress: nft.mint.address,
         nftEdition: nft.edition.address,
         stakeStatus: stakeStatusPda,
+        userAccountPda: userAccountPDA,
         collectionRewardInfo: statePDA,
         rewardMint: RewTok,
         programAuthority: delegatedAuthPda,
@@ -374,6 +390,7 @@ describe("EmberBed", async () => {
       nftMintAddress: nft.mint.address,
       nftEdition: nft.edition.address,
       stakeStatus: stakeStatusPda,
+      userAccountPda: userAccountPDA,
       programAuthority: delegatedAuthPda,
       // *SYSTEM Variables
       tokenProgram: TOKEN_PROGRAM_ID,
