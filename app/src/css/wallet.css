@@ -1,0 +1,46 @@
+.swv-modal-wrapper {
+    background-color: #1D1D1D;
+    color: #d6d6d6
+}
+
+.swv-modal-button-close {
+    background-color: transparent;
+    color: #ff7300
+}
+
+.swv-button {
+
+    transition: all 0.3s ease-in-out;
+    background-color: #1D1D1D
+}
+
+.swv-modal-list {
+    z-index: 9999;
+}
+
+.swv-button:hover {
+    color: black;
+}
+
+
+.swv-button {
+    color: #d6d6d6
+}
+
+.swv-button:hover,
+.swv-button:not([disabled]):hover {
+    background-color: #666666
+}
+
+.swv-button-trigger {
+
+    background-color: transparent
+}
+
+.sw-button-trigger p {
+    margin: unset
+}
+
+.swv-dropdown-list-active {
+    background-color: var(--q-accent)
+}

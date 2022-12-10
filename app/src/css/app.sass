@@ -1,0 +1,64 @@
+// app global css in Sass form
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Roboto:wght@100;300;900&display=swap')
+
+body,
+html
+
+    background-color: #1d1d1d
+
+body
+    width: 100%
+    overflow-x: hidden
+    margin: 0 auto
+    height: 100%
+    background-image: url('../assets/LowPolyLook7.png')
+    background-position: center
+    background-size: cover
+
+body *
+    font-family: 'Orbitron', 'Roboto', sans-serif
+    color: white
+
+#app
+    width: 100%
+    overflow-x: hidden
+
+.swv-modal-wrapper
+    background-color: #1D1D1D
+    color: #d6d6d6
+
+.swv-modal-button-close
+    background-color: transparent
+    color: #ff7300
+
+.swv-button
+    transition: all 0.3s ease-in-out
+    background-color: #1D1D1D
+
+.swv-modal-list
+    z-index: 9999
+
+
+    & .swv-button:hover
+        color: black
+
+
+    & .swv-button
+        color: #d6d6d6
+
+.swv-button:hover,
+.swv-button:not([disabled]):hover
+    background-color: #666666
+
+.swv-button-trigger
+    background-color: transparent
+
+
+    & p
+        margin: unset
+
+.swv-dropdown-list
+
+
+    &-active
+        background-color: var(--q-accent)
