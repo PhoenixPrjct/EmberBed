@@ -12,7 +12,7 @@ import {
   SolflareWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 
-const walletOptions = {
+export const walletOptions = {
   wallets: [
     new PhantomWalletAdapter(),
     new SlopeWalletAdapter(),
@@ -27,4 +27,6 @@ const walletOptions = {
 export default boot(async ({ app }) => {
   // something to do
   app.use(SolanaWallets, walletOptions);
+  // initWallet(walletOptions);
+
 })

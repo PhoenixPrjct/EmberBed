@@ -11,7 +11,8 @@
 
 const { configure } = require('quasar/wrappers');
 const path = require('path');
-
+const { nodePolyfills } = require('vite-plugin-node-polyfills');
+const { Notify } = require('quasar');
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
@@ -32,6 +33,7 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       'sw',
       'axios',
+
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
@@ -72,20 +74,24 @@ module.exports = configure(function (/* ctx */) {
 
       // publicPath: '/',
       // analyze: true,
-      // env: {},
+      env: {
+
+      },
       // rawDefine: {}
       // ignorePublicFolder: true,
       // minify: false,
-      // polyfillModulePreload: true,
+      polyfillModulePreload: true,
       // distDir
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
 
 
-      // vitePlugins: [
-      //   [ 'package-name', { ..options.. } ]
-      // ]
+      vitePlugins: [
+        [nodePolyfills({
+          protocolImports: true,
+        })]
+      ]
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
@@ -114,7 +120,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: [Notify]
     },
 
     // animations: 'all', // --- includes all animations

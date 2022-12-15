@@ -1,8 +1,8 @@
 <script setup lang="ts">
 // import { ref } from 'vue';
 // import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue';
+import { WalletMultiButton } from 'solana-wallets-vue';
 const currentYear = new Date().getFullYear();
-
 
 
 </script>
@@ -13,7 +13,7 @@ const currentYear = new Date().getFullYear();
         <q-toolbar-title>
           EmberBed
         </q-toolbar-title>
-
+        <WalletMultiButton dark />
       </q-toolbar>
     </q-header>
     <q-page-container>

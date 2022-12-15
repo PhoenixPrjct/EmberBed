@@ -1,4 +1,5 @@
 import { RouteRecordRaw } from 'vue-router';
+import DashPage from '@/pages/admin/DashPage.vue'
 
 const routes: RouteRecordRaw[] = [
   {
