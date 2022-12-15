@@ -1,11 +1,10 @@
-use anchor_lang::{ prelude::*, context };
+use anchor_lang::{ prelude::* };
 // use anchor_spl::associated_token::{ get_associated_token_address };
 // use anchor_spl::token::TokenAccount;
 // use anchor_spl;
 // use mpl_token_metadata;
 use std::str::FromStr;
 
-// use crate::errors::{ GenErrors };
 use crate::constants::{ FIRE_MINT };
 use crate::state_and_relations::{ PhoenixUserRelation, PhoenixRelation };
 

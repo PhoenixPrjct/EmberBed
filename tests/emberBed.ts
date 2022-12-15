@@ -2,6 +2,7 @@ import * as anchor from "@project-serum/anchor";
 import { Program } from "@project-serum/anchor";
 import { EmberBed } from "../target/types/ember_bed";
 import { PublicKey, Keypair, SystemProgram, AccountInfo } from "@solana/web3.js"
+import { InitializeStatePdaArgs, InitializeStatePdaAccounts } from "../app/src/types";
 import {
   Metaplex,
   bundlrStorage,
@@ -11,6 +12,7 @@ import {
 import * as beet from '@metaplex-foundation/beet'
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { getAssociatedTokenAddress, Account, createMint, TOKEN_PROGRAM_ID, getAccount, TOKEN_2022_PROGRAM_ID, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
+import * as types from '../app/src/types'
 // import {createInitializeStatePdaInstruction} from "../programs/staking_attempt_1/src/generated"
 
 // MY WALLET SETTING
@@ -38,15 +40,20 @@ const AdminWallet = Keypair.fromSecretKey(AdminSecret as Uint8Array)
 // const program = anchor.workspace.StakingProgram as Program<StakingAttempt1>
 // anchor.setProvider(anchor.AnchorProvider.env());
 // const connection = anchor.getProvider().connection
-const initState = true;
+const initState = false;
+const initFire = false;
 const withdrawing = false;
 const makeDeposit = false;
-const makeFireDeposit = true;
+const makeFireDeposit = false;
+const nftTests = true;
 describe("EmberBed", async () => {
+  console.log('Test Starting')
   anchor.setProvider(anchor.AnchorProvider.env());
+  // console.log("setProvider", anchor.AnchorProvider.env())
   const connection = anchor.getProvider().connection
 
   const program = await anchor.workspace.EmberBed as Program<EmberBed>;
+
   const FireTOK = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
 
   // Admin Variables
@@ -57,7 +64,7 @@ describe("EmberBed", async () => {
     firePDA: PublicKey,
     ratePerDay: number,
     authPDA: PublicKey,
-    userAccountPDA: PublicKey,
+    // userAccountPDA: PublicKey,
     bumpState: number,
     bumpToken: number,
     bumpAuth: number,
@@ -86,21 +93,30 @@ describe("EmberBed", async () => {
   let userRewardAta: PublicKey;
   let userFireAta: PublicKey;
   let PhoenixRelation: string;
+  let cmaPDA: PublicKey;
+  let cmaBump: number;
 
   const fireEligible = true;
   before(async () => {
+    console.log('Before Hook Triggered');
     //* Admin 
-    [firePDA, bumpFire] = await anchor.web3.PublicKey.findProgramAddress(
+
+    [firePDA, bumpFire] = await anchor.web3.PublicKey.findProgramAddressSync(
       [FireTOK.toBuffer(), Buffer.from(fireCollName), Buffer.from("fstate")],
       program.programId
     );
 
-    [statePDA, bumpState] = await anchor.web3.PublicKey.findProgramAddress(
+    [statePDA, bumpState] = await anchor.web3.PublicKey.findProgramAddressSync(
       [RewTok.toBuffer(), Buffer.from(collectionName), Buffer.from("state")],
       program.programId
     );
 
-    [authPDA, bumpAuth] = await anchor.web3.PublicKey.findProgramAddress(
+    [cmaPDA, cmaBump] = await anchor.web3.PublicKey.findProgramAddressSync(
+      [AdminWallet.publicKey.toBuffer()],
+      program.programId
+    );
+
+    [authPDA, bumpAuth] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from("redeem_authority")],
       program.programId
     );
@@ -118,6 +134,7 @@ describe("EmberBed", async () => {
     // const mintAddress: PublicKey = new PublicKey("GjFaTy4irZQ1LHev9NE6mHNnbFZYUtYEuYws88ZWZEua");
     const mintAddress: PublicKey = new PublicKey("32ke7s6Q3imrg2mv9gE67HwiyQnr6bLTux6zoiTrbxXm");
     nftTokenAddress = await getAssociatedTokenAddress(mintAddress, UserWallet.publicKey)
+
     const metaplex = Metaplex.make(connection)
       .use(keypairIdentity(UserWallet))
       .use(bundlrStorage())
@@ -133,46 +150,51 @@ describe("EmberBed", async () => {
     // console.log("generated mint address:", mintAddress.toBase58());
     // console.log("nft token address: ", nft.address.toBase58());
     console.log("nft token address: ", nftTokenAddress.toBase58());
+    console.log(`\n\nAdmin Stuff \n\n`)
+    console.log("Admin Wallet:", AdminWallet.publicKey.toBase58());
+    console.log("StatePDA :", statePDA.toBase58())
+    console.log("FireInfoPDA: ", firePDA.toBase58())
 
     userFireAta = await getAssociatedTokenAddress(FireTOK, UserWallet.publicKey);
     userRewardAta = await getAssociatedTokenAddress(RewTok, UserWallet.publicKey);
     // console.log("user ata:", userAta.address.toBase58());
     console.log("user reward ata:", userRewardAta.toBase58());
 
-    [delegatedAuthPda] = await anchor.web3.PublicKey.findProgramAddress(
+    [delegatedAuthPda] = await anchor.web3.PublicKey.findProgramAddressSync(
       [Buffer.from("authority")],
       program.programId
     );
 
-    [userAccountPDA, bumpAccount] = await anchor.web3.PublicKey.findProgramAddress(
-      [UserWallet.publicKey.toBuffer()],
-      program.programId
-    );
 
-    [userRewardInfoPda] = await anchor.web3.PublicKey.findProgramAddress(
+    // [userAccountPDA, bumpAccount] = await anchor.web3.PublicKey.findProgramAddressSync(
+    // [UserWallet.publicKey.toBuffer()],
+    // program.programId
+    // );
+
+    [userRewardInfoPda] = await anchor.web3.PublicKey.findProgramAddressSync(
       [UserWallet.publicKey.toBuffer(), RewTok.toBuffer()],
       program.programId
     );
-    [stakeStatusPda] = await anchor.web3.PublicKey.findProgramAddress(
+    [stakeStatusPda] = await anchor.web3.PublicKey.findProgramAddressSync(
       [UserWallet.publicKey.toBuffer(), nftTokenAddress.toBuffer()],
       program.programId
     );
     console.log("Stake Status PDA", stakeStatusPda.toBase58());
-    console.log("User Account PDA", userAccountPDA.toBase58());
+    // console.log("User Account PDA", userAccountPDA.toBase58());
   })
 
   it("Initializes FIRE COLLECTION PDA If Needed", async () => {
+    if (!initFire) {
+      console.log("Skipping Initializes Fire PDA Test");
+      return true;
+    }
     const rewardWalletBalance = Number(fireRewardWallet.amount)
     console.log("Admin Wallet:", DevWallet.publicKey.toBase58());
     console.log("FirePDA :", firePDA.toBase58())
 
     let stateExists = await program.account.fireRewardInfo.getAccountInfo(firePDA.toBase58())
     const stateStatus = stateExists ? await program.account.fireRewardInfo.fetch(firePDA) : <any>{};
-    console.log("Fire PDA Initialized:", !!stateStatus)
-    console.log("Balance:", rewardWalletBalance / anchor.web3.LAMPORTS_PER_SOL)
-    console.log("Funder ATA:", fireTokenAta.toBase58())
-    console.log("Reward Wallet:", fireRewardWallet.address.toBase58())
-    console.log("nftCollectionAddress:", nftCollectionAddress.toBase58())
+
     console.log({ bumpFire: bumpFire, bumpState: bumpState, bumpAuth: bumpAuth })
     if (stateStatus.isInitialized) {
       console.log("Fire Account", firePDA.toBase58(), "Already Initialized")
@@ -210,14 +232,16 @@ describe("EmberBed", async () => {
 
   });
 
+  it("Initializes CMA Account", async () => {
+
+  });
+
   it("Initializes State PDA If Needed", async () => {
     if (!initState) {
       console.log("Skipping Initialize Collection")
       return true
     }
     const rewardWalletBalance = Number(rewardWallet.amount)
-    console.log("Admin Wallet:", AdminWallet.publicKey.toBase58());
-    console.log("StatePDA :", statePDA.toBase58())
 
     let stateExists = await program.account.collectionRewardInfo.getAccountInfo(statePDA.toBase58())
     const stateStatus = stateExists ? await program.account.collectionRewardInfo.fetch(statePDA) : <any>{};
@@ -231,71 +255,97 @@ describe("EmberBed", async () => {
     console.log({ bumpToken: bumpToken, bumpState: bumpState, bumpAuth: bumpAuth })
     if (stateStatus.isInitialized) {
       console.log("State Account", statePDA.toBase58(), "Already Initialized")
-      return true;
+
     }
-    const tx = await program.methods.initializeStatePda(bumpState, ratePerDay, rewardSymbol, collectionName, fireEligible, PhoenixRelation).accounts({
-      statePda: statePDA,
-      tokenPoa: rewardWallet.address,
-      rewardMint: RewTok,
-      // authPda: authPDA,
-      nftCollectionAddress: nftCollectionAddress,
-      funder: AdminWallet.publicKey,
-      funderAta: funderTokenAta,
-      systemProgram: SystemProgram.programId,
-    }).signers([AdminWallet]).rpc();
+
+    // const args= [{ bump: bumpState, rate: ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixCollectionRelation: PhoenixRelation }]
+    const tx = await program.methods
+      .initializeStatePda(bumpState, ratePerDay, rewardSymbol, collectionName, fireEligible, PhoenixRelation)
+      .accounts({
+        statePda: statePDA,
+        tokenPoa: rewardWallet.address,
+        rewardMint: RewTok,
+        nftCollectionAddress: nftCollectionAddress,
+        funder: AdminWallet.publicKey,
+        funderAta: funderTokenAta,
+        systemProgram: SystemProgram.programId,
+      }).signers([AdminWallet]).rpc();
     console.log("Stake tx:")
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
   });
-  // it("Allows Manager to Deposit to Program Owned Account", async () => {
-  //   if (!makeDeposit) {
-  //     console.log("Skipping the Manager Deposit Test")
-  //     return true
-  //   }
-  //   amount = new anchor.BN(100000 * anchor.web3.LAMPORTS_PER_SOL)
-  //   const tx2 = await program.methods.depositToRewardAta(amount).accounts({
-  //     tokenPoa: rewardWallet.address,
-  //     statePda: statePDA,
-  //     mint: RewTok,
-  //     funder: AdminWallet.publicKey,
-  //     funderAta: funderTokenAta,
-  //     systemProgram: SystemProgram.programId,
-  //     rent: anchor.web3.SYSVAR_RENT_PUBKEY,
-  //     tokenProgram: TOKEN_PROGRAM_ID
-  //   }).signers([AdminWallet]).rpc();
-  //   console.log("Deposit tx:")
-  //   console.log(`https://explorer.solana.com/tx/${tx2}?cluster=devnet`)
 
-  // });
+  it("Allows Manager to Deposit to Program Owned Account", async () => {
+    if (!makeDeposit) {
+      console.log("Skipping the Manager Deposit Test")
+      return true
+    }
+    amount = new anchor.BN(100000 * anchor.web3.LAMPORTS_PER_SOL)
+    const tx2 = await program.methods.depositToRewardAta(amount).accounts({
+      tokenPoa: rewardWallet.address,
+      statePda: statePDA,
+      mint: RewTok,
+      funder: AdminWallet.publicKey,
+      funderAta: funderTokenAta,
+      systemProgram: SystemProgram.programId,
+      rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+      tokenProgram: TOKEN_PROGRAM_ID
+    }).signers([AdminWallet]).rpc();
+    console.log("Deposit tx:")
+    console.log(`https://explorer.solana.com/tx/${tx2}?cluster=devnet`)
 
-  // it(" Allows Manager to withdraw tokens", async () => {
-  //   if (!withdrawing) {
-  //     console.log("Skipping the Manager Withdrawal Test")
-  //     return true
-  //   };
-  //   amount = new anchor.BN(3 * anchor.web3.LAMPORTS_PER_SOL)
-  //   const closeAta = false;
-  //   const tx = await program.methods.managerWithdrawal(bumpState, closeAta, collectionName, amount).accounts({
-  //     manager: AdminWallet.publicKey,
-  //     statePda: statePDA,
-  //     tokenPoa: rewardWallet.address,
-  //     rewardMint: RewTok,
-  //     managerAta: funderTokenAta,
-  //     tokenProgram: TOKEN_PROGRAM_ID,
-  //     systemProgram: SystemProgram.programId,
-  //   }).signers([AdminWallet]).rpc();
-  //   console.log("Deposit tx:")
-  //   console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+  });
+  it("Gets Fire Account", async () => {
+    const fireAccount = await program.account.fireRewardInfo.all();
+    fireAccount.forEach(async (acct) => {
+      await program.account.fireRewardInfo.getAccountInfo(acct.publicKey);
+      const pk = acct.publicKey.toBase58();
+      const manager = acct.account.manager.toBase58();
+      console.log({ acct: pk, manager: manager })
+      console.dir({ info: acct.account })
+    })
 
-  // })
+    console.log(fireAccount.length)
+    if (fireAccount.length > -1) return true;
+    return false;
+  });
+  xit("Gets all collection accounts", async () => {
+    const collectionAccounts = await program.account.collectionRewardInfo.all();
+    console.log(collectionAccounts)
+    console.log(collectionAccounts.length)
+  });
+  it(" Allows Manager to withdraw tokens", async () => {
+    if (!withdrawing) {
+      console.log("Skipping the Manager Withdrawal Test")
+      return true
+    };
+    amount = new anchor.BN(3 * anchor.web3.LAMPORTS_PER_SOL)
+    const closeAta = false;
+    const tx = await program.methods.managerWithdrawal(bumpState, closeAta, collectionName, amount).accounts({
+      manager: AdminWallet.publicKey,
+      statePda: statePDA,
+      tokenPoa: rewardWallet.address,
+      rewardMint: RewTok,
+      managerAta: funderTokenAta,
+      tokenProgram: TOKEN_PROGRAM_ID,
+      systemProgram: SystemProgram.programId,
+    }).signers([AdminWallet]).rpc();
+    console.log("Deposit tx:")
+    console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+
+  })
   it("Stakes NFT", async () => {
+    if (!nftTests) {
+      console.log("Skipping the NFT Stake Test")
+      return true
+    }
     console.log('Staking NFT:', nft.address.toBase58());
     let stakeStatus
-    let userAccount, userAccountExists
-    userAccountExists = await program.account.userAccount.getAccountInfo(userAccountPDA.toBase58());
-    if (userAccountExists) {
-      userAccount = await program.account.userAccount.fetch(userAccountPDA.toBase58());
-      console.log("User Account PDA Contents", userAccount)
-    }
+    // let userAccount, userAccountExists
+    // userAccountExists = await program.account.userAccount.getAccountInfo(userAccountPDA.toBase58());
+    // if (userAccountExists) {
+    //   userAccount = await program.account.userAccount.fetch(userAccountPDA.toBase58());
+    //   console.log("User Account PDA Contents", userAccount)
+    // }
     let stakeStateExists = await program.account.userStakeInfo.getAccountInfo(stakeStatusPda.toBase58());
     if (!stakeStateExists) {
       console.log('User Stake info not found');
@@ -315,7 +365,7 @@ describe("EmberBed", async () => {
         nftMintAddress: nft.mint.address,
         nftEdition: nft.edition.address,
         stakeStatus: stakeStatusPda,
-        userAccountPda: userAccountPDA,
+        // userAccountPda: userAccountPDA,
         collectionRewardInfo: statePDA,
         rewardMint: RewTok,
         programAuthority: delegatedAuthPda,
@@ -336,6 +386,10 @@ describe("EmberBed", async () => {
     await new Promise((resolve) => setTimeout(resolve, 5000))
   })
   it("Redeems Fire Reward", async () => {
+    if (!nftTests) {
+      console.log("Skipping Fire Redemption Test")
+      return true
+    }
     console.log('Redeems Fire Reward:', firePDA.toBase58());
     console.log('Fire POA :', fireRewardWallet.address.toBase58());
     const nftsHeld = 2;
@@ -361,6 +415,10 @@ describe("EmberBed", async () => {
 
   })
   it("Redeems Staking Reward", async () => {
+    if (!nftTests) {
+      console.log("Skipping the Redeem Reward Test")
+      return true
+    }
     console.log("Redeeming Rewards")
     console.log("Redeem Authority:", authPDA.toBase58())
     const tx = await program.methods.redeemReward(bumpState, collectionName).accounts({
@@ -382,6 +440,10 @@ describe("EmberBed", async () => {
   })
 
   it("Unstakes NFT", async () => {
+    if (!nftTests) {
+      console.log("Skipping the Unstake Test")
+      return true
+    }
     console.log('Unstaking NFT:', nft.address.toBase58());
     console.log("Delegated Authority:", delegatedAuthPda.toBase58());
     const unstakeTx = await program.methods.unstake().accounts({
@@ -390,7 +452,7 @@ describe("EmberBed", async () => {
       nftMintAddress: nft.mint.address,
       nftEdition: nft.edition.address,
       stakeStatus: stakeStatusPda,
-      userAccountPda: userAccountPDA,
+      // userAccountPda: userAccountPDA,
       programAuthority: delegatedAuthPda,
       // *SYSTEM Variables
       tokenProgram: TOKEN_PROGRAM_ID,
@@ -404,4 +466,5 @@ describe("EmberBed", async () => {
     const stakeStatus = await program.account.userStakeInfo.fetch(stakeStatusPda)
     console.log("Stake State:", stakeStatus.stakeState)
   })
+
 });

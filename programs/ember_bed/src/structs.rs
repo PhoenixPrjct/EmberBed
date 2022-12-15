@@ -1,12 +1,7 @@
 use anchor_lang::prelude::*;
-// use anchor_lang::solana_program::{ program::invoke_signed };
-// use anchor_spl::token;
-use anchor_spl::{
-    // associated_token::{ AssociatedToken, create },
-    token::{ Mint, Token, TokenAccount },
-};
-use crate::constants::{ FIRE_COLLECTION_NAME, FIRE_MINT };
+use anchor_spl::{ token::{ Mint, Token, TokenAccount } };
 use crate::state_and_relations::{ StakeState, PhoenixRelation, PhoenixUserRelation };
+use crate::constants::{ FIRE_COLLECTION_NAME };
 // Staking Structs
 #[derive(Accounts)]
 pub struct Stake<'info> {
@@ -30,14 +25,14 @@ pub struct Stake<'info> {
         space = std::mem::size_of::<UserStakeInfo>() + 8
     )]
     pub stake_status: Box<Account<'info, UserStakeInfo>>,
-    #[account(
-        init_if_needed,
-        payer = user,
-        seeds = [user.key.as_ref()],
-        bump,
-        space = std::mem::size_of::<UserAccount>() + 40
-    )]
-    pub user_account_pda: Account<'info, UserAccount>,
+    // #[account(
+    //     init_if_needed,
+    //     payer = user,
+    //     seeds = [user.key.as_ref()],
+    //     bump,
+    //     space = std::mem::size_of::<UserAccount>() + 1024
+    // )]
+    // pub user_account_pda: Account<'info, UserAccount>,
     #[account(mut)]
     pub collection_reward_info: Box<Account<'info, CollectionRewardInfo>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
@@ -92,8 +87,8 @@ pub struct Unstake<'info> {
     pub nft_edition: AccountInfo<'info>,
     #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
-    #[account(mut)]
-    pub user_account_pda: Box<Account<'info, UserAccount>>,
+    // #[account(mut)]
+    // pub user_account_pda: Box<Account<'info, UserAccount>>,
     /// CHECK: Only using as a signing PDA
     #[account(mut, seeds=[b"authority".as_ref()],bump)]
     pub program_authority: AccountInfo<'info>,
@@ -170,7 +165,7 @@ pub struct FireRewardInfo {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8 , _rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String )]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String )]
 pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
@@ -182,7 +177,7 @@ pub struct InitializeStatePda<'info> {
     pub state_pda: Account<'info, CollectionRewardInfo>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub reward_mint: AccountInfo<'info>,
-    pub token_poa: Account<'info, TokenAccount>,
+    pub token_poa: Box<Account<'info, TokenAccount>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub nft_collection_address: AccountInfo<'info>,
     #[account(mut)]
@@ -193,12 +188,12 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8, fire_coll_name:String)]
+#[instruction(_bump : u8)]
 pub struct InitializeFirePDA<'info> {
     #[account(
         init_if_needed,
         payer = funder,
-        seeds = [reward_mint.key().as_ref(), fire_coll_name.as_ref(), b"fstate".as_ref()],
+        seeds = [reward_mint.key().as_ref(), FIRE_COLLECTION_NAME.as_ref(), b"fstate".as_ref()],
         bump,
         space = std::mem::size_of::<FireRewardInfo>() + 8
     )]

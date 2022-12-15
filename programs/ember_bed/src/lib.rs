@@ -3,13 +3,13 @@ use anchor_lang::solana_program::{ program::invoke_signed };
 use anchor_spl::token;
 use anchor_spl::{
     // associated_token::{ AssociatedToken, create },
-    token::{ Approve, Mint, Revoke, Token, TokenAccount, Transfer, CloseAccount, close_account },
+    token::{ Approve, Revoke, Transfer, CloseAccount, close_account },
 };
 
 use crate::constants::{ LPS, FIRE_MINT, BASE_RATE, FIRE_COLLECTION_NAME, FIRE_SYMBOL };
 use crate::structs::*;
 use crate::errors::{ StakeError, AdminError, RedeemError };
-use crate::state_and_relations::{ PhoenixRelation, StakeState };
+use crate::state_and_relations::{ StakeState };
 use crate::utils::*;
 mod utils;
 mod constants;
@@ -71,7 +71,7 @@ pub mod ember_bed {
         ctx.accounts.stake_status.last_stake_redeem = timestamp.unix_timestamp;
 
         // if !ctx.accounts.stake_status.is_initialized {
-        ctx.accounts.user_account_pda.user = ctx.accounts.user.key();
+        // ctx.accounts.user_account_pda.user = ctx.accounts.user.key();
         ctx.accounts.stake_status.user_pubkey = ctx.accounts.user.key();
         ctx.accounts.stake_status.collection_reward_state =
             ctx.accounts.collection_reward_info.key();
@@ -80,17 +80,19 @@ pub mod ember_bed {
         // }
 
         ctx.accounts.stake_status.stake_state = StakeState::Staked;
-        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-            let pubkey = ctx.accounts.nft_mint_address.key();
-            let nft_pks = &mut ctx.accounts.user_account_pda.stake_status_pks;
-            if !nft_pks.contains(&pubkey) {
-                nft_pks.push(pubkey);
-            }
-            msg!("NFTs staked by user: {}", nft_pks.len());
-            for item in nft_pks {
-                msg!("{}", item);
-            }
-        }
+        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+        //     let pubkey = ctx.accounts.nft_mint_address.key();
+        //     ctx.accounts.user_account_pda.
+        //     let nft_pks = &mut ctx.accounts.user_account_pda.stake_status_pks;
+        //     if !nft_pks.contains(&pubkey) {
+        //         nft_pks.push(pubkey);
+        //     }
+
+        //     msg!("NFTs staked by user: {}", nft_pks.len());
+        //     for item in nft_pks {
+        //         msg!("{}", item);
+        //     }
+        // }
         // Messages to confirm info passed to program
         msg!("NFT token account: {:?}", ctx.accounts.stake_status.user_nft_ata);
         msg!("User pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
@@ -222,15 +224,15 @@ pub mod ember_bed {
         token::revoke(revoke_cpi_ctx)?;
 
         ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
-        if ctx.accounts.stake_status.stake_state == StakeState::Unstaked {
-            let pubkey = ctx.accounts.nft_mint_address.key();
-            let mut nft_pks = ctx.accounts.user_account_pda.stake_status_pks.clone();
-            nft_pks.retain(|item| item != &pubkey);
-            msg!("NFTs staked by user: {}", nft_pks.len());
-            for item in nft_pks {
-                msg!("{}", item);
-            }
-        }
+        // if ctx.accounts.stake_status.stake_state == StakeState::Unstaked {
+        //     let pubkey = ctx.accounts.nft_mint_address.key();
+        //     let mut nft_pks = ctx.accounts.user_account_pda.stake_status_pks.clone();
+        //     nft_pks.retain(|item| item != &pubkey);
+        //     msg!("NFTs staked by user: {}", nft_pks.len());
+        //     for item in nft_pks {
+        //         msg!("{}", item);
+        //     }
+        // }
         // Messages Confirming Information
         msg!("NFT ATA: {:?}", ctx.accounts.stake_status.user_nft_ata);
         msg!("User Pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
@@ -242,11 +244,7 @@ pub mod ember_bed {
         Ok(())
     }
 
-    pub fn initialize_fire_pda(
-        ctx: Context<InitializeFirePDA>,
-        _bump: u8,
-        fire_coll_name: String
-    ) -> Result<()> {
+    pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
         msg!("Initializing fire pda");
         ctx.accounts.fire_pda.bump = _bump;
         ctx.accounts.fire_pda.collection_name = FIRE_COLLECTION_NAME.to_string();
@@ -267,8 +265,8 @@ pub mod ember_bed {
         _ctx: Context<InitializeStatePda>,
         _bump: u8,
         _rate: u32,
-        _collection_name: String,
         _reward_symbol: String,
+        _collection_name: String,
         _fire_eligible: bool,
         _phoenix_collection_relation: String
     ) -> Result<()> {
@@ -291,26 +289,17 @@ pub mod ember_bed {
         if _fire_eligible {
             _ctx.accounts.state_pda._phoenix_relation = pr;
         }
+        _ctx.accounts.state_pda.reward_mint = _ctx.accounts.reward_mint.key();
         _ctx.accounts.state_pda.bump = _bump;
-        _ctx.accounts.state_pda.collection_name = _collection_name;
+        _ctx.accounts.state_pda.collection_name = _collection_name.clone();
         _ctx.accounts.state_pda.reward_symbol = _reward_symbol;
         _ctx.accounts.state_pda.manager = _ctx.accounts.funder.key();
         _ctx.accounts.state_pda.collection_address = _ctx.accounts.nft_collection_address.key();
         _ctx.accounts.state_pda.reward_wallet = _ctx.accounts.token_poa.key();
         _ctx.accounts.state_pda.is_initialized = true;
+
         Ok(())
     }
-    /*NOT USED
-        pub fn initialize_token_pda(ctx: Context<InitializeTokenPda>, _bump1: u8) -> Result<()> {
-            msg!("Initializing Token PDA");
-            let pda = ctx.accounts.token_pda.key();
-            msg!("token pda : {}", pda);
-
-            ctx.accounts.state_pda.reward_wallet = pda;
-            msg!("state pda reward_wallet: {}", ctx.accounts.state_pda.reward_wallet.key());
-            Ok(())
-        }
-     NOT USED */
     pub fn deposit_to_reward_ata(ctx: Context<DepositToTokenPda>, amount: u64) -> Result<()> {
         msg!("Depositing to Token PDA: {}", ctx.accounts.state_pda.reward_wallet);
         msg!("Program Owned Ata Owner: {}", ctx.accounts.token_poa.owner);
