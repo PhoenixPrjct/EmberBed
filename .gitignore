@@ -22,7 +22,7 @@ test.js
 # ProgramIDs from DevNet Deploys Gone Wrong
 ProgramIDs.md
 app/quasar.config.js
-app/src/solana/devWallet.json
-app/src/solana/fundWallet.ts
+app/src/solana/wallets/**.ts
+
 _backup.ts
 not_anything.ts
