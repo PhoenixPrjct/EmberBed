@@ -5,7 +5,7 @@ import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import web3 = anchor.web3;
 import { Accounts, CollectionInfo } from '../types'
-import { devKP } from './devWallet'
+import { devKP } from './wallets/devWallet'
 import {
     Metaplex,
     bundlrStorage,
@@ -227,9 +227,6 @@ export function getAPI(program: Program<EmberBed>) {
         return tx;
     }
 
-
-
-
     async function initStatePda(user: web3.PublicKey, collectionInfo: CollectionInfo) {
         console.log(collectionInfo.collectionName)
         const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint } = collectionInfo;
@@ -244,8 +241,6 @@ export function getAPI(program: Program<EmberBed>) {
         //     console.log("State Account", statePDA.toBase58(), "Already Initialized")
         //     return statePDA.toBase58();
         // }
-        // const checkSigner = Keypair.fromSecretKey(signers.secretKey);
-        // console.log("checkSigner:", checkSigner.publicKey.toBase58())
         // console.log({ statePDA: statePDA.toBase58(), stateBump, rewardWallet: rewardWallet.address.toBase58(), RewTok: RewTok.toBase58(), nftCollectionAddress: nftCollectionAddress.toBase58(), user: user.toBase58(), userATA: funderTokenAta.toBase58() })
         const tx = await program.methods.initializeStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind).accounts({
             statePda: statePDA,
@@ -261,8 +256,10 @@ export function getAPI(program: Program<EmberBed>) {
 
 
         console.dir({ tx })
-        return tx
-    };
+        return {
+            collectionWallet: rewardWallet.address.toBase58(), tx: tx
+        };
+    }
 
     async function stake(user: web3.PublicKey, collectionName: string, nftMint: string, signers: web3.Keypair) {
         const accounts = await getAccounts(user, collectionName, nftMint)

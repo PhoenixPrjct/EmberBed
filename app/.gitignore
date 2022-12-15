@@ -33,5 +33,5 @@ yarn-error.log*
 *.sln
 
 .env
-./solana/devWallet.ts
+./src/solana/devWallet.ts
 quasar.config.js
