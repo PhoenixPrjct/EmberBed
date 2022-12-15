@@ -11,7 +11,6 @@ export interface StakeAccounts {
   nftMintAddress: PublicKey
   nftEdition: PublicKey
   stakeStatus: PublicKey
-  userAccountPda: PublicKey
   collectionRewardInfo: PublicKey
   rewardMint: PublicKey
   programAuthority: PublicKey
@@ -28,7 +27,6 @@ export function stake(accounts: StakeAccounts) {
     { pubkey: accounts.nftMintAddress, isSigner: false, isWritable: false },
     { pubkey: accounts.nftEdition, isSigner: false, isWritable: false },
     { pubkey: accounts.stakeStatus, isSigner: false, isWritable: true },
-    { pubkey: accounts.userAccountPda, isSigner: false, isWritable: true },
     {
       pubkey: accounts.collectionRewardInfo,
       isSigner: false,

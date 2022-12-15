@@ -6,7 +6,6 @@ import { PROGRAM_ID } from "../programId"
 
 export interface InitializeFirePdaArgs {
   bump: number
-  fireCollName: string
 }
 
 export interface InitializeFirePdaAccounts {
@@ -18,10 +17,7 @@ export interface InitializeFirePdaAccounts {
   systemProgram: PublicKey
 }
 
-export const layout = borsh.struct([
-  borsh.u8("bump"),
-  borsh.str("fireCollName"),
-])
+export const layout = borsh.struct([borsh.u8("bump")])
 
 export function initializeFirePda(
   args: InitializeFirePdaArgs,
@@ -40,7 +36,6 @@ export function initializeFirePda(
   const len = layout.encode(
     {
       bump: args.bump,
-      fireCollName: args.fireCollName,
     },
     buffer
   )

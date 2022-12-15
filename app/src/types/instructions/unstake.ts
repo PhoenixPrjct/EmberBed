@@ -10,7 +10,6 @@ export interface UnstakeAccounts {
   nftMintAddress: PublicKey
   nftEdition: PublicKey
   stakeStatus: PublicKey
-  userAccountPda: PublicKey
   programAuthority: PublicKey
   tokenProgram: PublicKey
   metadataProgram: PublicKey
@@ -24,7 +23,6 @@ export function unstake(accounts: UnstakeAccounts) {
     { pubkey: accounts.nftMintAddress, isSigner: false, isWritable: false },
     { pubkey: accounts.nftEdition, isSigner: false, isWritable: false },
     { pubkey: accounts.stakeStatus, isSigner: false, isWritable: true },
-    { pubkey: accounts.userAccountPda, isSigner: false, isWritable: true },
     { pubkey: accounts.programAuthority, isSigner: false, isWritable: true },
     { pubkey: accounts.tokenProgram, isSigner: false, isWritable: false },
     { pubkey: accounts.metadataProgram, isSigner: false, isWritable: false },
