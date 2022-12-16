@@ -142,7 +142,7 @@ export class CollectionRewardInfo {
       collectionName: this.collectionName,
       collectionAddress: this.collectionAddress.toString(),
       fireEligible: this.fireEligible,
-      phoenixRelation: this.phoenixRelation.toJSON(),
+      phoenixRelation: this.phoenixRelation.kind,
       rewardMint: this.rewardMint.toString(),
       manager: this.manager.toString(),
       isInitialized: this.isInitialized,

@@ -5,7 +5,7 @@ import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import web3 = anchor.web3;
 import { Accounts, CollectionInfo } from '../types'
-import { devKP } from './devWallet'
+import { devKP } from './wallets/devWallet'
 import {
     Metaplex,
     bundlrStorage,
@@ -258,10 +258,10 @@ export function getAPI(program: Program<EmberBed>) {
             systemProgram: SystemProgram.programId,
         }).signers([]).rpc();
 
-
+        const account = await program.account.collectionRewardInfo.getAccountInfo(statePDA)
 
         console.dir({ tx })
-        return tx
+        return { tx: tx, account: account }
     };
 
     async function stake(user: web3.PublicKey, collectionName: string, nftMint: string, signers: web3.Keypair) {
