@@ -6,6 +6,7 @@
   "author": "Wetesy <wetesy51@gmail.com>",
   "private": true,
   "scripts": {
+    "dev": "concurrently \"yarn watch\" \"quasar dev\"",
     "watch": "nodemon ./server/server.ts",
     "start": "quasar dev",
     "build": "quasar build",
@@ -24,6 +25,7 @@
     "@solana/web3.js": "^1.70.1",
     "axios": "^0.21.1",
     "body-parser": "^1.20.1",
+    "concurrently": "^7.6.0",
     "connect-history-api-fallback": "^2.0.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
