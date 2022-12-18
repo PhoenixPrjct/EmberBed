@@ -12,7 +12,7 @@ export interface CollectionRewardInfoFields {
   collectionName: string
   collectionAddress: PublicKey
   fireEligible: boolean
-  phoenixRelation: types.PhoenixRelationKind
+  phoenixRelation: types.PhoenixRelationJSON | types.PhoenixRelationKind
   rewardMint: PublicKey
   manager: PublicKey
   isInitialized: boolean
@@ -22,13 +22,13 @@ export interface CollectionRewardInfoJSON {
   bump: number
   ratePerDay: number
   rewardWallet: string
+  rewardMint: string
   rewardSymbol: string
   collectionName: string
   collectionAddress: string
   fireEligible: boolean
-  phoenixRelation: types.PhoenixRelationJSON
-  rewardMint: string
-  manager: string
+  phoenixRelation: types.PhoenixRelationJSON | types.PhoenixRelationKind
+  manager: string | PublicKey
   isInitialized: boolean
 }
 
@@ -142,7 +142,7 @@ export class CollectionRewardInfo {
       collectionName: this.collectionName,
       collectionAddress: this.collectionAddress.toString(),
       fireEligible: this.fireEligible,
-      phoenixRelation: this.phoenixRelation.toJSON(),
+      phoenixRelation: this.phoenixRelation,
       rewardMint: this.rewardMint.toString(),
       manager: this.manager.toString(),
       isInitialized: this.isInitialized,

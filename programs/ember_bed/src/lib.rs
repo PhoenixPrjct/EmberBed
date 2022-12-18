@@ -8,7 +8,7 @@ use anchor_spl::{
 
 use crate::constants::{ LPS, FIRE_MINT, BASE_RATE, FIRE_COLLECTION_NAME, FIRE_SYMBOL };
 use crate::structs::*;
-use crate::errors::{ StakeError, AdminError, RedeemError };
+use crate::errors::{ StakeError, AdminError, RedeemError, TokenStateError };
 use crate::state_and_relations::{ StakeState };
 use crate::utils::*;
 mod utils;
@@ -300,6 +300,36 @@ pub mod ember_bed {
 
         Ok(())
     }
+    pub fn update_state_pda(
+        _ctx: Context<UpdateStatePda>,
+        _bump: u8,
+        _rate: u32,
+        _reward_symbol: String,
+        _collection_name: String,
+        _fire_eligible: bool,
+        _phoenix_collection_relation: String
+    ) -> Result<()> {
+        if !_ctx.accounts.state_pda.is_initialized {
+            msg!("Account is not yet initialized");
+            return err!(TokenStateError::UnintializedAccount);
+        }
+        _ctx.accounts.state_pda.rate_per_day = _rate;
+        msg!("Rate per day: {}", _ctx.accounts.state_pda.rate_per_day);
+        _ctx.accounts.state_pda.fire_eligible = _fire_eligible;
+
+        let pr = _phoenix_collection_relation.parse().unwrap();
+        if _fire_eligible {
+            _ctx.accounts.state_pda._phoenix_relation = pr;
+        }
+        _ctx.accounts.state_pda.bump = _bump;
+        _ctx.accounts.state_pda.collection_name = _collection_name.clone();
+        _ctx.accounts.state_pda.reward_symbol = _reward_symbol;
+        _ctx.accounts.state_pda.collection_address = _ctx.accounts.nft_collection_address.key();
+        _ctx.accounts.state_pda.reward_wallet = _ctx.accounts.token_poa.key();
+
+        Ok(())
+    }
+
     pub fn deposit_to_reward_ata(ctx: Context<DepositToTokenPda>, amount: u64) -> Result<()> {
         msg!("Depositing to Token PDA: {}", ctx.accounts.state_pda.reward_wallet);
         msg!("Program Owned Ata Owner: {}", ctx.accounts.token_poa.owner);

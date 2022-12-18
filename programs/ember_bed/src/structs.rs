@@ -188,6 +188,23 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String )]
+pub struct UpdateStatePda<'info> {
+    #[account(mut)]
+    pub state_pda: Account<'info, CollectionRewardInfo>,
+    /// CHECK: This is not dangerous because we don't read or write to this account.
+    pub reward_mint: AccountInfo<'info>,
+    pub token_poa: Box<Account<'info, TokenAccount>>,
+    /// CHECK: This is not dangerous because we don't read or write to this account.
+    pub nft_collection_address: AccountInfo<'info>,
+    #[account(mut)]
+    pub funder: Signer<'info>,
+    #[account(mut)]
+    pub funder_ata: Account<'info, TokenAccount>,
+    pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
 #[instruction(_bump : u8)]
 pub struct InitializeFirePDA<'info> {
     #[account(

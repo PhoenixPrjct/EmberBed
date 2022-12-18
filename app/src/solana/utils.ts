@@ -141,7 +141,7 @@ export function getAPI(program: Program<EmberBed>) {
     }
 
 
-    async function getAccounts(user: web3.PublicKey, collectionName: string, rewardMint?: string, nftColAddress?: string, nftMint?: string): Promise<Accounts> {
+    async function getAccounts(user: web3.PublicKey, collectionName: string, rewardMint: string, nftColAddress?: string, nftMint?: string): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
         let RewTok
         let nftAccounts = {};
@@ -230,7 +230,7 @@ export function getAPI(program: Program<EmberBed>) {
     async function initStatePda(user: web3.PublicKey, collectionInfo: CollectionInfo) {
         console.log(collectionInfo.collectionName)
         const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint } = collectionInfo;
-        const accounts = await getAccounts(user, collectionName, rewardMint ? rewardMint : void 0);
+        const accounts = await getAccounts(user, collectionName, rewardMint);
         const { statePDA, RewTok, stateBump, funderTokenAta } = accounts;
         const rewardWallet = await getRewardWallet(RewTok, statePDA);
         const nftCollectionAddress = new PublicKey(collectionAddress);
@@ -253,13 +253,11 @@ export function getAPI(program: Program<EmberBed>) {
             systemProgram: SystemProgram.programId,
         }).signers([]).rpc();
 
-
+        const account = await program.account.collectionRewardInfo.getAccountInfo(statePDA)
 
         console.dir({ tx })
-        return {
-            collectionWallet: rewardWallet.address.toBase58(), tx: tx
-        };
-    }
+        return { tx: tx, account: account }
+    };
 
     async function stake(user: web3.PublicKey, collectionName: string, nftMint: string, signers: web3.Keypair) {
         const accounts = await getAccounts(user, collectionName, nftMint)

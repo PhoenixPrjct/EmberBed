@@ -8,6 +8,8 @@ import web3 = anchor.web3;
 import { EmberBed, IDL } from '../solana/types/ember_bed'
 import { getAPI } from '../solana/utils'
 
+// import { AnchorWallet } from 'solana-wallets-vue/src/useAnchorWallet'
+
 const EmberBedAddress = "BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z"
 
 const preflightCommitment = 'processed';
@@ -17,7 +19,7 @@ const programID = new PublicKey(EmberBedAddress);
 export function _createChainAPI() {
     const wallet = useAnchorWallet();
     const connection = new Connection(clusterApiUrl('devnet'));
-    const provider = computed(() => wallet.value ? new anchor.AnchorProvider(connection, wallet.value, { preflightCommitment, commitment }) : null)
+    const provider = computed(() => wallet ? new anchor.AnchorProvider(connection, wallet, { preflightCommitment, commitment }) : null)
     const program = computed(() => provider.value ? new Program(IDL, programID, provider.value) : null);
     const newProgram = program as unknown as ComputedRef<Program<EmberBed>>;
     const api = computed(() => program.value ? getAPI(newProgram.value) : null)
