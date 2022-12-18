@@ -5,14 +5,18 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 // import { fundKP } from '../../solana/fundWallet'
 import { useQuasar } from 'quasar';
 import { useChainAPI } from '../../api/chain-api';
-import { CollectionInfo, CollectionRewardInfo, Accounts, CollectionRewardInfoJSON, CollectionRewardInfoFields } from '../../types';
-import * as db from '../../../server/'
+import axios from 'src/boot/axios';
+import { CollectionInfo, CollectionRewardInfo, Accounts, CollectionRewardInfoJSON, CollectionRewardInfoFields, PhoenixRelation } from '../../types';
+
 
 import CollectionOnChainInfo from 'src/components/CollectionOnChainInfo.vue';
-import { padEmptyChars } from '@metaplex-foundation/js';
+import { useAnchorWallet } from 'solana-wallets-vue';
+import { ProgramAccount } from '@project-serum/anchor';
+import { EmberBed } from 'src/types/types/PhoenixRelation';
 const $q = useQuasar();
 
-const { api, connection, wallet, program } = useChainAPI();
+const { api, connection, program } = useChainAPI();
+const wallet = useAnchorWallet();
 // const readyForInfo = ref(false)
 // const fundWallet = Keypair.fromSecretKey(Uint8Array.from(fundKP));
 const collectionPDA = ref(null as unknown as PublicKey)
@@ -33,7 +37,8 @@ const onChainInfo: Ref<CollectionRewardInfoJSON> = ref(null as unknown as Collec
 
 const accounts: Ref<Accounts> = ref(null as unknown as Accounts)
 
-const collectionPDAs = ref();
+const collectionPDAs = ref<ProgramAccount<EmberBed>[]>([])
+const demoRewardMint = new PublicKey("REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko");
 
 async function getCollectionInfo(collectionName: string, rewardMint: string) {
     onChainInfo.value = null as unknown as CollectionRewardInfoJSON
@@ -41,17 +46,10 @@ async function getCollectionInfo(collectionName: string, rewardMint: string) {
     accounts.value = await api.value.getAccounts(wallet.value.publicKey, collectionName, rewardMint);
     collectionPDA.value = accounts.value.statePDA
     const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
-    console.log(`\nRewTok: ${RewTok?.toBase58()}\n
-            stateBump:${stateBump}\n 
-            statePDA:${statePDA?.toBase58()}\n 
-            rewardWallet: ${rewardWallet?.toBase58()}\n 
-            userAccountPDA: ${userAccountPDA?.toBase58()}\n 
-            userRewardAta: ${userRewardAta?.toBase58()}\n 
-            nftCollectionAddress: ${nftCollectionAddress?.toBase58()}\n
-            funderTokenAta: ${funderTokenAta?.toBase58()}\n`);
+    console.dir(accounts.value);
     const res = await CollectionRewardInfo.fetch(connection, collectionPDA.value);
     if (!res) return
-    onChainInfo.value = await res.toJSON()
+    onChainInfo.value = res.toJSON()
 
 }
 interface PDAsArrayItem {
@@ -62,27 +60,29 @@ interface PDAsArrayItem {
 // const nftMint = "B2vPYLHVmVrbJHZnDtA6oUGUS429czJkAvitFaW11VLR"
 watchEffect(async () => {
     console.log(onChainInfo.value)
-    if (!collectionPDAs.value) {
-        let PDAs: any[] = []
-        const rawPDAs = await (await program.value.account.collectionRewardInfo.all()).map(pda => PDAs.push({ PDA: pda.publicKey, info: { ...pda.account } }))
-        PDAs = PDAs.map(PDA =>
-            new CollectionRewardInfo(PDA.info).toJSON())
-        // const collectionRef = rawPDAs.map((pda) => CollectionRewardInfo.fetch(connection, pda).then(res => res))
+    if (!collectionPDAs.value?.length) {
+        const walletString = wallet.value.publicKey
+        await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
+            if (acct.account.manager.toBase58() == walletString) {
+                collectionPDAs.value = [...collectionPDAs.value, acct];
+            }
+            return;
+        })
 
-        // collectionPDAs.value = computed(()=>collectionRef
 
 
-        console.log(PDAs)
+
+        console.log(collectionPDAs.value[0].account)
     }
 })
 
 
 async function handleInitCollectionPDAClick() {
     console.log(!!accounts.value)
-    if (wallet.value && api.value) {
+    if (wallet.publicKey && api.value) {
         try {
 
-            const tx = await (await api.value.initStatePda(wallet.value.publicKey, collectionInfo.value)).tx
+            const tx = (await api.value.initStatePda(wallet.publicKey, collectionInfo.value)).tx
             if (!tx) {
                 throw new Error('Possible TX Failure')
             }
@@ -133,7 +133,7 @@ async function handleInitCollectionPDAClick() {
 
 
     <q-btn label="Init State" @click="handleInitCollectionPDAClick()" />
-    <q-btn label="Get Info" @click="getCollectionInfo()" />
+    <q-btn label="Get Info" @click="getCollectionInfo('TestEyes', demoRewardMint.toBase58())" />
 
     <CollectionOnChainInfo v-if="onChainInfo" :address="accounts?.statePDA" :onChainInfo="onChainInfo" />
 </template>

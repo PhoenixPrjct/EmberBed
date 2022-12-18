@@ -12,7 +12,7 @@
 const { configure } = require('quasar/wrappers');
 const path = require('path');
 const { nodePolyfills } = require('vite-plugin-node-polyfills');
-const { Notify } = require('quasar');
+// const { Notify } = require('quasar');
 module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
@@ -120,7 +120,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: [Notify]
+      plugins: ['Notify']
     },
 
     // animations: 'all', // --- includes all animations

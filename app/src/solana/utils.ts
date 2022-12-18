@@ -141,7 +141,7 @@ export function getAPI(program: Program<EmberBed>) {
     }
 
 
-    async function getAccounts(user: web3.PublicKey, collectionName: string, rewardMint?: string, nftColAddress?: string, nftMint?: string): Promise<Accounts> {
+    async function getAccounts(user: web3.PublicKey, collectionName: string, rewardMint: string, nftColAddress?: string, nftMint?: string): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
         let RewTok
         let nftAccounts = {};
