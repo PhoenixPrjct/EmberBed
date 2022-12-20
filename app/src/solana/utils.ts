@@ -143,18 +143,12 @@ export function getAPI(program: Program<EmberBed>) {
 
     async function getAccounts(user: web3.PublicKey, collectionName: string, rewardMint: string, nftColAddress?: string, nftMint?: string): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
-        let RewTok
+        const RewTok: PublicKey = new PublicKey(rewardMint);
         let nftAccounts = {};
         let mintAddress, nft, delegatedAuthPda,
             nftTokenAddress,
             stakeStatusPDA
-        if (typeof rewardMint == 'string') {
-            RewTok = new PublicKey(rewardMint);
-        } else if (!rewardMint) {
-            throw new Error('Reward mint is required')
-        } else {
-            RewTok = rewardMint;
-        }
+
 
 
         const userAccountPDA = await getUserAccountPda(user);

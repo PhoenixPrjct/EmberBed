@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { PublicKey } from '@solana/web3.js';
-import { CollectionRewardInfoJSON } from 'src/types';
 import { copyToClipboard, useQuasar } from 'quasar'
+import { useChainAPI } from 'src/api/chain-api';
+import CollectionCard from './CollectionCard.vue';
+
+import { ProgramAccount } from '@project-serum/anchor';
+import { EmberBed } from 'src/solana/types/ember_bed';
+import { CollectionRewardInfoJSON } from 'src/types';
+
 type OnChainInfo = CollectionRewardInfoJSON & { statePDA: PublicKey }
 
-
+const { wallet, api, program } = useChainAPI();
 defineProps<{
-    onChainInfo: CollectionRewardInfoJSON,
-    address: PublicKey,
+    collectionPDAs: ProgramAccount<EmberBed>[],
 }>()
 const $q = useQuasar();
 async function handleCopyClick(value: string) {
@@ -34,15 +39,30 @@ async function handleCopyClick(value: string) {
 
         })
     }
-
-
 }
+
+// async function getCollectionInfo(collectionName: string, rewardMint: string) {
+//     onChainInfo.value = null as unknown as CollectionRewardInfoJSON
+//     if (!api.value) return false;
+//     accounts.value = await api.value.getAccounts(wallet.value.publicKey, collectionName, rewardMint);
+//     collectionPDA.value = accounts.value.statePDA
+//     const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
+//     console.dir(accounts.value);
+//     const res = await CollectionRewardInfo.fetch(connection, collectionPDA.value);
+//     if (!res) return
+//     onChainInfo.value = res.toJSON()
+
+// }
 
 
 
 </script>
 <template>
-    <q-card dark>
+    <div class="flex justify-around collection-card--container">
+        <CollectionCard v-for="acct in collectionPDAs" :key="acct.publicKey.toBase58()"
+            :collectionRewardPDA="acct.publicKey" />
+    </div>
+    <!-- <q-card dark>
         <q-item>
             <q-item-section>
                 $FIRE Eligible:
@@ -91,15 +111,24 @@ async function handleCopyClick(value: string) {
                 {{ onChainInfo.ratePerDay }}
             </q-item-section>
         </q-item>
-    </q-card>
-    <q-spinner v-if="!onChainInfo" />
+    </q-card> -->
+
 </template>
 <style scoped>
+.collection-card--container {
+    width: 90%;
+    margin: 1rem auto;
+    flex-flow: row wrap;
+    gap: 1rem;
+}
+
+
 .pubkey {
     font-size: calc(10px + .25vw);
-    width: 100%;
+    width: 50%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    cursor: pointer;
 }
 </style>

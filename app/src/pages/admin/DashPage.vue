@@ -3,23 +3,24 @@ import { ref, watchEffect, Ref } from 'vue';
 import { Keypair, PublicKey } from '@solana/web3.js';
 // import { useWorkspace, initWorkspace } from 'src/composables';
 // import { fundKP } from '../../solana/fundWallet'
-import { useQuasar } from 'quasar';
+import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { useChainAPI } from '../../api/chain-api';
 import axios from 'src/boot/axios';
 import { CollectionInfo, CollectionRewardInfo, Accounts, CollectionRewardInfoJSON, CollectionRewardInfoFields, PhoenixRelation } from '../../types';
 
-
-import CollectionOnChainInfo from 'src/components/CollectionOnChainInfo.vue';
+import { CopyClick } from 'src/helpers';
+import CollectionOnChainInfo from 'src/components/CollectionContainer.vue';
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { ProgramAccount } from '@project-serum/anchor';
-import { EmberBed } from 'src/types/types/PhoenixRelation';
+import { EmberBed } from 'src/solana/types/ember_bed';
+
 const $q = useQuasar();
 
 const { api, connection, program } = useChainAPI();
 const wallet = useAnchorWallet();
 // const readyForInfo = ref(false)
 // const fundWallet = Keypair.fromSecretKey(Uint8Array.from(fundKP));
-const collectionPDA = ref(null as unknown as PublicKey)
+
 const demoInfoSubmission: CollectionInfo = {
     // address: null as unknown as PublicKey,
     rewardMint: "REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko",
@@ -40,22 +41,6 @@ const accounts: Ref<Accounts> = ref(null as unknown as Accounts)
 const collectionPDAs = ref<ProgramAccount<EmberBed>[]>([])
 const demoRewardMint = new PublicKey("REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko");
 
-async function getCollectionInfo(collectionName: string, rewardMint: string) {
-    onChainInfo.value = null as unknown as CollectionRewardInfoJSON
-    if (!api.value) return false;
-    accounts.value = await api.value.getAccounts(wallet.value.publicKey, collectionName, rewardMint);
-    collectionPDA.value = accounts.value.statePDA
-    const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
-    console.dir(accounts.value);
-    const res = await CollectionRewardInfo.fetch(connection, collectionPDA.value);
-    if (!res) return
-    onChainInfo.value = res.toJSON()
-
-}
-interface PDAsArrayItem {
-    PDA: PublicKey,
-    info: CollectionRewardInfoFields;
-}
 
 // const nftMint = "B2vPYLHVmVrbJHZnDtA6oUGUS429czJkAvitFaW11VLR"
 watchEffect(async () => {
@@ -63,18 +48,27 @@ watchEffect(async () => {
     if (!collectionPDAs.value?.length) {
         const walletString = wallet.value.publicKey
         await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
-            if (acct.account.manager.toBase58() == walletString) {
-                collectionPDAs.value = [...collectionPDAs.value, acct];
-            }
+            // if (acct.account.manager.toBase58() == walletString) {
+            collectionPDAs.value = [...collectionPDAs.value, acct];
+            // }
             return;
         })
-
-
-
-
-        console.log(collectionPDAs.value[0].account)
     }
 })
+
+async function getCollectionInfo(collectionName: string, rewardMint: string) {
+    onChainInfo.value = null as unknown as CollectionRewardInfoJSON
+    if (!api.value) return false;
+    accounts.value = await api.value.getAccounts(wallet.value.publicKey, collectionName, rewardMint);
+    accounts.value.statePDA
+    const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
+    console.dir(accounts.value);
+    const res = await CollectionRewardInfo.fetch(connection, accounts.value.statePDA);
+    if (!res) return
+    console.dir(res.toJSON())
+    onChainInfo.value = res.toJSON()
+
+}
 
 
 async function handleInitCollectionPDAClick() {
@@ -99,41 +93,92 @@ async function handleInitCollectionPDAClick() {
 
     }
 }
+async function handleCopyClick(e: any, v?: string) {
+    e.target.innerText ?
+        v = e.target.innerText :
+        v = undefined
+    if (typeof (v) !== 'string') {
+        return $q.notify({
+            color: 'red-10',
+            textColor: 'white',
+            icon: 'warning',
+            message: `So that didn't work. . . sorry`,
+            caption: `Was Expecting Type To Be 'string' . . . contact the dev.`,
+            position: 'top'
 
-    // console.log(tx)
-    // const tx2 = await ws?.program.value.methods.initializeStatePda(stateBump, ratePerDay, collectionName, rewardSymbol, fireEligible, PhoenixRelation
-    //    ).accounts({
-    //             statePda: statePDA,
-    //             tokenPoa: rewardWallet,
-    //             rewardMint: RewTok,
-    //             // authPda: authPDA,
-    //             nftCollectionAddress: nftCollectionAddress,
-    //             funder: wallet.publicKey.value!,
-    //             funderAta: funderTokenAta,
-    //             systemProgram: SystemProgram.programId,
-    //         }).rpc();
-    //     }
+        })
+    }
+    const result: QNotifyCreateOptions = await CopyClick(v);
+    return $q.notify({ ...result })
 
-    // tx2.feePayer = wallet.publicKey.value!;
-    // tx2.recentBlockhash = (await ws?.connection.getLatestBlockhash()).blockhash
-    // const signedTx = await ws?.wallet.value?.signTransaction(tx2)
-    // const txId = await wallet.sendTransaction(signedTx, ws?.connection)
-    // console.log("TX ID:", txId)
-    // ws?.wallet.value?.signTransaction(tx)
-
-    // console.log('sig:', tx)
-
-
-
-</script>
+}
+  </script>
 <template>
-    <h1>Admin Dashboard!</h1>
-    <q-input v-model="collectionInfo.collectionName" label="Collection Name" />
-    <q-input v-model="collectionInfo.collectionAddress" label="Collection Address" />
+    <section class="btn-container">
+        <q-btn dark label="Add New" icon="add" :class="!collectionPDAs.length ? 'add-btn' : void 0" />
+
+        <q-btn dark label="Stats" icon="query_stats">
+            <q-tooltip>Coming Soon.</q-tooltip>
+        </q-btn>
+
+        <q-btn dark label="Active Collections" @click="getCollectionInfo('TestEyes', demoRewardMint.toBase58())"
+            icon="person" />
+    </section>
+    <section class="info-container">
+        <h4>This is where info will go on how to use this page.</h4>
+    </section>
 
 
-    <q-btn label="Init State" @click="handleInitCollectionPDAClick()" />
-    <q-btn label="Get Info" @click="getCollectionInfo('TestEyes', demoRewardMint.toBase58())" />
+    <CollectionOnChainInfo v-if="!collectionPDAs" :collectionPDAs="collectionPDAs" />
+    <section v-else>
+        <q-card dark class="no-collections ">
+            <q-card-section class="text-h5 text-center">
+                No Collections Found for <div class="pubkey" @click="(e) => handleCopyClick(e)">
 
-    <CollectionOnChainInfo v-if="onChainInfo" :address="accounts?.statePDA" :onChainInfo="onChainInfo" />
+                    {{ wallet.publicKey }}
+                </div>
+
+            </q-card-section>
+        </q-card>
+    </section>
 </template>
+<style lang="scss" scoped>
+.no-collections {
+    width: 50%;
+    margin: auto;
+
+}
+
+.add-btn {
+    box-shadow: (0px 0px 10px $secondary);
+    animation: pulse 1s linear infinite;
+
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.25);
+    }
+
+    100% {
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
+    }
+}
+
+.btn-container,
+.info-container {
+    display: flex;
+    justify-content: center;
+    padding: 2em;
+}
+
+.btn-container {
+    gap: 2rem;
+    flex-flow: row wrap;
+    margin: 1rem;
+}
+</style>

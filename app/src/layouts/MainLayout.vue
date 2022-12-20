@@ -11,6 +11,10 @@ const currentYear = new Date().getFullYear();
     <q-header elevated>
       <q-toolbar>
         <q-toolbar-title>
+          <q-avatar square>
+            <img src="@/assets/logo_only.png" alt="Logo">
+
+          </q-avatar>
           EmberBed
         </q-toolbar-title>
         <WalletMultiButton dark />
@@ -19,21 +23,37 @@ const currentYear = new Date().getFullYear();
     <q-page-container>
       <router-view />
     </q-page-container>
-    <q-footer elevated reveal class="center">
-      <q-toolbar class="flex justify-center">
-        <q-btn type="a" flat href="https://prjctphoenix.xyz" target="_blank">
-          A PrjctPheonix
-          <q-avatar>
-            <img src="@/assets/logo.png">
-          </q-avatar>
-          Product
-        </q-btn>
+    <q-footer reveal class="center bg-transparent">
+      <q-toolbar class="flex justify-center phoenix-footer">
+        <span type="a" target="_blank">
+          <a class="footer" href="https://prjctphoenix.xyz">
+            A PrjctPheonix
+
+            <q-avatar>
+              <img src="@/assets/phoenix_logo.png">
+            </q-avatar>
+            Product
+          </a>
+        </span>
       </q-toolbar>
-      <q-toolbar inset class="flex justify-center">
-        <div class="copyright">
-          <small>&copy; Copyright {{ currentYear }}, Prjct Phoenix. All rights reserved.</small>
-        </div>
-      </q-toolbar>
+
+
+      <small inset class="flex justify-center bg-primary copyright">&copy; Copyright {{ currentYear }}, Prjct Phoenix.
+        All rights reserved.</small>
     </q-footer>
   </q-layout>
 </template>
+
+<style lang="scss" scoped>
+.footer {
+  font-variant: normal;
+  text-decoration: none;
+  transition: color 1s ease-in
+}
+
+.footer:hover {
+  color: $secondary;
+  font-weight: 800;
+
+}
+</style>

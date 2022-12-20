@@ -12,8 +12,9 @@ body
     margin: 0 auto
     height: 100%
     background-image: url('../assets/LowPolyLook7.png')
-    background-position: center
+    background-position: top center
     background-size: cover
+    background-repeat: no-repeat
 
 body *
     font-family: 'Orbitron', 'Roboto', sans-serif
@@ -38,10 +39,8 @@ body *
 .swv-modal-list
     z-index: 9999
 
-
     & .swv-button:hover
         color: black
-
 
     & .swv-button
         color: #d6d6d6
@@ -53,12 +52,36 @@ body *
 .swv-button-trigger
     background-color: transparent
 
-
     & p
         margin: unset
 
 .swv-dropdown-list
 
-
     &-active
         background-color: var(--q-accent)
+
+.phoenix-footer
+    background-color: #1d1d1d86 !important
+    margin-bottom: 0
+    padding-bottom: 0
+    padding-top: 0
+    align-items: flex-end
+    align-self: flex-end
+    & span
+        margin-bottom: 0
+        padding-bottom: 0
+        padding-top: 0
+
+.pubkey
+    font-size: calc(.65rem + .25vw)
+    align-items: flex-start
+    font-stretch: condensed
+    // white-space: nowrap;
+    overflow: hidden
+    text-overflow: ellipsis
+    cursor: copy
+    transition: text-shadow 0.2s
+
+    &:hover
+        color: $secondary
+        font-weight: 800
