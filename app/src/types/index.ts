@@ -10,11 +10,14 @@ export * from './instructions'
 export * from './programId'
 export type CollectionInfo = {
     address?: PublicKey
+    bump?: number,
+    manager?: string,
+    rewardWallet?: string,
     collectionName: string,
     collectionAddress: string,
-    ratePerDay: number,
+    ratePerDay?: number,
     fireEligible: boolean,
-    phoenixRelation: { kind: string },
+    phoenixRelation?: { kind: string },
     rewardSymbol: string,
     rewardMint: string
 }

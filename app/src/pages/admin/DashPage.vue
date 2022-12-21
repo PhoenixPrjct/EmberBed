@@ -112,10 +112,10 @@ async function handleCopyClick(e: any, v?: string) {
     return $q.notify({ ...result })
 
 }
-  </script>
+</script>
 <template>
     <section class="btn-container">
-        <q-btn dark label="Add New" icon="add" :class="!collectionPDAs.length ? 'add-btn' : void 0" />
+        <q-btn dark label="Add New" icon="add" :class="!collectionPDAs.length ? 'add-btn' : void 0" to="/admin/new" />
 
         <q-btn dark label="Stats" icon="query_stats">
             <q-tooltip>Coming Soon.</q-tooltip>
