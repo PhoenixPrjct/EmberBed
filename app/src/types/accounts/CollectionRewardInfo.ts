@@ -71,7 +71,7 @@ export class CollectionRewardInfo {
     this.collectionName = fields.collectionName
     this.collectionAddress = fields.collectionAddress
     this.fireEligible = fields.fireEligible
-    this.phoenixRelation = fields.phoenixRelation
+    this.phoenixRelation = fields.phoenixRelation as types.PhoenixRelationKind
     this.rewardMint = fields.rewardMint
     this.manager = fields.manager
     this.isInitialized = fields.isInitialized

@@ -21,6 +21,11 @@ const collectionSchema = new Schema({
         trim: true,
         default: 'None',
     },
+    paid_sig: {
+        type: String,
+        trim: true,
+        // required: true,
+    },
     hashlist: [String],
 
 

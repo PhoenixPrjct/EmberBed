@@ -18,11 +18,15 @@ body
 
 body *
     font-family: 'Orbitron', 'Roboto', sans-serif
+
+div:not(.special, .q-toggle__track, .q-toggle__thumb)
     color: white
 
 #app
     width: 100%
     overflow-x: hidden
+    &:not(.special)
+        color: white
 
 .swv-modal-wrapper
     background-color: #1D1D1D
@@ -88,3 +92,12 @@ body *
 
 input
     font-size: calc(9px + .25vw)
+
+.q-field--dense .q-field__bottom
+    font-size: .55rem
+
+.q-field *
+    padding: 0
+
+// .q-field__native
+    // line-height: 1rem

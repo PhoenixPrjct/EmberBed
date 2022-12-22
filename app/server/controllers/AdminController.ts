@@ -1,3 +1,4 @@
+import { readFileSync } from "fs"
 import { Collection, User, Admin } from "../models"
 export const AC = {
     getDBAcct: async (wallet: string) => {
@@ -17,6 +18,17 @@ export const AC = {
         try {
             const collections = await Collection.find({});
             return { status: 200, response: collections }
+        } catch (e) {
+            console.log(e)
+            return { status: 500, e }
+        }
+    },
+    getRelations: async () => {
+        try {
+            const relations = await readFileSync('../data/relations.json', 'utf-8');
+            return {
+                status: 200, response: JSON.parse(relations)
+            }
         } catch (e) {
             console.log(e)
             return { status: 500, e }

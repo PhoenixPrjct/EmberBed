@@ -19,6 +19,15 @@ router.get('/info/:wallet', async (req, res) => {
     }
 
 })
+router.get('/relations', async (req, res) => {
+    try {
+        const { status, response } = await AC.getRelations();
+        res.status(status).json(response)
+    } catch (err) {
+        console.log(err)
+        res.status(500).json(err);
+    }
+})
 
 router.use((req, res) => {
     res.status(404).end();
