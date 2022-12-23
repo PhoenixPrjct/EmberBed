@@ -18,9 +18,10 @@ const commitment = 'processed';
 const programID = new PublicKey(EmberBedAddress);
 
 export function _createChainAPI() {
-    const wallet: AnchorWallet = useAnchorWallet();
+    const wallet: ComputedRef<AnchorWallet> = useAnchorWallet();
+
     const connection = new Connection(clusterApiUrl('devnet'));
-    const provider = computed(() => wallet ? new anchor.AnchorProvider(connection, wallet, { preflightCommitment, commitment }) : null)
+    const provider = computed(() => wallet ? new anchor.AnchorProvider(connection, wallet.value, { preflightCommitment, commitment }) : null)
     const program = computed(() => provider.value ? new Program(IDL, programID, provider.value) : null);
     const newProgram = program as unknown as ComputedRef<Program<EmberBed>>;
     const api = computed(() => program.value ? getAPI(newProgram.value) : null)

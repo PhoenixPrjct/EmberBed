@@ -150,6 +150,7 @@ export class CollectionRewardInfo {
   }
 
   static fromJSON(obj: CollectionRewardInfoJSON): CollectionRewardInfo {
+    console.log(obj)
     return new CollectionRewardInfo({
       bump: obj.bump,
       ratePerDay: obj.ratePerDay,

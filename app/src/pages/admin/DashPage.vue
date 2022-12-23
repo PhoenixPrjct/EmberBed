@@ -48,9 +48,10 @@ watchEffect(async () => {
     if (!collectionPDAs.value?.length) {
         const walletString = wallet.value.publicKey
         await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
-            // if (acct.account.manager.toBase58() == walletString) {
-            collectionPDAs.value = [...collectionPDAs.value, acct];
-            // }
+            console.log(acct.account.manager.toBase58())
+            if (acct.account.manager.toBase58() == walletString) {
+                collectionPDAs.value = [...collectionPDAs.value, acct];
+            }
             return;
         })
     }
@@ -129,7 +130,7 @@ async function handleCopyClick(e: any, v?: string) {
     </section>
 
 
-    <CollectionOnChainInfo v-if="!collectionPDAs" :collectionPDAs="collectionPDAs" />
+    <CollectionOnChainInfo v-if="collectionPDAs" :collectionPDAs="collectionPDAs" />
     <section v-else>
         <q-card dark class="no-collections ">
             <q-card-section class="text-h5 text-center">

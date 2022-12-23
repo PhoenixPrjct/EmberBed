@@ -1,7 +1,7 @@
 import * as anchor from '@project-serum/anchor';
 import { Program, Idl } from '@project-serum/anchor';
 import { EmberBed } from './types/ember_bed';
-import { PublicKey, Keypair, SystemProgram, Transaction } from '@solana/web3.js';
+import { PublicKey, Keypair, SystemProgram, Transaction, BlockheightBasedTransactionConfirmationStrategy } from '@solana/web3.js';
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import web3 = anchor.web3;
 import { Accounts, AnchorWallet, CollectionInfo, CollectionRewardInfo } from '../types'
@@ -15,7 +15,10 @@ import {
     walletAdapterIdentity,
 } from "@metaplex-foundation/js"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
+
 import { useAnchorWallet } from 'solana-wallets-vue';
+import { ComputedRef } from 'vue';
+import { useWallet } from 'solana-wallets-vue';
 
 
 // const { connection, wallet } = useChainAPI();
@@ -23,27 +26,7 @@ const DevSecret = Uint8Array.from(devKP);
 // const FundSecret = Uint8Array.from(fundKP);
 const DevWallet = Keypair.fromSecretKey(DevSecret as Uint8Array, { skipValidation: true });
 // const FundWallet = Keypair.fromSecretKey(FundSecret as Uint8Array);
-const wallet: AnchorWallet = useAnchorWallet().wallet;
-const demoCollectionInfo = [{
-    name: 'ZeroEvo',
-    tokenMint: 'REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko',
-    tokenName: 'Evo',
-    tokenSymbol: '$EVO',
-    relation: 'Affiliate'
-},
-{
-    name: 'TestEyes',
-    tokenMint: 'REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko',
-    tokenName: 'Eyes',
-    tokenSymbol: '$EYES',
-    relation: 'Affiliate'
-},
-{
-    name: 'Phoenix: Founder',
-    tokenMint: 'F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw',
-    tokenName: 'Fire',
-    tokenSymbol: '$FIRE'
-}]
+const wallet: ComputedRef<AnchorWallet> = useAnchorWallet();
 
 
 export function getAPI(program: Program<EmberBed>) {
@@ -142,9 +125,11 @@ export function getAPI(program: Program<EmberBed>) {
     }
 
 
-    async function getAccounts(user: web3.PublicKey, collectionName: string, rewardMint: string, nftColAddress?: string, nftMint?: string): Promise<Accounts> {
+    async function getAccounts(data: { user: web3.PublicKey, collectionName: string, rewardMint: string, nftColAddress?: string, nftMint?: string }): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
-        const RewTok: PublicKey = new PublicKey(rewardMint);
+
+        console.log(data.collectionName, data.rewardMint, data.nftColAddress, data.nftMint)
+        const RewTok: PublicKey = new PublicKey(data.rewardMint);
         let nftAccounts = {};
         let mintAddress, nft, delegatedAuthPda,
             nftTokenAddress,
@@ -152,10 +137,10 @@ export function getAPI(program: Program<EmberBed>) {
 
 
 
-        const userAccountPDA = await getUserAccountPda(user);
-        const userRewardAta = await getUserRewardAta(user, RewTok);
-        const statePDA = await getStatePda(RewTok, collectionName);
-        const funderTokenAta = await getAssociatedTokenAddress(RewTok, user);
+        const userAccountPDA = await getUserAccountPda(data.user);
+        const userRewardAta = await getUserRewardAta(data.user, RewTok);
+        const statePDA = await getStatePda(RewTok, data.collectionName);
+        const funderTokenAta = await getAssociatedTokenAddress(RewTok, data.user);
         const userAccounts = {
             userRewardAta: userRewardAta,
             userAccountPDA: userAccountPDA.pda
@@ -170,13 +155,13 @@ export function getAPI(program: Program<EmberBed>) {
             statePDA: statePDA.pda
         }
         accounts = { ...accounts, ...collectionAccounts, ...userAccounts }
-        if (nftMint) {
-            mintAddress = new PublicKey(nftMint);
+        if (data.nftMint) {
+            mintAddress = new PublicKey(data.nftMint);
             nft = await metaplex
                 .nfts().findByMint({ mintAddress: mintAddress })
             delegatedAuthPda = await getDelegatedAuthPda();
-            nftTokenAddress = await getNftTokenAddress(user, nftMint);
-            stakeStatusPDA = await getStakeStatusPda(user, nftMint);
+            nftTokenAddress = await getNftTokenAddress(data.user, data.nftMint);
+            stakeStatusPDA = await getStakeStatusPda(data.user, data.nftMint);
             nftAccounts = {
                 nftTokenAddress: nftTokenAddress, nft: nft, stakeStatusPda: stakeStatusPDA.pda, stakeStatusBump: stakeStatusPDA.bump, delegatedAuthPda: delegatedAuthPda.pda,
                 authBump: delegatedAuthPda.bump,
@@ -184,12 +169,12 @@ export function getAPI(program: Program<EmberBed>) {
 
             accounts = { ...accounts, ...nftAccounts }
         }
-        if (nftColAddress) {
-            const nftCollectionAddress = new PublicKey(nftColAddress);
+        if (data.nftColAddress) {
+            const nftCollectionAddress = new PublicKey(data.nftColAddress);
             accounts = { ...accounts, nftCollectionAddress: nftCollectionAddress }
         }
 
-        console.log('REWTOK:', accounts.RewTok.toBase58())
+        // console.log('REWTOK:', accounts.RewTok.toBase58())
 
         return accounts;
     }
@@ -222,44 +207,68 @@ export function getAPI(program: Program<EmberBed>) {
         return tx;
     }
 
-    async function chargeInitFee(amount: number) {
-        const PhoenixWallet = new web3.PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB')
+    async function chargeInitFee(user: PublicKey, amount: number) {
+        const PhoenixWallet = new web3.PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB');
+        console.log(PhoenixWallet.toBase58(), `\n`, wallet.value.publicKey)
         try {
-            const latestBlockHash = await connection.getLatestBlockhash();
-            const { blockhash, lastValidBlockHeight } = latestBlockHash
+            async function getTx() {
 
-            const transaction: Transaction = new web3.Transaction().add(
-                web3.SystemProgram.transfer({
-                    fromPubkey: wallet.publicKey,
-                    toPubkey: PhoenixWallet,
-                    lamports: amount * web3.LAMPORTS_PER_SOL,
-                }))
-            const signature = await wallet.signTransaction(transaction);
-            console.log({ signature })
-            console.log({ latestBlockHash })
+                const { blockhash, lastValidBlockHeight } = await connection.getLatestBlockhash();
 
-
-            const confirmation = await connection.confirmTransaction({ signature: signature.toString(), blockhash, lastValidBlockHeight }, 'confirmed')
-            console.dir(confirmation)
-            if (!confirmation.value.err) {
-                console.log(`Successfully validated signature \n \n ${signature}`)
-                return { success: true, sig: signature, message: `Successfully paid initialization fee ${amount} SOL` }
+                const transaction = new web3.Transaction()
+                    .add(
+                        web3.SystemProgram.transfer({
+                            fromPubkey: user,
+                            toPubkey: PhoenixWallet,
+                            lamports: amount * web3.LAMPORTS_PER_SOL,
+                        })
+                    );
+                transaction.feePayer = user
+                transaction.recentBlockhash = blockhash;
+                transaction.lastValidBlockHeight = lastValidBlockHeight
+                console.dir(transaction);
+                return transaction;
             }
-            console.log(confirmation.value.err)
-            return { success: false, sig: signature, error: confirmation.value.err };
-        } catch (err) {
-            console.dir(err)
-            return { success: false, error: err };
+            const transaction = await getTx();
+            return transaction
+            // const signedTx = await wallet.value.signTransaction(transaction);
+            // console.log(signedTx)
+            // const serializedTx = await signedTx.serialize()
+            // console.log(serializedTx)
+            // const txId = await connection.sendRawTransaction(serializedTx);
+            // console.log("TX ID:", txId);
+            // const opts: BlockheightBasedTransactionConfirmationStrategy = {
+            //     signature: txId,
+            //     blockhash,
+            //     lastValidBlockHeight,
+            // };
 
+            // const confirmation = await connection.confirmTransaction(opts);
+
+            // console.dir(confirmation);
+            // if (!confirmation.value.err) {
+            //     console.log(`Successfully validated signature \n \n ${txId}`);
+            //     return {
+            //         success: true,
+            //         sig: txId,
+            //         message: `Successfully paid initialization fee ${amount} SOL`,
+            //     };
+            // }
+            // console.log(confirmation.value.err);
+            // return { success: false, sig: txId, error: confirmation.value.err };
+        } catch (err) {
+            console.dir(err);
+            return { success: false, error: err };
         }
     }
+
 
     async function initStatePda(user: web3.PublicKey, collectionInfo: CollectionRewardInfo) {
         try {
 
             console.log(collectionInfo.collectionName)
             const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint } = collectionInfo;
-            const accounts = await getAccounts(user, collectionName, rewardMint.toBase58());
+            const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58() });
             const { statePDA, RewTok, stateBump, funderTokenAta } = accounts;
             const rewardWallet = await getRewardWallet(RewTok, statePDA);
             const nftCollectionAddress = new PublicKey(collectionAddress);
@@ -293,7 +302,7 @@ export function getAPI(program: Program<EmberBed>) {
     };
 
     async function stake(user: web3.PublicKey, collectionName: string, nftMint: string, signers: web3.Keypair) {
-        const accounts = await getAccounts(user, collectionName, nftMint)
+        const accounts = await getAccounts({ user, collectionName, rewardMint: nftMint })
         const { RewTok, nft, nftTokenAddress, userRewardAta, stakeStatusPda, userAccountPDA, statePDA, delegatedAuthPda } = accounts
         const tx = await program.methods.stake()
             .accounts({

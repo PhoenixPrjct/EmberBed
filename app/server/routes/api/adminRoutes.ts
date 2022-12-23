@@ -21,6 +21,7 @@ router.get('/info/:wallet', async (req, res) => {
 })
 router.get('/relations', async (req, res) => {
     try {
+        console.log('Relations Endpoint')
         const { status, response } = await AC.getRelations();
         res.status(status).json(response)
     } catch (err) {

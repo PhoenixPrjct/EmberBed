@@ -9,6 +9,7 @@ export function _createServerAPI() {
         get: async (query: string) => await (await axios.get(`${baseURL}/admin`, { params: query })).data,
         getInfo: async (query: string) => await (await axios.get(`${baseURL}/admin/info/${query}`)).data,
         post: async (data: any) => await (await axios.post(`${baseURL}/admin`, data)).data,
+        getRelations: async () => await (await axios.get(`${baseURL}/admin/relations`)).data
         // other API endpoints go here...
       },
       collection: {

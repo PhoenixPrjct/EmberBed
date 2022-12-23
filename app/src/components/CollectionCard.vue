@@ -25,7 +25,7 @@ const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(useChainA
 const collectionInfo = ref(_collectionInfo.value?.toJSON())
 watchEffect(() => {
     if (!collectionInfo.value && _collectionInfo.value) {
-        collectionInfo.value = { ..._collectionInfo.value.toJSON() };
+        collectionInfo.value = _collectionInfo.value.toJSON();
     }
 })
 function isPK(v: any): boolean {
@@ -65,6 +65,9 @@ async function handleCopyClick(e: any, v?: string) {
     return notify({ ...result })
 
 }
+function handleDialogShow() {
+    dialogShow.value = true;
+}
 
 function isRelevant(k: string): boolean {
     console.log(k)
@@ -96,7 +99,7 @@ function isRelevant(k: string): boolean {
                 <q-item-section>
                     <q-item-label header class="text-h5 card-section-title">
                         Collection:
-                        <span>
+                        <span class="text-white">
                             {{ collectionInfo.collectionName }}
                         </span>
                     </q-item-label>
@@ -108,7 +111,6 @@ function isRelevant(k: string): boolean {
             <q-card-section> -->
 
             <q-item>
-
                 <q-item-label header class="card-section-title">
                     Reward Token Mint:
                     <br>
@@ -118,31 +120,62 @@ function isRelevant(k: string): boolean {
                 </q-item-label>
                 <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
             </q-item>
+            <q-item>
+                <q-item-label header class="card-section-title">
+                    <span class="title">
+                        EmberBed Token Account:
+                        <q-tooltip>
+                            * Where to send {{ collectionInfo.rewardSymbol }}
+                        </q-tooltip>
+                    </span>
 
 
-            <!-- </q-item> -->
-
-
+                    <div class="pubkey" @click="(e: MouseEvent) => handleCopyClick(e)">
+                        {{ collectionInfo.rewardWallet }}
+                    </div>
+                </q-item-label>
+                <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
+            </q-item>
+            <q-item>
+                <q-item-label header class="card-section-title">
+                    Collection Reward PDA:
+                    <br>
+                    <div class="pubkey" @click="(e: MouseEvent) => handleCopyClick(e)">
+                        {{ props.collectionRewardPDA.toBase58() }}
+                    </div>
+                </q-item-label>
+                <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
+            </q-item>
         </q-list>
-        <!-- </q-card-section> -->
         <q-card-actions>
-            <q-btn flat dark @click="dialogShow = true">Details</q-btn>
+            <q-btn flat dark @click="handleDialogShow">Details</q-btn>
         </q-card-actions>
     </q-card>
     <q-dialog v-model="dialogShow">
         <q-card dark>
+            <q-card-section header>
+                <div class="text-h6 text-accent flex justify-center">
+                    {{ collectionInfo?.collectionName }}
+
+                </div>
+            </q-card-section>
             <q-card-section>
                 <q-list v-for="(v, k) in collectionInfo" :key="k">
-                    <q-item v-if="isRelevant(k)">
-                        <q-item-section>
-                            {{ camelCaseToTitleCase(k) }}
-                        </q-item-section>
-                        <q-item-section :class="isPK(v) ? 'pubkey' : void 0"
-                            :@click="isPK(v) ? (e: MouseEvent) => handleCopyClick(e) : void 0">
-                            {{ v }}
-                        </q-item-section>
-                        <q-space />
-                    </q-item>
+                    <!-- <q-item v-if="isRelevant(k)"> -->
+                    <!-- <q-item> -->
+                    <q-item-section class="collectionInfo-key">
+                        {{ camelCaseToTitleCase(k) }}
+                    </q-item-section>
+                    <!-- </q-item> -->
+                    <!-- <q-item> -->
+                    <q-item-section v-if="isPK(v)" class="pubkey collectionInfo-value"
+                        @click="(e: MouseEvent) => handleCopyClick(e)">
+                        {{ v }}
+                    </q-item-section>
+                    <q-item-section v-else class="collectionInfo-value">
+                        {{ v }}
+                    </q-item-section>
+                    <!-- </q-item> -->
                 </q-list>
             </q-card-section>
             <!-- <q-card-section>
@@ -158,7 +191,15 @@ function isRelevant(k: string): boolean {
     user-select: none;
 }
 
+.collectionInfo-key {
+    font-weight: 800;
+}
 
+.collectionInfo-value {
+    font-weight: 400;
+    margin-top: 0;
+    padding-top: 0;
+}
 
 .collection--card {
     flex: 1 0 320px;
@@ -190,7 +231,7 @@ function isRelevant(k: string): boolean {
 
         color: $accent;
 
-        & span,
+        & span:not(.title),
         div {
             font-weight: 300;
         }
