@@ -20,7 +20,7 @@ export function _createServerAPI() {
           hashlist: async (query: string) => await (await axios.get(`${baseURL}/collection/hashlist/${query}`)).data
         },
         add: {
-          hashlist: async (data: { wallet: string, hashlist: string, pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data
+          hashlist: async (data: { wallet: string, hashlist: string[], pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data
         },
         post: async (data: any) => await (await axios.post(`${baseURL}/collection`, data)).data,
         new: async (data: any) => await (await axios.post(`${baseURL}/collection/new`, data)).data

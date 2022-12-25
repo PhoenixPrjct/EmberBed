@@ -1,31 +1,31 @@
 
-import { Admin, Collection, User } from '../../models'
+// import { Admin, Collection, User } from '../../models'
 import express from "express";
 import { CC } from '../../controllers';
 const router = express.Router();
 
 
-router.get("/", async (req, res) => {
-    const response = await Collection.find();
-    res.status(200).send(response);
-})
+// router.get("/", async (req, res) => {
+//     const response = await Collection.find();
+//     res.status(200).send(response);
+// })
 
-router.get("/owner/:wallet", async (req, res) => {
-    const { wallet } = req.params;
-    const { status, response } = await CC.getByOwner(wallet);
-    res.status(status).send(response);
-})
-router.post("/new", async (req, res) => {
-    try {
-        console.log(req.body)
-        const { sig, collection, pda } = req.body;
-        const { status, response } = await CC.create(sig, pda, collection)
-        res.status(status).send(response);
-    } catch (err) {
-        console.log(err);
-        res.status(500).send(err);
-    }
-})
+// router.get("/owner/:wallet", async (req, res) => {
+//     const { wallet } = req.params;
+//     const { status, response } = await CC.getByOwner(wallet);
+//     res.status(status).send(response);
+// })
+// router.post("/new", async (req, res) => {
+//     try {
+//         console.log(req.body)
+//         const { sig, collection, pda } = req.body;
+//         const { status, response } = await CC.create(sig, pda, collection)
+//         res.status(status).send(response);
+//     } catch (err) {
+//         console.log(err);
+//         res.status(500).send(err);
+//     }
+// })
 
 router.get('/hashlist/:pda', async (req, res) => {
     const { pda } = req.params;

@@ -1,78 +1,95 @@
+import { readdirSync, readFileSync, unlinkSync, writeFileSync } from "fs"
+import { join } from 'path';
 import { CollectionRewardInfoJSON } from "src/types"
-import { Collection, User, Admin } from "../models"
+// import { Collection, User, Admin } from "../models"
+
+// {
+//     manager: 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q',
+//         pda: 'CG4KDtfDDvYWP4ChqxKVLXjxjrg8VT28RoMpJgjYosFs',
+//             hashlist: []
+// }
+
+interface CollectionFile {
+    pda: string;
+    manager: string;
+    hashlist: string[];
+}
+
+class CollectionFile {
+    pda: string;
+    manager: string;
+    hashlist: string[];
+    constructor(pda: string, manager: string, hashlist: string[]) {
+        this.pda = pda;
+        this.manager = manager;
+        this.hashlist = hashlist;
+    }
+
+    static toDB(pda: string, manager: string, hashlist: string[]) {
+        const cleanedHashlist = hashlist.map(hash => hash.trim())
+        const data = { manager: manager, hashlist: cleanedHashlist };
+        writeFileSync(
+            join(__dirname, '../collections', pda + '.json'),
+            JSON.stringify(data)
+        );
+    }
+}
+
+
 export const CC = {
-    getByOwner: async (owner: string) => {
-        try {
-            const collections = await Collection.find({ owner: owner })
-            return { status: 200, response: collections }
-        } catch (e) {
-            console.log(e)
-            return { status: 500, e }
-        }
-    },
-    getAll: async () => {
-        try {
-            const collections = await Collection.find({});
-            return { status: 200, response: collections }
-        } catch (e) {
-            console.log(e)
-            return { status: 500, e }
-        }
-    },
-    create: async (sig: string, pda: string, collection: CollectionRewardInfoJSON) => {
-        try {
-            const exists = await Collection.findOne({ pda: pda });
-            if (exists) {
-                // Update the existing document with the new values
-                const update = await Collection.findOneAndUpdate({ pda: pda }, collection);
-                return { status: 200, response: update }
-            } else {
-                const col = await Collection.create({ ...collection, phoenix_relation: collection.phoenixRelation.kind, paid_sig: sig });
-                await Admin.findOneAndUpdate({ pubkey: collection.manager }, { $addToSet: { collections: col._id } });
-                return { status: 200, response: col }
-            }
-        } catch (err: any) {
-            console.log(err)
-            return { status: 500, err }
-        }
-    },
 
     deleteByPDA: async (pda: string) => {
         try {
-            const col = await Collection.findOne({ pda: pda }).sort({ _id: 1 });
-            if (!col) throw new Error('Collection not found');
-            // Delete all the other collection documents that match the pda value
-            await Collection.deleteMany({ pda: pda, _id: { $ne: col._id } });
-            return { status: 200, response: col }
+            await unlinkSync(join(__dirname, `../collections/${pda}.json`))
+            return { status: 200, response: `Deleted ${pda}` }
         } catch (err) {
             console.log(err)
             return { status: 500, err }
         }
     },
-    addHashlist: async (wallet: string, hashlist: string, pda: string) => {
+    addHashlist: async (wallet: string, hashlist: string[], pda: string) => {
+        console.log({ wallet, hashlist, pda })
         try {
-            console.log({ wallet: wallet, hashlist: hashlist, pda: pda })
-            const col = await Collection.findOne({ pda: pda });
-            if (!col) throw new Error('Collection not found');
-            if (col.manager !== wallet) throw new Error(`Unauthorized To Modify Collection`);
-            const update = await Collection.updateOne({ pda: pda }, { $set: { hashlist: hashlist } }, { new: true });
-            console.log(JSON.stringify(update));
-            return { status: 200, response: update }
-
+            const files = await readdirSync(join(__dirname, `../collections`));
+            if (files.includes(pda + '.json')) {
+                const fileContents = await readFileSync(
+                    join(__dirname, `../collections/${pda}.json`),
+                    'utf-8'
+                );
+                const collectionFile = JSON.parse(fileContents) as CollectionFile;
+                if (collectionFile.manager !== wallet) {
+                    return { status: 400, error: 'Manager does not match' };
+                }
+                collectionFile.hashlist = hashlist;
+                CollectionFile.toDB(pda, wallet, hashlist);
+                return { status: 200, response: 'Hashlist updated' };
+            } else {
+                const col = new CollectionFile(pda, wallet, hashlist);
+                CollectionFile.toDB(pda, wallet, hashlist);
+                return { status: 200, response: 'Hashlist added' };
+            }
         } catch (err) {
-            console.log(err)
-            return { status: 500, err }
+            console.log(err);
+            return { status: 500, err };
         }
+
     },
     getHashlist: async (pda: string) => {
         try {
-            const col = await Collection.findOne({ pda: pda });
-            if (!col) throw new Error('Collection not found');
-            console.log(col);
-            return { status: 200, response: col.hashlist }
+            const files = await readdirSync(join(__dirname, `../collections`));
+            if (files.includes(pda + '.json')) {
+                const fileContents = await readFileSync(
+                    join(__dirname, `../collections/${pda}.json`),
+                    'utf-8'
+                );
+                const collectionFile = JSON.parse(fileContents) as CollectionFile;
+                return { status: 200, response: collectionFile.hashlist };
+            } else {
+                return { status: 200, response: [] };
+            }
         } catch (err) {
-            console.log(err)
-            return { status: 500, err }
+            console.log(err);
+            return { status: 500, err };
         }
     }
 }

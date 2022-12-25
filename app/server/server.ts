@@ -1,6 +1,6 @@
 import express from "express";
 import routes from './routes';
-import * as db from "./config/connection";
+// import * as db from "./config/connection";
 const app: express.Application = express();
 
 app.use(express.json());
@@ -35,10 +35,10 @@ app.get('/*', (req, res) => {
 // }
 
 app.use(history())
-db.default.once('open', () => {
-    app.listen(PORT, () => {
-        // console.log({ IS_DEV: process.env.IS_DEV })
-        console.log(`🌍 Now listening on localhost:${PORT}`)
+// db.default.once('open', () => {
+app.listen(PORT, () => {
+    // console.log({ IS_DEV: process.env.IS_DEV })
+    console.log(`🌍 Now listening on localhost:${PORT}`)
 
-    })
 })
+// })
