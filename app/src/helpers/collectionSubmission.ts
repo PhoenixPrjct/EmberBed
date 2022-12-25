@@ -37,6 +37,7 @@ export async function collectionInitFeeTx(user: PublicKey, amount: number) {
                 lamports: amount * LAMPORTS_PER_SOL,
             }))
         const sig = await wallet.sendTransaction(transaction, connection)
+        if (!sig) throw new Error('Transaction failed: ' + JSON.stringify(sig))
         console.log({ sig })
         console.log({ latestBlockHash })
         const confirmation = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed');

@@ -102,7 +102,8 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         const amount = getInitCost(kind)
         submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
         const paidTx = await collectionInitFeeTx(wallet.value.publicKey, amount);
-        if (!paidTx.success && paidTx.error) throw new Error(paidTx.error.message)
+        console.log({ paidTx })
+        if (!paidTx.success) throw new Error(paidTx.error)
         const paymentSig = await paidTx.sig
         submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
         const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
