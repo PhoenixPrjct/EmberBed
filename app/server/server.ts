@@ -37,7 +37,7 @@ app.get('/*', (req, res) => {
 app.use(history())
 db.default.once('open', () => {
     app.listen(PORT, () => {
-        console.log({ IS_DEV: process.env.IS_DEV })
+        // console.log({ IS_DEV: process.env.IS_DEV })
         console.log(`🌍 Now listening on localhost:${PORT}`)
 
     })

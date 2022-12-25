@@ -9,11 +9,19 @@ export function _createServerAPI() {
         get: async (query: string) => await (await axios.get(`${baseURL}/admin`, { params: query })).data,
         getInfo: async (query: string) => await (await axios.get(`${baseURL}/admin/info/${query}`)).data,
         post: async (data: any) => await (await axios.post(`${baseURL}/admin`, data)).data,
-        getRelations: async () => await (await axios.get(`${baseURL}/admin/relations`)).data
+
         // other API endpoints go here...
       },
       collection: {
-        get: async (query: string) => await (await axios.get(`${baseURL}/collection`, { params: query })).data,
+        get: {
+          byOwner: async (query: string) => await (await axios.get(`${baseURL}/collection/owner`, { params: query })).data,
+          one: async (query: string) => await (await axios.get(`${baseURL}/collection`, { params: query })).data,
+          all: async () => await (await axios.get(`${baseURL}/collection`)).data,
+          hashlist: async (query: string) => await (await axios.get(`${baseURL}/collection/hashlist/${query}`)).data
+        },
+        add: {
+          hashlist: async (data: { wallet: string, hashlist: string, pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data
+        },
         post: async (data: any) => await (await axios.post(`${baseURL}/collection`, data)).data,
         new: async (data: any) => await (await axios.post(`${baseURL}/collection/new`, data)).data
         // other API endpoints go here...
@@ -23,6 +31,9 @@ export function _createServerAPI() {
         post: async (data: any) => await (await axios.post(`${baseURL}/user`, data)).data,
         // other API endpoints go here...
       },
+      general: {
+        getRelations: async () => await (await axios.get(`${baseURL}/relations`)).data
+      }
       // other API groups go here...
 
     }

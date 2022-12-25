@@ -76,15 +76,19 @@ function getInitCost(kind: string) {
 
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
     try {
+        console.log(rawInfo)
         submissionStatus.value = {
             loading: true,
             message: 'Validating Info. . .',
             percent: 5
         }
+        // Find or Create the PDAs
         const accounts = await (await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
         if (!accounts) throw new Error('Generating PDAS Failed')
         const { statePDA, rewardWallet } = accounts
         rawInfo.rewardWallet = rewardWallet.toBase58();
+
+        // Validate The Information
         const valid = await validateCollectionInfo(rawInfo);
         if (!valid) throw new Error('Failed to validate collection')
 
@@ -95,16 +99,17 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         if (!success || !info) throw new Error('Collection Info is Invalid')
         const { kind } = info.phoenixRelation
 
-        submissionStatus.value = { ...submissionStatus.value, percent: 20, message: 'Sending Initialization Fee for Collection. . .' }
         const amount = getInitCost(kind)
+        submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
         const paidTx = await collectionInitFeeTx(wallet.value.publicKey, amount);
         if (!paidTx.success && paidTx.error) throw new Error(paidTx.error.message)
-        submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paidTx.sig} \n\n Halfway there! Let's Go!!` }
+        const paymentSig = await paidTx.sig
+        submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
         const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
         if (!initState || initState.error) throw new Error(`Something went wrong with \n tx: ${initState?.tx}`)
         const { account, tx } = await initState
         submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
-        const data = { sig: tx, collection: { ...account, name: account?.collectionName, pda: statePDA, reward_wallet: rewardWallet } }
+        const data = { sig: tx, pda: statePDA, collection: { ...account, name: account?.collectionName, reward_wallet: rewardWallet } }
         submissionStatus.value = { ...submissionStatus.value, percent: 80, message: 'Indexing Collection on DB. . .' }
         const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(data)
         if (res.Error) throw new Error(`Collection Not Written to The Server`);
@@ -178,6 +183,7 @@ function findPhoenixRelation(collectionAddress: string) {
         })
         return
     }
+    console.log({ Relations: relations.value })
     const affiliate = relations.value.Affiliates.includes(collectionAddress);
     const saved = relations.value.Saved.includes(collectionAddress);
     const prjctPhoenix = { founders: relations.value.Founders.includes(collectionAddress), members: relations.value.Members.includes(collectionAddress) };
@@ -250,7 +256,7 @@ async function handleSplTokenClick(tokenInfo?: TokenInfo) {
 watchEffect(async () => {
     showSubmit.value = Object.values(collectionInfo.value).every(val => val !== null && val !== undefined && val !== 0);
     if (!relations.value) {
-        const relationsResult = await server_api.admin.getRelations()
+        const relationsResult = await server_api.general.getRelations()
         if (!relationsResult) return
         relations.value = relationsResult
         console.log(relations.value)

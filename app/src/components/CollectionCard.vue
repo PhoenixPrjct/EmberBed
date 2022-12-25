@@ -4,10 +4,10 @@ import { computedAsync } from '@vueuse/core';
 import { useChainAPI } from 'src/api/chain-api';
 import * as types from 'src/types';
 import { PhoenixRelationKind } from 'src/types';
-import { computed, Events, ref, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 import { CopyClick, camelCaseToTitleCase } from 'src/helpers';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
-import { ConstraintClose } from 'src/types/errors/anchor';
+import { AddHashList } from 'src/components'
 
 type PR =
     | PhoenixRelationKind
@@ -19,9 +19,12 @@ type PR =
     | types.PhoenixRelation.None
 const { notify } = useQuasar();
 const dialogShow = ref(false);
+const hashListCardView = ref(false);
+
 const { CollectionRewardInfo } = types
 const props = defineProps<{ collectionRewardPDA: PublicKey }>()
-const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(useChainAPI().connection, props.collectionRewardPDA), null);
+const collectionRewardPDA = ref(props.collectionRewardPDA)
+const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(useChainAPI().connection, collectionRewardPDA.value), null);
 const collectionInfo = ref(_collectionInfo.value?.toJSON())
 watchEffect(() => {
     if (!collectionInfo.value && _collectionInfo.value) {
@@ -44,7 +47,11 @@ function isPK(v: any): boolean {
 
 }
 
+function handleAddHashlistClick() {
+    // dialogShow.value = false;
+    hashListCardView.value = true;
 
+}
 async function handleCopyClick(e: any, v?: string) {
     console.log(e.target)
     e.target.innerText ?
@@ -141,7 +148,7 @@ function isRelevant(k: string): boolean {
                     Collection Reward PDA:
                     <br>
                     <div class="pubkey" @click="(e: MouseEvent) => handleCopyClick(e)">
-                        {{ props.collectionRewardPDA.toBase58() }}
+                        {{ collectionRewardPDA.toBase58() }}
                     </div>
                 </q-item-label>
                 <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
@@ -178,10 +185,14 @@ function isRelevant(k: string): boolean {
                     <!-- </q-item> -->
                 </q-list>
             </q-card-section>
-            <!-- <q-card-section>
-
-            <q-card-section></q-card-section> -->
+            {{ collectionInfo?.collectionName }} || {{ collectionRewardPDA }}
+            <q-card-actions v-if="collectionInfo?.collectionName && collectionRewardPDA">
+                <q-btn dark label="Add Hashlist" @click="handleAddHashlistClick()" />
+            </q-card-actions>
         </q-card>
+    </q-dialog>
+    <q-dialog v-model="hashListCardView" fullWidth>
+        <AddHashList :pda="collectionRewardPDA.toBase58()" :collectionName="collectionInfo!.collectionName" />
     </q-dialog>
 </template>
 <style lang="scss" scoped>

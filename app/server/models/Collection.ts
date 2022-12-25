@@ -6,8 +6,9 @@ const opts = { toJSON: { virtuals: true }, toObject: { virtuals: true } };
 
 const collectionSchema = new Schema({
     idx: String,
+    manager: String,
     name: String,
-    pda: String,
+    pda: { type: String, unique: true },
     reward_mint: String,
     reward_wallet: String,
     phoenix_relation: {
