@@ -76,7 +76,6 @@ function getInitCost(kind: string) {
 
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
     try {
-        console.log(rawInfo)
         submissionStatus.value = {
             loading: true,
             message: 'Validating Info. . .',
@@ -94,7 +93,7 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
         submissionStatus.value.message = `Info Checks Out, Moving On. . .`
 
-        console.log('Valid:', valid);
+
         const { success, err, info } = valid
         if (!success || !info) throw new Error('Collection Info is Invalid')
         const { kind } = info.phoenixRelation
@@ -102,7 +101,7 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         const amount = getInitCost(kind)
         submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
         const paidTx = await collectionInitFeeTx(wallet.value.publicKey, amount);
-        console.log({ paidTx })
+
         if (!paidTx.success) throw new Error(paidTx.error)
         const paymentSig = await paidTx.sig
         submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
@@ -115,7 +114,7 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(data)
         if (res.Error) throw new Error(`Collection Not Written to The Server`);
         submissionStatus.value = { ...submissionStatus.value, percent: 100, message: 'Welcome Aboard!' }
-        console.log({ CollectionPDA: res.response?.pda })
+
 
         $q.notify({
             type: 'positive',
@@ -153,13 +152,13 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
 
 function onReset() {
+    console.log('Resetting Form.');
     findSplToken.value._info = null;
     findSplToken.value.info = null;
     findSplToken.value.key = 'name';
     findSplToken.value.val = '';
     manualSplEntryToggle.value = false;
     collectionInfo.value = {} as CollectionRewardInfoJSON
-    console.log('reset!');
 }
 
 function isPK(v: PublicKey | string): boolean {
@@ -285,7 +284,9 @@ watchEffect(async () => {
     <q-page class="flex justify-center">
         <div class="submission-loading" v-if="submissionStatus.loading">
             <div class="text-h6">
+                <pre class="text-center">
                 {{ submissionStatus.message }}
+                </pre>
             </div>
             <q-linear-progress size="25px" :value="submissionStatus.percent" color="accent" class="q-mt-sm" />
             <q-linear-progress size="25px" :value="100 - submissionStatus.percent" color="secondary" class="q-mt-sm" />

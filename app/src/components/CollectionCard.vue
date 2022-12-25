@@ -161,28 +161,28 @@ function isRelevant(k: string): boolean {
     <q-dialog v-model="dialogShow">
         <q-card dark>
             <q-card-section header>
-                <div class="text-h6 text-accent flex justify-center">
+                <div class="text-h6 collection-name flex justify-center">
                     {{ collectionInfo?.collectionName }}
 
                 </div>
             </q-card-section>
             <q-card-section>
                 <q-list v-for="(v, k) in collectionInfo" :key="k">
-                    <!-- <q-item v-if="isRelevant(k)"> -->
-                    <!-- <q-item> -->
-                    <q-item-section class="collectionInfo-key">
-                        {{ camelCaseToTitleCase(k) }}
-                    </q-item-section>
-                    <!-- </q-item> -->
-                    <!-- <q-item> -->
-                    <q-item-section v-if="isPK(v)" class="pubkey collectionInfo-value"
-                        @click="(e: MouseEvent) => handleCopyClick(e)">
-                        {{ v }}
-                    </q-item-section>
-                    <q-item-section v-else class="collectionInfo-value">
-                        {{ v }}
-                    </q-item-section>
-                    <!-- </q-item> -->
+                    <div v-if="isRelevant(k)">
+
+                        <q-item-section class="collectionInfo-key">
+                            {{ camelCaseToTitleCase(k) }}
+                        </q-item-section>
+
+                        <q-item-section v-if="isPK(v)" class="pubkey collectionInfo-value"
+                            @click="(e: MouseEvent) => handleCopyClick(e)">
+                            {{ v }}
+                        </q-item-section>
+                        <q-item-section v-else class="collectionInfo-value">
+                            {{ v }}
+                        </q-item-section>
+                    </div>
+
                 </q-list>
             </q-card-section>
             {{ collectionInfo?.collectionName }} || {{ collectionRewardPDA }}
@@ -204,6 +204,8 @@ function isRelevant(k: string): boolean {
 
 .collectionInfo-key {
     font-weight: 800;
+    font-size: calc(10px + .5vw);
+    color: $dirtyFont;
 }
 
 .collectionInfo-value {
@@ -228,6 +230,9 @@ function isRelevant(k: string): boolean {
 }
 
 
+.collection-name {
+    color: $dirtyFont;
+}
 
 .q-item {
 
@@ -240,7 +245,7 @@ function isRelevant(k: string): boolean {
         font-weight: bold;
         font-size: 1rem;
 
-        color: $accent;
+        color: $dirtyFont;
 
         & span:not(.title),
         div {
