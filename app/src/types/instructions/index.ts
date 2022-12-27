@@ -1,5 +1,7 @@
+export { stakingFee } from "./stakingFee"
+export type { StakingFeeAccounts } from "./stakingFee"
 export { stake } from "./stake"
-export type { StakeAccounts } from "./stake"
+export type { StakeArgs, StakeAccounts } from "./stake"
 export { redeemReward } from "./redeemReward"
 export type { RedeemRewardArgs, RedeemRewardAccounts } from "./redeemReward"
 export { unstake } from "./unstake"
@@ -14,6 +16,11 @@ export type {
   InitializeStatePdaArgs,
   InitializeStatePdaAccounts,
 } from "./initializeStatePda"
+export { updateStatePda } from "./updateStatePda"
+export type {
+  UpdateStatePdaArgs,
+  UpdateStatePdaAccounts,
+} from "./updateStatePda"
 export { depositToRewardAta } from "./depositToRewardAta"
 export type {
   DepositToRewardAtaArgs,

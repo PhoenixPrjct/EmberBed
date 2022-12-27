@@ -4,6 +4,10 @@ import * as borsh from "@project-serum/borsh" // eslint-disable-line @typescript
 import * as types from "../types" // eslint-disable-line @typescript-eslint/no-unused-vars
 import { PROGRAM_ID } from "../programId"
 
+export interface StakeArgs {
+  collectionRewardPda: PublicKey
+}
+
 export interface StakeAccounts {
   user: PublicKey
   userRewardAta: PublicKey
@@ -19,7 +23,9 @@ export interface StakeAccounts {
   systemProgram: PublicKey
 }
 
-export function stake(accounts: StakeAccounts) {
+export const layout = borsh.struct([borsh.publicKey("collectionRewardPda")])
+
+export function stake(args: StakeArgs, accounts: StakeAccounts) {
   const keys: Array<AccountMeta> = [
     { pubkey: accounts.user, isSigner: true, isWritable: true },
     { pubkey: accounts.userRewardAta, isSigner: false, isWritable: true },
@@ -39,7 +45,14 @@ export function stake(accounts: StakeAccounts) {
     { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
   ]
   const identifier = Buffer.from([206, 176, 202, 18, 200, 209, 179, 108])
-  const data = identifier
+  const buffer = Buffer.alloc(1000)
+  const len = layout.encode(
+    {
+      collectionRewardPda: args.collectionRewardPda,
+    },
+    buffer
+  )
+  const data = Buffer.concat([identifier, buffer]).slice(0, 8 + len)
   const ix = new TransactionInstruction({ keys, programId: PROGRAM_ID, data })
   return ix
 }

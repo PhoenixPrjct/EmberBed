@@ -5,14 +5,11 @@ import { WalletMultiButton } from "solana-wallets-vue";
     <q-layout view="lHh Lpr lFf">
         <q-header elevated>
             <q-toolbar>
-                <q-toolbar-title style="font-variant: small-caps;">
-                    <q-avatar square>
-                        <img src="@/assets/logo_only.png" alt="Logo">
-                    </q-avatar>
-                    <q-btn type="a" dark flat to="/">
+                <q-toolbar-title style="font-variant: small-caps ">
+                    <q-btn dark flat to="/">
                         EmberBed:
-                        Admin
                     </q-btn>
+                    Staking
                 </q-toolbar-title>
                 <q-space />
                 <wallet-multi-button dark />

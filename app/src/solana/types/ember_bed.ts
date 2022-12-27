@@ -1,10 +1,29 @@
-import { Idl } from "@project-serum/anchor";
-
 export type EmberBed = {
   "version": "0.1.0",
   "name": "ember_bed",
   "instructions": [
     {
+      "name": "stakingFee",
+      "accounts": [
+        {
+          "name": "from",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "to",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "stake",
       "accounts": [
         {
@@ -53,20 +72,6 @@ export type EmberBed = {
           }
         },
         {
-          "name": "userAccountPda",
-          "isMut": true,
-          "isSigner": false,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "type": "publicKey",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
           "name": "collectionRewardInfo",
           "isMut": true,
           "isSigner": false
@@ -106,7 +111,12 @@ export type EmberBed = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "collectionRewardPda",
+          "type": "publicKey"
+        }
+      ]
     },
     {
       "name": "redeemReward",
@@ -211,11 +221,6 @@ export type EmberBed = {
           "isSigner": false
         },
         {
-          "name": "userAccountPda",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "programAuthority",
           "isMut": true,
           "isSigner": false,
@@ -262,9 +267,9 @@ export type EmberBed = {
                 "path": "reward_mint"
               },
               {
-                "kind": "arg",
+                "kind": "const",
                 "type": "string",
-                "path": "fire_coll_name"
+                "value": "EmberBed"
               },
               {
                 "kind": "const",
@@ -304,10 +309,6 @@ export type EmberBed = {
         {
           "name": "bump",
           "type": "u8"
-        },
-        {
-          "name": "fireCollName",
-          "type": "string"
         }
       ]
     },
@@ -379,11 +380,77 @@ export type EmberBed = {
           "type": "u32"
         },
         {
+          "name": "rewardSymbol",
+          "type": "string"
+        },
+        {
           "name": "collectionName",
           "type": "string"
         },
         {
+          "name": "fireEligible",
+          "type": "bool"
+        },
+        {
+          "name": "phoenixCollectionRelation",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "updateStatePda",
+      "accounts": [
+        {
+          "name": "statePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenPoa",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nftCollectionAddress",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "funderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "rate",
+          "type": "u32"
+        },
+        {
           "name": "rewardSymbol",
+          "type": "string"
+        },
+        {
+          "name": "collectionName",
           "type": "string"
         },
         {
@@ -951,17 +1018,35 @@ export type EmberBed = {
       "name": "NotFireEligible",
       "msg": "Not Eligible for FIRE Token"
     }
-  ],
-  "metadata": {
-    "address": string;
-  }
+  ]
 };
 
-export const IDL: Idl = {
+export const IDL: EmberBed = {
   "version": "0.1.0",
   "name": "ember_bed",
   "instructions": [
     {
+      "name": "stakingFee",
+      "accounts": [
+        {
+          "name": "from",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "to",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": []
+    },
+    {
       "name": "stake",
       "accounts": [
         {
@@ -1010,20 +1095,6 @@ export const IDL: Idl = {
           }
         },
         {
-          "name": "userAccountPda",
-          "isMut": true,
-          "isSigner": false,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "account",
-                "type": "publicKey",
-                "path": "user"
-              }
-            ]
-          }
-        },
-        {
           "name": "collectionRewardInfo",
           "isMut": true,
           "isSigner": false
@@ -1063,7 +1134,12 @@ export const IDL: Idl = {
           "isSigner": false
         }
       ],
-      "args": []
+      "args": [
+        {
+          "name": "collectionRewardPda",
+          "type": "publicKey"
+        }
+      ]
     },
     {
       "name": "redeemReward",
@@ -1168,11 +1244,6 @@ export const IDL: Idl = {
           "isSigner": false
         },
         {
-          "name": "userAccountPda",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "programAuthority",
           "isMut": true,
           "isSigner": false,
@@ -1219,9 +1290,9 @@ export const IDL: Idl = {
                 "path": "reward_mint"
               },
               {
-                "kind": "arg",
+                "kind": "const",
                 "type": "string",
-                "path": "fire_coll_name"
+                "value": "EmberBed"
               },
               {
                 "kind": "const",
@@ -1261,10 +1332,6 @@ export const IDL: Idl = {
         {
           "name": "bump",
           "type": "u8"
-        },
-        {
-          "name": "fireCollName",
-          "type": "string"
         }
       ]
     },
@@ -1336,11 +1403,77 @@ export const IDL: Idl = {
           "type": "u32"
         },
         {
+          "name": "rewardSymbol",
+          "type": "string"
+        },
+        {
           "name": "collectionName",
           "type": "string"
         },
         {
+          "name": "fireEligible",
+          "type": "bool"
+        },
+        {
+          "name": "phoenixCollectionRelation",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "name": "updateStatePda",
+      "accounts": [
+        {
+          "name": "statePda",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenPoa",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "nftCollectionAddress",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "funderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        },
+        {
+          "name": "rate",
+          "type": "u32"
+        },
+        {
           "name": "rewardSymbol",
+          "type": "string"
+        },
+        {
+          "name": "collectionName",
           "type": "string"
         },
         {
@@ -1908,8 +2041,5 @@ export const IDL: Idl = {
       "name": "NotFireEligible",
       "msg": "Not Eligible for FIRE Token"
     }
-  ],
-  "metadata": {
-    "address": "BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z"
-  }
+  ]
 };

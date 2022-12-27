@@ -7,7 +7,6 @@ export * from './accounts'
 export * from './errors'
 export * from './types'
 export * from './instructions'
-
 export * from './programId'
 export type CollectionInfo = {
     address?: PublicKey
@@ -29,7 +28,114 @@ export interface AnchorWallet {
     signAllTransactions: SignerWalletAdapterProps["signAllTransactions"];
 }
 
+export interface RawEBNft {
+    key: number;
+    mint: string;
+    ebCollection?: string;
+    updateAuthority: string;
+    data: {
+        name: string;
+        symbol: string;
+        description: string;
 
+        image: string;
+        external_url: string;
+        edition: number;
+        attributes: {
+            trait_type: string;
+            value: string;
+        }[];
+        properties: {
+            files: {
+                uri: string;
+                type: string;
+            }[];
+            category: string;
+            creators: {
+                address: string;
+                share: number;
+            }[];
+        }
+    }
+}
+
+export interface EBNft {
+    key: number;
+    mint: string;
+    ebCollection?: string;
+    updateAuthority: string;
+    name: string;
+    symbol: string;
+    description: string;
+
+    image: string;
+    external_url: string;
+    edition: number;
+    misc: {
+        attributes: {
+            trait_type: string;
+            value: string;
+        }[];
+        properties: {
+            files: {
+                uri: string;
+                type: string;
+            }[];
+            category: string;
+            creators: {
+                address: string;
+                share: number;
+            }[];
+        }
+    }
+}
+export class EBNft {
+    key: number;
+    mint: string;
+    ebCollection?: string;
+    updateAuthority: string;
+    name: string;
+    symbol: string;
+
+    description: string;
+    image: string;
+    external_url: string;
+    edition: number;
+    misc: {
+        attributes: {
+            trait_type: string;
+            value: string;
+        }[];
+        properties: {
+            files: {
+                uri: string;
+                type: string;
+            }[];
+            category: string;
+            creators: {
+                address: string;
+                share: number;
+            }[];
+        }
+    };
+
+    constructor(props: RawEBNft) {
+        this.key = props.key;
+        this.mint = props.mint;
+        this.ebCollection = props.ebCollection;
+        this.updateAuthority = props.updateAuthority;
+        this.name = props.data.name;
+        this.symbol = props.data.symbol;
+        this.description = props.data.description;
+        this.image = props.data.image;
+        this.external_url = props.data.external_url;
+        this.edition = props.data.edition;
+        this.misc = {
+            attributes: [...props.data.attributes],
+            properties: { ...props.data.properties }
+        };
+    }
+}
 export type CollectionAccounts = {
     RewTok: PublicKey,
     collectionAddress: PublicKey,
@@ -80,7 +186,7 @@ export interface RelationsServerResponse {
 }
 
 
-export interface NewCollectionResponse{
+export interface NewCollectionResponse {
     _id: string;
     phoenix_relation: "Affiliate" | "Founder" | "Member" | "Saved" | "None";
     hashlist: string[];

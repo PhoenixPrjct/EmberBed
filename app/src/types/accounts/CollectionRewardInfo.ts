@@ -12,7 +12,7 @@ export interface CollectionRewardInfoFields {
   collectionName: string
   collectionAddress: PublicKey
   fireEligible: boolean
-  phoenixRelation: types.PhoenixRelationJSON | types.PhoenixRelationKind
+  phoenixRelation: types.PhoenixRelationKind
   rewardMint: PublicKey
   manager: PublicKey
   isInitialized: boolean
@@ -22,13 +22,13 @@ export interface CollectionRewardInfoJSON {
   bump: number
   ratePerDay: number
   rewardWallet: string
-  rewardMint: string
   rewardSymbol: string
   collectionName: string
   collectionAddress: string
   fireEligible: boolean
-  phoenixRelation: types.PhoenixRelationJSON | types.PhoenixRelationKind
-  manager: string | PublicKey
+  phoenixRelation: types.PhoenixRelationJSON
+  rewardMint: string
+  manager: string
   isInitialized: boolean
 }
 
@@ -71,7 +71,7 @@ export class CollectionRewardInfo {
     this.collectionName = fields.collectionName
     this.collectionAddress = fields.collectionAddress
     this.fireEligible = fields.fireEligible
-    this.phoenixRelation = fields.phoenixRelation as types.PhoenixRelationKind
+    this.phoenixRelation = fields.phoenixRelation
     this.rewardMint = fields.rewardMint
     this.manager = fields.manager
     this.isInitialized = fields.isInitialized
@@ -142,7 +142,7 @@ export class CollectionRewardInfo {
       collectionName: this.collectionName,
       collectionAddress: this.collectionAddress.toString(),
       fireEligible: this.fireEligible,
-      phoenixRelation: this.phoenixRelation,
+      phoenixRelation: this.phoenixRelation.toJSON(),
       rewardMint: this.rewardMint.toString(),
       manager: this.manager.toString(),
       isInitialized: this.isInitialized,
@@ -150,7 +150,6 @@ export class CollectionRewardInfo {
   }
 
   static fromJSON(obj: CollectionRewardInfoJSON): CollectionRewardInfo {
-    console.log(obj)
     return new CollectionRewardInfo({
       bump: obj.bump,
       ratePerDay: obj.ratePerDay,

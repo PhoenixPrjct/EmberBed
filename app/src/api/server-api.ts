@@ -33,6 +33,9 @@ export function _createServerAPI() {
       },
       general: {
         getRelations: async () => await (await axios.get(`${baseURL}/relations`)).data
+      },
+      nft: {
+        getCollectionFor: async (tokenMint: string) => await (await axios.get(`${baseURL}/user/nft/collection/${tokenMint}`)).data
       }
       // other API groups go here...
 
