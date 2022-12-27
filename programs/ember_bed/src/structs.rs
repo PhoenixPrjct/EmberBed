@@ -2,13 +2,26 @@ use anchor_lang::prelude::*;
 use anchor_spl::{ token::{ Mint, Token, TokenAccount } };
 use crate::state_and_relations::{ StakeState, PhoenixRelation, PhoenixUserRelation };
 use crate::constants::{ FIRE_COLLECTION_NAME };
+
+#[derive(Accounts)]
+#[instruction(_amount:u64)]
+pub struct StakingFee<'info> {
+    #[account(mut)]
+    pub from: Signer<'info>,
+    /// CHECK: This is receiving funds
+    #[account(mut)]
+    pub to: AccountInfo<'info>,
+    pub system_program: Program<'info, System>,
+}
 // Staking Structs
 #[derive(Accounts)]
+#[instruction(collection_reward_pda:Pubkey)]
 pub struct Stake<'info> {
     #[account(mut)]
     pub user: Signer<'info>,
     #[account(mut)]
     pub user_reward_ata: Box<Account<'info, TokenAccount>>,
+    // pub phoenix_wallet: AccountInfo<'info>,
     #[account(
         mut, 
         associated_token::mint = nft_mint_address, 
@@ -87,8 +100,6 @@ pub struct Unstake<'info> {
     pub nft_edition: AccountInfo<'info>,
     #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
-    // #[account(mut)]
-    // pub user_account_pda: Box<Account<'info, UserAccount>>,
     /// CHECK: Only using as a signing PDA
     #[account(mut, seeds=[b"authority".as_ref()],bump)]
     pub program_authority: AccountInfo<'info>,

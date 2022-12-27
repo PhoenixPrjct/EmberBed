@@ -16,7 +16,7 @@ import * as types from '../app/src/types'
 // import {createInitializeStatePdaInstruction} from "../programs/staking_attempt_1/src/generated"
 
 // MY WALLET SETTING
-const user_json_path = require("os").homedir() + "/Crypto/Scripts/TestStaking/TestStaking.json"
+const user_json_path = require("os").homedir() + "/.config/solana/id.json"// require("os").homedir() + "/Crypto/Scripts/TestStaking/TestStaking.json"
 // const user_json_path = 
 const UserSecret = Uint8Array.from(
   JSON.parse(require("fs").readFileSync(user_json_path))
@@ -74,8 +74,8 @@ describe("EmberBed", async () => {
     amount: beet.bignum,
     rewardWallet: Account,
     fireRewardWallet: Account
-  const rewardSymbol: string = "$REW2";
-  const collectionName: string = "PPM";
+  const rewardSymbol: string = "$EYEZ";
+  const collectionName: string = "TestEyes";
   const fireCollName: string = "EmberBed"
   let funderTokenAta = await getAssociatedTokenAddress(RewTok, AdminWallet.publicKey);
   let fireTokenAta = await getAssociatedTokenAddress(FireTOK, DevWallet.publicKey);
@@ -132,7 +132,8 @@ describe("EmberBed", async () => {
     ratePerDay = 10
     //* Staking
     // const mintAddress: PublicKey = new PublicKey("GjFaTy4irZQ1LHev9NE6mHNnbFZYUtYEuYws88ZWZEua");
-    const mintAddress: PublicKey = new PublicKey("32ke7s6Q3imrg2mv9gE67HwiyQnr6bLTux6zoiTrbxXm");
+    // const mintAddress: PublicKey = new PublicKey("32ke7s6Q3imrg2mv9gE67HwiyQnr6bLTux6zoiTrbxXm");
+    const mintAddress: PublicKey = new PublicKey("B2vPYLHVmVrbJHZnDtA6oUGUS429czJkAvitFaW11VLR");
     nftTokenAddress = await getAssociatedTokenAddress(mintAddress, UserWallet.publicKey)
 
     const metaplex = Metaplex.make(connection)
@@ -183,7 +184,7 @@ describe("EmberBed", async () => {
     // console.log("User Account PDA", userAccountPDA.toBase58());
   })
 
-  it("Initializes FIRE COLLECTION PDA If Needed", async () => {
+  xit("Initializes FIRE COLLECTION PDA If Needed", async () => {
     if (!initFire) {
       console.log("Skipping Initializes Fire PDA Test");
       return true;
@@ -211,7 +212,7 @@ describe("EmberBed", async () => {
     console.log("Initialize Fire PDA tx:")
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
   });
-  it("Deposits to Fire POA", async () => {
+  xit("Deposits to Fire POA", async () => {
     if (!makeFireDeposit) {
       console.log("Skipping the Manager Deposit Test")
       return true
@@ -232,11 +233,11 @@ describe("EmberBed", async () => {
 
   });
 
-  it("Initializes CMA Account", async () => {
+  xit("Initializes CMA Account", async () => {
 
   });
 
-  it("Initializes State PDA If Needed", async () => {
+  xit("Initializes State PDA If Needed", async () => {
     if (!initState) {
       console.log("Skipping Initialize Collection")
       return true
@@ -274,7 +275,7 @@ describe("EmberBed", async () => {
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
   });
 
-  it("Allows Manager to Deposit to Program Owned Account", async () => {
+  xit("Allows Manager to Deposit to Program Owned Account", async () => {
     if (!makeDeposit) {
       console.log("Skipping the Manager Deposit Test")
       return true
@@ -294,7 +295,7 @@ describe("EmberBed", async () => {
     console.log(`https://explorer.solana.com/tx/${tx2}?cluster=devnet`)
 
   });
-  it("Gets Fire Account", async () => {
+  xit("Gets Fire Account", async () => {
     const fireAccount = await program.account.fireRewardInfo.all();
     fireAccount.forEach(async (acct) => {
       await program.account.fireRewardInfo.getAccountInfo(acct.publicKey);
@@ -313,7 +314,7 @@ describe("EmberBed", async () => {
     console.log(collectionAccounts)
     console.log(collectionAccounts.length)
   });
-  it(" Allows Manager to withdraw tokens", async () => {
+  xit(" Allows Manager to withdraw tokens", async () => {
     if (!withdrawing) {
       console.log("Skipping the Manager Withdrawal Test")
       return true
@@ -333,6 +334,11 @@ describe("EmberBed", async () => {
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
 
   })
+  it("Gets Stake Status", async () => {
+    const res = await program.account.userStakeInfo.fetch(stakeStatusPda.toBase58());
+    console.log(res)
+  });
+
   it("Stakes NFT", async () => {
     if (!nftTests) {
       console.log("Skipping the NFT Stake Test")
@@ -385,7 +391,7 @@ describe("EmberBed", async () => {
     console.log("Sleeping for 5 sec...")
     await new Promise((resolve) => setTimeout(resolve, 5000))
   })
-  it("Redeems Fire Reward", async () => {
+  xit("Redeems Fire Reward", async () => {
     if (!nftTests) {
       console.log("Skipping Fire Redemption Test")
       return true
@@ -414,7 +420,7 @@ describe("EmberBed", async () => {
     await new Promise((resolve) => setTimeout(resolve, 5000))
 
   })
-  it("Redeems Staking Reward", async () => {
+  xit("Redeems Staking Reward", async () => {
     if (!nftTests) {
       console.log("Skipping the Redeem Reward Test")
       return true
@@ -463,8 +469,8 @@ describe("EmberBed", async () => {
     console.log(`https://explorer.solana.com/tx/${unstakeTx}?cluster=devnet`)
 
 
-    const stakeStatus = await program.account.userStakeInfo.fetch(stakeStatusPda)
-    console.log("Stake State:", stakeStatus.stakeState)
+    // const stakeStatus = await program.account.userStakeInfo.fetch(stakeStatusPda)
+    // console.log("Stake State:", stakeStatus.stakeState)
   })
 
 });

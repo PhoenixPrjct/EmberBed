@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_lang::system_program;
 use anchor_lang::solana_program::{ program::invoke_signed };
 use anchor_spl::token;
 use anchor_spl::{
@@ -6,7 +7,7 @@ use anchor_spl::{
     token::{ Approve, Revoke, Transfer, CloseAccount, close_account },
 };
 
-use crate::constants::{ LPS, FIRE_MINT, BASE_RATE, FIRE_COLLECTION_NAME, FIRE_SYMBOL };
+use crate::constants::*; //{ LPS, FIRE_MINT, BASE_RATE, FIRE_COLLECTION_NAME, FIRE_SYMBOL };
 use crate::structs::*;
 use crate::errors::{ StakeError, AdminError, RedeemError, TokenStateError };
 use crate::state_and_relations::{ StakeState };
@@ -21,8 +22,24 @@ declare_id!("BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z");
 
 #[program]
 pub mod ember_bed {
+    use anchor_lang::system_program;
+
     use super::*;
-    pub fn stake(ctx: Context<Stake>) -> Result<()> {
+
+    pub fn staking_fee(ctx: Context<StakingFee>) -> Result<()> {
+        let amount = 50000 as u64;
+
+        let cpi_context = CpiContext::new(
+            ctx.accounts.system_program.to_account_info(),
+            system_program::Transfer {
+                from: ctx.accounts.from.to_account_info().clone(),
+                to: ctx.accounts.to.to_account_info().clone(),
+            }
+        );
+        system_program::transfer(cpi_context, amount)?;
+        Ok(())
+    }
+    pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
         msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("Staking Program Invoked");
         if ctx.accounts.stake_status.stake_state == StakeState::Staked {
@@ -73,8 +90,7 @@ pub mod ember_bed {
         // if !ctx.accounts.stake_status.is_initialized {
         // ctx.accounts.user_account_pda.user = ctx.accounts.user.key();
         ctx.accounts.stake_status.user_pubkey = ctx.accounts.user.key();
-        ctx.accounts.stake_status.collection_reward_state =
-            ctx.accounts.collection_reward_info.key();
+        ctx.accounts.stake_status.collection_reward_state = collection_reward_pda;
         ctx.accounts.stake_status.user_nft_ata = ctx.accounts.nft_ata.key();
         ctx.accounts.stake_status.is_initialized = true;
         // }
@@ -277,10 +293,10 @@ pub mod ember_bed {
         msg!("Funder Address: {}", _ctx.accounts.funder.key());
         msg!("Token Prog Owned ATA: {}", _ctx.accounts.token_poa.key());
         msg!("Reward Token Mint: {}", _ctx.accounts.reward_mint.key());
-        // if _ctx.accounts.state_pda.is_initialized {
-        //     msg!("Account is already initialized");
-        //     return err!(TokenStateError::AccountAlreadyInitialized);
-        // }
+        if _ctx.accounts.state_pda.is_initialized {
+            msg!("Account is already initialized");
+            return err!(TokenStateError::AccountAlreadyInitialized);
+        }
         _ctx.accounts.state_pda.rate_per_day = _rate;
         msg!("Rate per day: {}", _ctx.accounts.state_pda.rate_per_day);
         _ctx.accounts.state_pda.fire_eligible = _fire_eligible;
@@ -309,6 +325,10 @@ pub mod ember_bed {
         _fire_eligible: bool,
         _phoenix_collection_relation: String
     ) -> Result<()> {
+        if _ctx.accounts.funder.key() != _ctx.accounts.state_pda.manager.key() {
+            msg!("Not Your Account Bruh.");
+            return err!(AdminError::IncorrectManagingAccount);
+        }
         if !_ctx.accounts.state_pda.is_initialized {
             msg!("Account is not yet initialized");
             return err!(TokenStateError::UnintializedAccount);

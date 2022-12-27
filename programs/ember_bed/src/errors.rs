@@ -22,6 +22,7 @@ pub enum TokenStateError {
     AccountAlreadyInitialized,
     #[msg("Account not initialized")]
     UnintializedAccount,
+    
 }
 
 #[error_code]
