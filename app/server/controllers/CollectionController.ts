@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, unlinkSync, writeFileSync } from "fs"
-import { join } from 'path';
+import path, { join } from 'path';
 import { CollectionRewardInfoJSON } from "src/types"
 // import { Collection, User, Admin } from "../models"
 
@@ -37,7 +37,36 @@ class CollectionFile {
 
 
 export const CC = {
+    create: async (pda: string, manager: string, collection: string, rewardWallet: string) => {
+        try {
 
+            const collections = readdirSync(join(__dirname, '../collections'));
+            if (collections?.includes(collection)) {
+                throw new Error('Collection already exists');
+            }
+            const data = { manager: `${manager}`, name: `${collection}`, rewardWallet: `${rewardWallet}`, hashlist: [] };
+            const newFile = await writeFileSync(join(__dirname, `../collections/${pda}.json`), JSON.stringify(data), 'utf-8');
+            return { status: 200, response: newFile };
+        } catch (err: any) {
+            console.log(err);
+            return { status: 400, response: err.message }
+        }
+    },
+    getByPDA: async (pda: string) => {
+        try {
+            const collections = readdirSync(join(__dirname, '../collections'));
+            console.log("GetPDA Collections")
+            console.log(collections)
+            if (!collections.includes(`${pda}.json`)) throw new Error('Collection Not Found')
+            const data = readFileSync(join(__dirname, `../collections/${pda}.json`), 'utf-8');
+
+            return { status: 200, response: JSON.parse(data) };
+
+        } catch (err: any) {
+            console.log(err);
+            return { status: 400, response: err.message }
+        }
+    },
     deleteByPDA: async (pda: string) => {
         try {
             await unlinkSync(join(__dirname, `../collections/${pda}.json`))

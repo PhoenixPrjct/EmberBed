@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
-import { getTokenInfo, SplKey, validateCollectionInfo, collectionInitFeeTx } from 'src/helpers'
+import { Keypair, LAMPORTS_PER_SOL, PublicKey } from '@solana/web3.js';
+import { getTokenInfo, SplKey, validateCollectionInfo, chargeFeeTx, getInitCost } from 'src/helpers'
 import { TokenInfo } from '@solana/spl-token-registry';
-import { ref, Ref, watchEffect } from 'vue';
+import { ref, Ref, watchEffect, ComputedRef } from 'vue';
 import { useChainAPI } from 'src/api/chain-api';
 import { useQuasar } from 'quasar';
 import { useServerAPI } from 'src/api/server-api';
@@ -10,10 +10,14 @@ import {
     CollectionInfo, CollectionRewardInfo,
     NewCollectionResponse, RelationsServerResponse,
     CollectionRewardInfoJSON, PhoenixRelation,
-    PhoenixRelationKind, MutableTokenInfo
+    PhoenixRelationKind, MutableTokenInfo, WalletStore
 } from 'src/types';
+import { useRouter } from 'vue-router';
+import { useWallet } from 'solana-wallets-vue';
 
-const { wallet, api, connection } = useChainAPI();
+const router = useRouter();
+const { wallet, api, connection, program } = useChainAPI();
+const $wallet: ComputedRef<WalletStore> = useWallet().wallet
 const { server_api } = useServerAPI();
 const $q = useQuasar();
 
@@ -40,38 +44,27 @@ const submissionStatus = ref({
 });
 const collectionInfo = ref<CollectionInfo>({
     // rewardWallet: '',
-    manager: wallet.value.publicKey.toBase58() || '',
-    rewardMint: "REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko",
-    collectionName: "TestEyes",
-    collectionAddress: "CG4KDtfDDvYWP4ChqxKVLXjxjrg8VT28RoMpJgjYosFs",
-    ratePerDay: 5,
+    manager: '',
+    rewardMint: "F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw",
+    collectionName: "PrjctPhoenix: Member",
+    collectionAddress: "9xVireFnLBZ3ZCjLS29EzF632YbpSFwsKvwsqCLxefxr",
+    ratePerDay: 2,
     fireEligible: true,
     phoenixRelation: null as unknown as PhoenixRelationKind,
-    rewardSymbol: "$EYEZ",
+    rewardSymbol: "$FIRE",
 }) as Ref<CollectionRewardInfoJSON>
 
-function getInitCost(kind: string) {
-    let amount
-    const baseAmount = 10
-
-    switch (kind) {
-        case 'EmberBed':
-            amount = baseAmount / 2;
-            break;
-        case 'Affiliate':
-            amount = baseAmount / 5;
-            break;
-        case 'Saved':
-            amount = baseAmount / 10;
-            break;
-        case 'None':
-            amount = baseAmount;
-            break;
-        default:
-            amount = 0.05
-            break;
+async function getRewardWallet() {
+    const rw = new PublicKey(collectionInfo.value.rewardMint);
+    const colInfo = await api.value?.getStatePda(rw, collectionInfo.value.collectionName);
+    if (!colInfo) return null;
+    console.log(colInfo.pda.toBase58());
+    const rewardWallet = await api.value?.getRewardWallet(rw, colInfo.pda);
+    if (rewardWallet) {
+        console.log(rewardWallet.address.toBase58())
+        return rewardWallet
     }
-    return amount;
+    return null
 }
 
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
@@ -83,33 +76,45 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         }
         // Find or Create the PDAs
         const accounts = await (await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
+
         if (!accounts) throw new Error('Generating PDAS Failed')
-        const { statePDA, rewardWallet } = accounts
+        const { stateBump, statePDA, rewardWallet } = accounts
+        rawInfo.bump = stateBump
         rawInfo.rewardWallet = rewardWallet.toBase58();
+        const collections = await (await program.value.account.collectionRewardInfo.all()).map(collection => collection.publicKey.toBase58())
+        if (!collections.includes(statePDA.toBase58())) {
+            console.log(rawInfo)
+            // Validate The Information
+            const valid = await validateCollectionInfo(rawInfo);
+            if (!valid) throw new Error('Failed to validate collection')
 
-        // Validate The Information
-        const valid = await validateCollectionInfo(rawInfo);
-        if (!valid) throw new Error('Failed to validate collection')
-
-        submissionStatus.value.message = `Info Checks Out, Moving On. . .`
+            submissionStatus.value.message = `Info Checks Out, Moving On. . .`
 
 
-        const { success, err, info } = valid
-        if (!success || !info) throw new Error('Collection Info is Invalid')
-        const { kind } = info.phoenixRelation
+            const { success, info } = valid
+            console.log(valid.success, info?.toJSON())
+            if (!success || !info) throw new Error(`Failed To Validate Collection Information`)
+            const { kind } = info.phoenixRelation
 
-        const amount = getInitCost(kind)
-        submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
-        const paidTx = await collectionInitFeeTx(wallet.value.publicKey, amount);
+            const amount = getInitCost(kind)
+            submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
+            const paidTx = await chargeFeeTx(wallet.value.publicKey, amount);
 
-        if (!paidTx.success) throw new Error(paidTx.error)
-        const paymentSig = await paidTx.sig
-        submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
-        const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
-        if (!initState || initState.error) throw new Error(`Something went wrong with \n tx: ${initState?.tx}`)
-        const { account, tx } = await initState
-        submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
-        const data = { sig: tx, pda: statePDA, collection: { ...account, name: account?.collectionName, reward_wallet: rewardWallet } }
+            if (!paidTx.success) throw new Error(paidTx.error)
+            const paymentSig = await paidTx.sig
+            submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
+            const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
+            if (!initState || initState.error) throw new Error(`${initState?.error.message}`)
+            const { account, tx } = await initState
+            submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
+        }
+        const data = {
+            pda: statePDA,
+            manager: wallet.value.publicKey.toBase58(),
+            collection: rawInfo.collectionName,
+            /*{ ...account, name: account?.collectionName, */
+            reward_wallet: rewardWallet
+        }
         submissionStatus.value = { ...submissionStatus.value, percent: 80, message: 'Indexing Collection on DB. . .' }
         const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(data)
         if (res.Error) throw new Error(`Collection Not Written to The Server`);
@@ -273,9 +278,20 @@ watchEffect(async () => {
             // console.log('pr:', collectionInfo.value?.phoenixRelation, `\n`, 'ca:', collectionInfo.value?.collectionAddress)
         }
     }
+    if (wallet.value) {
+        collectionInfo.value.manager = wallet.value.publicKey.toBase58()
+    }
+    if (!collectionInfo.value.rewardWallet && collectionInfo.value.rewardMint && collectionInfo.value.collectionName) {
+        const rw = await getRewardWallet()
+        if (!rw) return
+        console.log(rw.address.toBase58())
+        collectionInfo.value.rewardWallet = rw.address.toBase58();
+    }
+    console.log($wallet.value)
 
-
-
+    if (!$wallet.value) {
+        router.push({ path: '/admin' })
+    }
 })
 
 
@@ -357,9 +373,9 @@ watchEffect(async () => {
                                 <q-input dark dense readonly v-model="token.decimals" label="Decimals" />
                             </div>
                             <!-- </q-card-section> -->
-                            <q-card-action dark class="flex justify-center select-btn">
+                            <q-card-actions dark class="flex justify-center select-btn">
                                 <q-btn flat dark round dense label="Select" @click="handleSplTokenClick(token)" />
-                            </q-card-action>
+                            </q-card-actions>
                         </q-card>
                     </div>
                     <div v-if="manualSplEntryToggle">

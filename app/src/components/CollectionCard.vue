@@ -8,6 +8,7 @@ import { ref, watchEffect } from 'vue'
 import { CopyClick, camelCaseToTitleCase } from 'src/helpers';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { AddHashList } from 'src/components'
+import { useRouter } from 'vue-router';
 
 type PR =
     | PhoenixRelationKind
@@ -17,14 +18,16 @@ type PR =
     | types.PhoenixRelation.Member
     | types.PhoenixRelation.EmberBed
     | types.PhoenixRelation.None
+
+const router = useRouter();
 const { notify } = useQuasar();
 const dialogShow = ref(false);
 const hashListCardView = ref(false);
-
+const { connection, wallet } = useChainAPI();
 const { CollectionRewardInfo } = types
 const props = defineProps<{ collectionRewardPDA: PublicKey }>()
 const collectionRewardPDA = ref(props.collectionRewardPDA)
-const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(useChainAPI().connection, collectionRewardPDA.value), null);
+const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(connection, collectionRewardPDA.value), null);
 const collectionInfo = ref(_collectionInfo.value?.toJSON())
 watchEffect(() => {
     if (!collectionInfo.value && _collectionInfo.value) {
@@ -94,6 +97,11 @@ function isRelevant(k: string): boolean {
     return result;
 }
 
+function handleCollectionRouteClick(pda: string) {
+    console.log(pda)
+    router.push(`/c/${pda}`)
+}
+
 </script>
 <template>
     <q-card class="collection-card" dark v-if="!collectionInfo">
@@ -154,8 +162,10 @@ function isRelevant(k: string): boolean {
                 <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
             </q-item>
         </q-list>
-        <q-card-actions>
+        <q-card-actions class="flex justify-between">
             <q-btn flat dark @click="handleDialogShow">Details</q-btn>
+            <q-btn flat dark @click="handleCollectionRouteClick(collectionRewardPDA.toBase58())">Go to
+                {{ collectionInfo.collectionName }} Page</q-btn>
         </q-card-actions>
     </q-card>
     <q-dialog v-model="dialogShow">
@@ -185,8 +195,8 @@ function isRelevant(k: string): boolean {
 
                 </q-list>
             </q-card-section>
-            {{ collectionInfo?.collectionName }} || {{ collectionRewardPDA }}
-            <q-card-actions v-if="collectionInfo?.collectionName && collectionRewardPDA">
+            <q-card-actions
+                v-if="collectionInfo?.manager == wallet.publicKey.toBase58() && collectionInfo?.collectionName && collectionRewardPDA">
                 <q-btn dark label="Add Hashlist" @click="handleAddHashlistClick()" />
             </q-card-actions>
         </q-card>

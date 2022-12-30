@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { CollectionRewardInfo, EBNft, StakeAccounts, StakeState, UnstakeAccounts, UserStakeInfo, UserStakeInfoJSON } from 'src/types';
-import { camelCaseToTitleCase, CopyClick } from 'src/helpers';
+import { CollectionRewardInfo, EBNft, StakeAccounts, StakeState, StakeStateJSON, UnstakeAccounts, UserStakeInfo, UserStakeInfoJSON } from 'src/types';
+import { camelCaseToTitleCase, CopyClick, getStakingFee, chargeFeeTx } from 'src/helpers';
 import { ref, watchEffect } from 'vue';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { useChainAPI } from 'src/api/chain-api';
@@ -73,9 +73,11 @@ async function handleStakeNft(nft: EBNft) {
 // }
 
 async function handleUnstakeNft(nft: EBNft) {
-    // const feePaid = await payFee();
-    // if (!feePaid) return;
-    // console.log(feePaid)
+    if (!ebCollection.value.info) return false;
+    const feeAmount = await getStakingFee(ebCollection.value.info.phoenixRelation.kind)
+    const paidTx = await chargeFeeTx(wallet.value.publicKey, feeAmount);
+    if (!paidTx) return false;
+    console.log(paidTx)
     console.log(`Unstaking ${nft.name}`)
     const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.value.info!.collectionName, rewardMint: ebCollection.value.info!.rewardMint.toBase58(), nftMint: nft.mint })
     if (!accounts) return;
@@ -92,7 +94,7 @@ async function handleUnstakeNft(nft: EBNft) {
         systemProgram: SystemProgram.programId,
     }
     console.log(accounts);
-    const unstakeTx: Promise<{ tx: string, stakeStatus: any }> | unknown = await api.value?.unstake(unstakeAccts)
+    const unstakeTx: { tx: string, stakeState: StakeStateJSON } | any = await api.value?.unstake(unstakeAccts)
     if (!unstakeTx) return;
     console.log(`https://explorer.solana.com/tx/${unstakeTx.tx}?cluster=devnet`)
     refreshStakeState();
@@ -174,7 +176,7 @@ watchEffect(async () => {
                 <q-card-actions
                     v-if="(!stakeState.info || stakeState.info.stakeState.kind == 'Unstaked') && eligible && ebCollection.info">
                     <q-btn dark label="Stake" @click="handleStakeNft(nft)" />
-                    <q-btn dark label="Check PDA" @click="checkPDA()" />
+                    <!-- <q-btn dark label="Check PDA" @click="checkPDA()" /> -->
                 </q-card-actions>
             </div>
         </q-card-section>

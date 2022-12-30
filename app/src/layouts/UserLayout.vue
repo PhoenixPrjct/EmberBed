@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { WalletMultiButton } from "solana-wallets-vue";
+
 </script>
 <template>
     <q-layout view="lHh Lpr lFf">
@@ -7,9 +8,11 @@ import { WalletMultiButton } from "solana-wallets-vue";
             <q-toolbar>
                 <q-toolbar-title style="font-variant: small-caps ">
                     <q-btn dark flat to="/">
-                        EmberBed:
+                        EmberBed:&nbsp;
+                        <span style="color:#fe4200">
+                            User
+                        </span>
                     </q-btn>
-                    Staking
                 </q-toolbar-title>
                 <q-space />
                 <wallet-multi-button dark />

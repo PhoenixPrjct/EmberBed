@@ -1,7 +1,12 @@
 
 import { Nft } from "@metaplex-foundation/js"
 import { PublicKey } from "@solana/web3.js"
-import type { SignerWalletAdapterProps } from "@solana/wallet-adapter-base";
+import type {
+    Adapter, WalletReadyState, WalletName,
+    WalletNotReadyError,
+    WalletNotConnectedError, MessageSignerWalletAdapterProps, SignerWalletAdapterProps, WalletAdapterProps
+} from "@solana/wallet-adapter-base";
+import { Ref } from "vue";
 
 export * from './accounts'
 export * from './errors'
@@ -26,6 +31,38 @@ export interface AnchorWallet {
     publicKey: PublicKey;
     signTransaction: SignerWalletAdapterProps["signTransaction"];
     signAllTransactions: SignerWalletAdapterProps["signAllTransactions"];
+}
+
+export type Wallet = {
+    adapter: Adapter;
+    readyState: WalletReadyState;
+};
+export interface WalletStore {
+    // Props.
+    wallets: Ref<Wallet[]>;
+    autoConnect: Ref<boolean>;
+
+    // Data.
+    wallet: Ref<Wallet | null>;
+    publicKey: Ref<PublicKey | null>;
+    readyState: Ref<WalletReadyState>;
+    ready: Ref<boolean>;
+    connected: Ref<boolean>;
+    connecting: Ref<boolean>;
+    disconnecting: Ref<boolean>;
+
+    // Methods.
+    select(walletName: WalletName): void;
+    connect(): Promise<void>;
+    disconnect(): Promise<void>;
+    sendTransaction: WalletAdapterProps["sendTransaction"];
+
+    // Optional methods.
+    signTransaction: Ref<SignerWalletAdapterProps["signTransaction"] | undefined>;
+    signAllTransactions: Ref<
+        SignerWalletAdapterProps["signAllTransactions"] | undefined
+    >;
+    signMessage: Ref<MessageSignerWalletAdapterProps["signMessage"] | undefined>;
 }
 
 export interface RawEBNft {
@@ -57,6 +94,22 @@ export interface RawEBNft {
             }[];
         }
     }
+}
+
+
+export type DBCollectionInfo = {
+    manager: string;
+    name: string;
+    hashlist: string[];
+    style: {
+        icon: string,
+        colors: {
+            primary: string;
+            secondary: string;
+            accent: string;
+        }
+    }
+
 }
 
 export interface EBNft {

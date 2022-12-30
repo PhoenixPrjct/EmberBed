@@ -22,6 +22,11 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/UserLayout.vue'),
     children: [{ path: '', component: () => import('src/pages/user/DashPage.vue') }],
   },
+  {
+    path: '/c/:id',
+    component: () => import('layouts/CollectionLayout.vue'),
+    children: [{ path: '', component: () => import('src/pages/collections/CollectionHome.vue') }],
+  },
   // Always leave this as last one,
   // but you can also remove it
   {

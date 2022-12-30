@@ -48,10 +48,10 @@ watchEffect(async () => {
     if (!collectionPDAs.value?.length) {
         const walletString = wallet.value.publicKey
         await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
-            console.log(acct.account.manager.toBase58())
-            if (acct.account.manager.toBase58() == walletString) {
-                collectionPDAs.value = [...collectionPDAs.value, acct];
-            }
+            console.log(acct.account)
+            // if (acct.account.manager.toBase58() == walletString) {
+            collectionPDAs.value = [...collectionPDAs.value, acct];
+            // }
             return;
         })
     }
@@ -60,11 +60,10 @@ watchEffect(async () => {
 async function getCollectionInfo(collectionName: string, rewardMint: string) {
     onChainInfo.value = null as unknown as CollectionRewardInfoJSON
     if (!api.value) return false;
-    accounts.value = await api.value.getAccounts(wallet.value.publicKey, collectionName, rewardMint);
-    accounts.value.statePDA
+    accounts.value = await api.value.getAccounts({ user: wallet.value.publicKey, collectionName, rewardMint });
     const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
     console.dir(accounts.value);
-    const res = await CollectionRewardInfo.fetch(connection, accounts.value.statePDA);
+    const res = await CollectionRewardInfo.fetch(connection, statePDA);
     if (!res) return
     console.dir(res.toJSON())
     onChainInfo.value = res.toJSON()

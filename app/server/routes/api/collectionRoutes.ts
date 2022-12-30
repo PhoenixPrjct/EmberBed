@@ -15,17 +15,17 @@ const router = express.Router();
 //     const { status, response } = await CC.getByOwner(wallet);
 //     res.status(status).send(response);
 // })
-// router.post("/new", async (req, res) => {
-//     try {
-//         console.log(req.body)
-//         const { sig, collection, pda } = req.body;
-//         const { status, response } = await CC.create(sig, pda, collection)
-//         res.status(status).send(response);
-//     } catch (err) {
-//         console.log(err);
-//         res.status(500).send(err);
-//     }
-// })
+router.post("/new", async (req, res) => {
+    try {
+        const { collection, manager, pda, reward_wallet } = req.body;
+        console.log(reward_wallet)
+        const { status, response } = await CC.create(pda, manager, collection, reward_wallet)
+        res.status(status).send(response);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+    }
+})
 
 router.get('/hashlist/:pda', async (req, res) => {
     const { pda } = req.params;
@@ -38,6 +38,14 @@ router.post('/hashlist/add', async (req, res) => {
     const { status, response } = await CC.addHashlist(wallet, hashlist, pda)
     res.status(status).send(response);
 })
+
+router.get('/info/:pda', async (req, res) => {
+    const { pda } = req.params;
+    console.log(`Getting Info for ${pda}`)
+    const { status, response } = await CC.getByPDA(pda)
+    res.status(status).json(response)
+})
+
 router.delete("/:pda", async (req, res) => {
     const { status, response } = await CC.deleteByPDA(req.params.pda)
     res.status(status).send(response);

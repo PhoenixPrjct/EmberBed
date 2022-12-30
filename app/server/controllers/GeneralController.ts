@@ -22,6 +22,7 @@ export const GC = {
             for (const hashListfile of hashlistFiles) {
                 // Store the current file name
                 const currentFile = hashListfile.split('.')[0]
+                // console.log(currentFile)
                 // Read the contents of the file
                 const fileContents = await readFileSync(path.join(__dirname, `../collections/${hashListfile}`), 'utf-8')
                 // Parse the file contents into a JavaScript object
@@ -31,8 +32,8 @@ export const GC = {
                 combinedHashlist = [...combinedHashlist, hashListObj]
                 // Search for the string in the combined hashlist
                 combinedHashlist.map((collection, i) => {
-                    if (collection[currentFile].includes(tokenMint)) {
-                        file = currentFile;
+                    if (collection[currentFile]?.includes(tokenMint)) {
+                        file = currentFile
                     }
                 })
             }

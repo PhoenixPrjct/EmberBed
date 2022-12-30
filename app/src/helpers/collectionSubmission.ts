@@ -9,20 +9,68 @@ const wallet = useWallet();
 export async function validateCollectionInfo(
     collectionInfo: CollectionRewardInfoJSON
 ) {
-    try {
-
-        Object.entries(collectionInfo).map((val, key) => { console.log(val[0], typeof val[1]) });
-        const info: CollectionRewardInfo = await CollectionRewardInfo.fromJSON(collectionInfo)
-        console.log('INFO:', info.toJSON())
-        return { success: true, info: info }
-    } catch (err: any) {
-        return { success: false, err: err.message };
-    }
+    // try {
+    Object.entries(collectionInfo).map((val, key) => { console.log(val[0], typeof val[1]) });
+    const info: CollectionRewardInfo = CollectionRewardInfo.fromJSON(collectionInfo);
+    console.log('INFO:', info.toJSON())
+    await info.toJSON()
+    return { success: true, info: info }
+    // } catch (err: any) {
+    // return { success: false, err: err.message };
+    // }
 }
 
 
+export function getInitCost(kind: string) {
+    let amount
+    const baseAmount = 10
 
-export async function collectionInitFeeTx(user: PublicKey, amount: number) {
+    switch (kind) {
+        case 'EmberBed':
+            amount = baseAmount / 2;
+            break;
+        case 'Affiliate':
+            amount = baseAmount / 5;
+            break;
+        case 'Saved':
+            amount = baseAmount / 10;
+            break;
+        case 'None':
+            amount = baseAmount;
+            break;
+        default:
+            amount = 0.05
+            break;
+    }
+    return amount;
+}
+
+export function getStakingFee(kind: string) {
+    let amount
+    const baseAmount = 0.05
+
+    switch (kind) {
+        case 'EmberBed':
+            amount = baseAmount / 2;
+            break;
+        case 'Affiliate':
+            amount = baseAmount / 5;
+            break;
+        case 'Saved':
+            amount = baseAmount / 10;
+            break;
+        case 'None':
+            amount = baseAmount;
+            break;
+        default:
+            amount = 0.05
+            break;
+    }
+    return amount;
+}
+
+
+export async function chargeFeeTx(user: PublicKey, amount: number) {
     if (!user) return { error: 'No public key provided, did you connect your wallet?' }
     alert(`Initialization Fee = ${amount * LAMPORTS_PER_SOL} SOL`);
     const PhoenixWallet = new PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB')

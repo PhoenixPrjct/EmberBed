@@ -15,7 +15,7 @@ export function _createServerAPI() {
       collection: {
         get: {
           byOwner: async (query: string) => await (await axios.get(`${baseURL}/collection/owner`, { params: query })).data,
-          one: async (query: string) => await (await axios.get(`${baseURL}/collection`, { params: query })).data,
+          one: async (query: string) => await (await axios.get(`${baseURL}/collection/info/${query}`)).data,
           all: async () => await (await axios.get(`${baseURL}/collection`)).data,
           hashlist: async (query: string) => await (await axios.get(`${baseURL}/collection/hashlist/${query}`)).data
         },
