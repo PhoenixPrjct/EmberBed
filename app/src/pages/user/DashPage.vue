@@ -4,11 +4,35 @@ import { useChainAPI } from 'src/api/chain-api';
 import { CollectionContainer } from 'src/components';
 import UserNftTray from 'src/components/UserNftTray.vue';
 import { EmberBed } from 'src/solana/types/ember_bed';
-import { CollectionRewardInfoJSON } from 'src/types';
+import { CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types';
 import { watchEffect, ref } from 'vue';
+import { useServerAPI } from 'src/api/server-api';
+import { useRouter } from 'vue-router';
+import { useQuasar } from 'quasar';
 
+
+const { notify } = useQuasar();
+const router = useRouter();
+const { server_api } = useServerAPI();
 const { program } = useChainAPI()
 const collectionPDAs = ref<ProgramAccount<EmberBed>[]>([]);
+const userCollections = ref<{ name: string, account: string }[]>([]);
+const collectionOptions = ref<string[]>([]);
+const selectColProxy = ref<string>()
+
+function handleCollectionGoClick() {
+    const item = userCollections.value.find(i => i.name == selectColProxy.value)
+    if (!item) return notify({
+        type: 'error',
+        message: 'Collection not found',
+        caption: 'Collection Page Not Found',
+        position: 'top',
+    })
+    router.push(`/c/${item?.account}`)
+}
+
+
+
 watchEffect(async () => {
 
     if (!collectionPDAs.value?.length) {
@@ -18,16 +42,37 @@ watchEffect(async () => {
             // }
             return;
         })
+        const pdas: Promise<{ name: string, account: string }>[] = collectionPDAs.value.map(async (acct) => {
+            const { name } = await server_api.collection.get.one(acct.publicKey.toBase58())
+            const account = acct.publicKey.toBase58()
+            const res = { name: name, account: account }
+            return res
+        })
+        userCollections.value = await Promise.all(pdas);
+        collectionOptions.value = userCollections.value.map(item => item.name)
     }
+    console.log(userCollections.value)
 })
 
 
 </script>
 <template>
+    <section class="search-section">
+        <div class="flex justify-center">
+            <q-btn outline :label="!selectColProxy ? 'Go to Collection Page:' : 'Reset Selection'"
+                @click="selectColProxy = undefined" />
+            <q-select filled style="border-top:1px solid #fff;min-width:200px; flex: 1 0 65%;" dark
+                v-model="selectColProxy" :label="!selectColProxy ? 'EmberBed Collections' : void 0"
+                :options="collectionOptions" />
+            <q-btn :outline="!!selectColProxy" style="padding-left:1rem;flex: 0 0 10%;" label="Go"
+                :disable="!selectColProxy" @click="handleCollectionGoClick()"></q-btn>
+        </div>
 
-    <CollectionContainer :collectionPDAs="collectionPDAs" />
-    <UserNftTray />
+    </section>
+    <UserNftTray :colPda="null" :theme="null" />
 </template>
 <style lang="scss" scoped>
-
+.search-section {
+    padding: 2rem;
+}
 </style>

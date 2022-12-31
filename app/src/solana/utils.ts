@@ -274,7 +274,7 @@ export function getAPI(program: Program<EmberBed>) {
         }
     };
 
-    async function stake(data: StakeAccounts): Promise<{ tx: string, stakeStatus: StakeStateJSON }> {
+    async function stake(data: StakeAccounts): Promise<{ tx: string, stakeStatus: StakeStateJSON | null }> {
         // const accounts = await getAccounts({ user, collectionName, rewardMint: nftMint })
         const { collectionRewardInfo } = data
         console.log({ collectionRewardInfo })
@@ -286,8 +286,9 @@ export function getAPI(program: Program<EmberBed>) {
         console.log("Stake tx:")
         console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
         const stakeStatusInfo: UserStakeInfo | null = await UserStakeInfo.fetch(connection, data.stakeStatus);
+        if (!stakeStatusInfo) return { tx: tx, stakeStatus: null as unknown as StakeStateJSON }
         const stakeState = stakeStatusInfo?.toJSON().stakeState
-        return { tx: tx, stakeStatus: stakeState! }
+        return { tx: tx, stakeStatus: stakeState }
     }
     async function redeemFire() {
         console.log('Hey')
@@ -295,38 +296,36 @@ export function getAPI(program: Program<EmberBed>) {
     async function redeemReward() {
         console.log('Hey')
     };
-    async function unstake(accounts: UnstakeAccounts): Promise<{ tx: string, stakeState: StakeStateJSON | null } | unknown> {
-        try {
-            console.log('Unstaking NFT:', accounts.nftMintAddress.toBase58());
-            console.log("Delegated Authority:", accounts.programAuthority.toBase58());
-            console.log("SystemProgram:", SystemProgram.programId.toBase58());
-            console.log("Token Program:", TOKEN_PROGRAM_ID.toBase58());
-            console.log("Delegated Authority", accounts.programAuthority.toBase58());
-            console.log("Stake Status", accounts.stakeStatus.toBase58());
-            const unstakeTx = await program.methods.unstake().accounts({
-                user: accounts.user,
-                nftAta: accounts.nftAta,
-                nftMintAddress: accounts.nftMintAddress,
-                nftEdition: accounts.nftEdition,
-                stakeStatus: accounts.stakeStatus,
-                programAuthority: accounts.programAuthority,
-                // *SYSTEM Variables
-                tokenProgram: TOKEN_PROGRAM_ID,
-                metadataProgram: METADATA_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-            }).signers([]).rpc();
-            // console.log("Unstake tx:")
-            // console.log(`https://explorer.solana.com/tx/${unstakeTx}?cluster=devnet`)
+    async function unstake(accounts: UnstakeAccounts): Promise<{ tx: string, stakeState: StakeStateJSON | null }> {
+        console.log('Unstaking NFT:', accounts.nftMintAddress.toBase58());
+        console.log("Delegated Authority:", accounts.programAuthority.toBase58());
+        console.log("SystemProgram:", SystemProgram.programId.toBase58());
+        console.log("Token Program:", TOKEN_PROGRAM_ID.toBase58());
+        console.log("Delegated Authority", accounts.programAuthority.toBase58());
+        console.log("Stake Status", accounts.stakeStatus.toBase58());
+        const unstakeTxPromise = program.methods.unstake().accounts({
+            user: accounts.user,
+            nftAta: accounts.nftAta,
+            nftMintAddress: accounts.nftMintAddress,
+            nftEdition: accounts.nftEdition,
+            stakeStatus: accounts.stakeStatus,
+            programAuthority: accounts.programAuthority,
+            // *SYSTEM Variables
+            tokenProgram: TOKEN_PROGRAM_ID,
+            metadataProgram: METADATA_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+        });
+        // console.log("Unstake tx:")
+        // console.log(`https://explorer.solana.com/tx/${unstakeTx}?cluster=devnet`)
+        const unstakeTx = await unstakeTxPromise;
+        // if (!unstakeTx) throw new Error(unstakeTxPromise.view()
+        const sig = await unstakeTx.rpc();
+        console.log("Signature:", sig)
+        const stakeStatus = await (await UserStakeInfo.fetch(connection, accounts.stakeStatus))?.toJSON()
+        const stakeState = stakeStatus?.stakeState || null
 
+        return { tx: sig, stakeState: stakeState }
 
-            const stakeStatus = await (await UserStakeInfo.fetch(connection, accounts.stakeStatus))?.toJSON()
-            const stakeState = stakeStatus?.stakeState || null
-
-            return { tx: unstakeTx, stakeState: stakeState }
-        } catch (err) {
-            console.log(err)
-            return err
-        }
     };
     async function depositToFireAta() {
         console.log('Hey')

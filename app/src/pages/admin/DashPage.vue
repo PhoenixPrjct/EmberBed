@@ -49,9 +49,9 @@ watchEffect(async () => {
         const walletString = wallet.value.publicKey
         await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
             console.log(acct.account)
-            // if (acct.account.manager.toBase58() == walletString) {
-            collectionPDAs.value = [...collectionPDAs.value, acct];
-            // }
+            if (acct.account.manager.toBase58() == walletString) {
+                collectionPDAs.value = [...collectionPDAs.value, acct];
+            }
             return;
         })
     }

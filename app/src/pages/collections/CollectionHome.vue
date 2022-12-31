@@ -64,6 +64,7 @@ watchEffect(async () => {
                         :label="pdaInfo?.ratePerDay ? `Base Rate/Day: ${pdaInfo?.ratePerDay}` : 'Base Rate/Day Unavailable'" />
                 </span>
             </div>
+            
             <UserNftTray :colPda="(pda as string)" :theme="theme" />
         </section>
     </q-page>
