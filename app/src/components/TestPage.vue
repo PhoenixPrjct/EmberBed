@@ -39,5 +39,6 @@ async function getAllCollections() {
     <pre v-if="collectionList">{{ collectionList }}</pre>
 
     <pre v-if="msg">{{ msg }}</pre>
+    <q-btn label="User" to="/user" />
     <q-btn label="Admin" to="/admin" />
 </template>

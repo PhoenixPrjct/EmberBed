@@ -248,7 +248,7 @@ watchEffect(async () => {
         </q-card-section>
     </q-card>
     <div>
-        <div class="eligible nft-card-container">
+        <div class="eligible">
             <section v-if="nfts.loaded && !nfts.ebNfts.length">
                 <h5>
                     You are not holding any NFTs eligible for staking.
@@ -290,16 +290,61 @@ small {
     flex-flow: row wrap;
     justify-content: space-around;
     align-items: center;
-    gap: 1.25rem 1.25rem;
+    gap: 3rem 1rem;
     height: 100%;
     width: 100%;
-    padding: 2rem;
+    padding: 1rem;
     margin: 1rem;
 }
 
 .nft-card {
-    flex: 0 0 50%;
+    margin: 1rem;
+    flex: 0 0 20%;
     max-width: 400px;
-    min-width: 320px
+    // min-width: 320px
+}
+
+@media screen and (min-width:1200px) {
+    .nft-card {
+        flex: 0 0 10%;
+    }
+
+}
+
+@media screen and (max-width:900px) {
+    .nft-card-container {
+        gap: 0 5rem;
+    }
+
+    .nft-card {
+        min-width: unset;
+        max-width: unset;
+        max-height: unset;
+        flex: 0 0 35%;
+    }
+
+}
+
+
+@media screen and (max-width:768px) {
+    .nft-card-container {
+        gap: 1rem;
+    }
+
+    .nft-card {
+        flex: 0 0 100%;
+    }
+
+}
+
+@media screen and (max-width:500px) {
+    .eligible {
+        padding: 1rem;
+    }
+
+    .nft-card-container {
+        margin: 0;
+        // padding: 1rem;
+    }
 }
 </style>

@@ -210,7 +210,7 @@ watchEffect(async () => {
     <q-card class="nft-card-local" dark>
         <q-card-section v-if="!showNftDetails" @click="toggleShowNftDetails()">
             <q-img :src="nft.image" :ratio="1 / 1" width="100%" height="100%">
-                <div v-if="!showStakeButton" class="absolute-top">
+                <div v-if="!showStakeButton && stakeStateRef" class="absolute-top">
 
                     <span>{{ counterDisplay.days }}</span>:
                     <span>{{ counterDisplay.hours }}</span>:
@@ -218,7 +218,7 @@ watchEffect(async () => {
                     <span>{{ counterDisplay.seconds }}</span>
                     <!-- {{ fireRate }} -->
                 </div>
-                <div v-if="!showStakeButton" class="absolute-bottom">
+                <div v-if="!showStakeButton && stakeStateRef" class="absolute-bottom">
                     <span>
                         ~ {{ yieldRef.native?.toFixed(4) }} {{ ebCollection.info?.rewardSymbol }}
                     </span>
@@ -263,7 +263,7 @@ watchEffect(async () => {
                         @click="handleRedeemRewards(nft, ebCollection, true)" />
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
-                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info.rewardSymbol}` : void 0"
+                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info.rewardSymbol}` : 'Redeem Tokens'"
                         @click="handleRedeemRewards(nft, ebCollection, false)" />
 
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
@@ -322,4 +322,6 @@ watchEffect(async () => {
     height: 400px;
     overflow-y: auto;
 }
+
+
 </style>

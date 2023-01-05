@@ -27,6 +27,14 @@ router.post("/new", async (req, res) => {
     }
 })
 
+router.post('style/add/:pda', async (req, res) => {
+    const { pda } = req.params;
+    const { wallet, style } = req.body;
+    const { status, response } = await CC.addStyle(pda, wallet, style);
+    res.status(status).send(response);
+
+})
+
 router.get('/hashlist/:pda', async (req, res) => {
     const { pda } = req.params;
     console.log(pda);

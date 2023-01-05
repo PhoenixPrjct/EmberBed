@@ -9,25 +9,39 @@ import { CollectionRewardInfoJSON } from "src/types"
 //             hashlist: []
 // }
 
+type CollectionStyle = {
+    icon: string,
+    colors: {
+        primary: string,
+        secondary: string,
+        accent: string
+    }
+}
+
+
 interface CollectionFile {
     pda: string;
     manager: string;
     hashlist: string[];
+    style?: CollectionStyle;
 }
 
 class CollectionFile {
     pda: string;
     manager: string;
     hashlist: string[];
-    constructor(pda: string, manager: string, hashlist: string[]) {
+    style?: CollectionStyle;
+
+    constructor(pda: string, manager: string, hashlist: string[], style?: CollectionStyle) {
         this.pda = pda;
         this.manager = manager;
         this.hashlist = hashlist;
+        this.style = style;
     }
 
-    static toDB(pda: string, manager: string, hashlist: string[]) {
+    static toDB(pda: string, manager: string, hashlist: string[], style?: CollectionStyle) {
         const cleanedHashlist = hashlist.map(hash => hash.trim())
-        const data = { manager: manager, hashlist: cleanedHashlist };
+        const data = { manager: manager, hashlist: cleanedHashlist, style: style };
         writeFileSync(
             join(__dirname, '../collections', pda + '.json'),
             JSON.stringify(data)
@@ -120,5 +134,28 @@ export const CC = {
             console.log(err);
             return { status: 500, err };
         }
+    },
+    addStyle: async (pda: string, wallet: string, style: CollectionStyle) => {
+        try {
+
+            const files = await readdirSync(join(__dirname, `../collections`));
+            if (files.includes(pda + '.json')) {
+                const fileContents = await readFileSync(
+                    join(__dirname, `../collections/${pda}.json`),
+                    'utf-8'
+                );
+
+                const collectionFile = JSON.parse(fileContents) as CollectionFile;
+                if (collectionFile.manager !== wallet) throw new Error('Not Your Collection to Be Styling Dog.')
+                collectionFile.style = style
+                CollectionFile.toDB(pda, collectionFile.manager, collectionFile.hashlist, collectionFile.style);
+            }
+            return { status: 200, response: 'Style added' };
+
+        } catch (err: any) {
+            console.log(err);
+            return { status: 500, response: err.message };
+        }
     }
+
 }
