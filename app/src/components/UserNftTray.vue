@@ -305,8 +305,12 @@ small {
 }
 
 @media screen and (min-width:1200px) {
+    .nft-card-container {
+        justify-content: center;
+    }
+
     .nft-card {
-        flex: 0 0 10%;
+        flex: 0 0 15%;
     }
 
 }

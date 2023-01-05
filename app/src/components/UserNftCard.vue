@@ -278,12 +278,12 @@ watchEffect(async () => {
                         style="flex:0 0 90%" label="Stake" @click="handleStakeNft(nft, ebCollection)" />
                     <!-- <q-btn dark label="Check PDA" @click="checkPDA()" /> -->
 
+
+
+
                 </q-card-actions>
             </div>
-            <q-card-actions>
-                <q-btn flat class='refresh-btn' dark icon="refresh" @click="getStakeState(nft)" />
-
-            </q-card-actions>
+            <q-btn flat class='refresh-btn' dark icon="refresh" @click="getStakeState(nft)" />
         </q-card-section>
     </q-card>
 
@@ -311,10 +311,11 @@ watchEffect(async () => {
 
 .action-btn {
     flex: 0 0 100%;
-    max-width: 200px
+    // max-width: 200px
 }
 
 .refresh-btn {
+    flex: 0 0 100%;
     color: $dirtyFont;
 }
 
@@ -322,6 +323,4 @@ watchEffect(async () => {
     height: 400px;
     overflow-y: auto;
 }
-
-
 </style>

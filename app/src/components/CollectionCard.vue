@@ -2,12 +2,13 @@
 import { PublicKey } from '@solana/web3.js';
 import { computedAsync } from '@vueuse/core';
 import { useChainAPI } from 'src/api/chain-api';
+import { useServerAPI } from 'src/api/server-api';
 import * as types from 'src/types';
 import { PhoenixRelationKind } from 'src/types';
 import { ref, watchEffect } from 'vue'
 import { CopyClick, camelCaseToTitleCase } from 'src/helpers';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
-import { AddHashList } from 'src/components'
+import { AddHashList, AddStyleDialog } from 'src/components'
 import { useRouter } from 'vue-router';
 
 type PR =
@@ -20,18 +21,34 @@ type PR =
     | types.PhoenixRelation.None
 
 const router = useRouter();
+const { server_api } = useServerAPI();
 const { notify } = useQuasar();
 const dialogShow = ref(false);
 const hashListCardView = ref(false);
+const styleCardView = ref(false);
+const styleReady = ref(false);
 const { connection, wallet } = useChainAPI();
 const { CollectionRewardInfo } = types
 const props = defineProps<{ collectionRewardPDA: PublicKey }>()
+const collectionStyle = ref<types.DBCollectionInfo['style']>();
 const collectionRewardPDA = ref(props.collectionRewardPDA)
 const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(connection, collectionRewardPDA.value), null);
 const collectionInfo = ref(_collectionInfo.value?.toJSON())
-watchEffect(() => {
+watchEffect(async () => {
     if (!collectionInfo.value && _collectionInfo.value) {
         collectionInfo.value = _collectionInfo.value.toJSON();
+    }
+    if (props.collectionRewardPDA) {
+        const dbCollectionInfo: Promise<types.DBCollectionInfo> = await server_api.collection.get.one(props.collectionRewardPDA.toBase58())
+        const styleInfo = await (await dbCollectionInfo).style
+        if (!styleInfo) {
+            collectionStyle.value = { icon: '', colors: { primary: '#14f195', secondary: '#9945FF', accent: '#88888' } }
+        } else {
+            collectionStyle.value = (await dbCollectionInfo).style
+        }
+    }
+    if (collectionStyle.value) {
+        styleReady.value = true;
     }
 })
 function isPK(v: any): boolean {
@@ -102,6 +119,7 @@ function handleCollectionRouteClick(pda: string) {
     router.push(`/c/${pda}`)
 }
 
+
 </script>
 <template>
     <q-card class="collection-card" dark v-if="!collectionInfo">
@@ -159,7 +177,7 @@ function handleCollectionRouteClick(pda: string) {
                         {{ collectionRewardPDA.toBase58() }}
                     </div>
                 </q-item-label>
-                <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
+                <q-tooltip>Copy Full Address to Clipboard</q-tooltip>
             </q-item>
         </q-list>
         <q-card-actions class="flex justify-between">
@@ -198,11 +216,16 @@ function handleCollectionRouteClick(pda: string) {
             <q-card-actions
                 v-if="collectionInfo?.manager == wallet.publicKey.toBase58() && collectionInfo?.collectionName && collectionRewardPDA">
                 <q-btn dark label="Add Hashlist" @click="handleAddHashlistClick()" />
+                <q-btn dark label="Customization" :disable="!styleReady" @click="styleCardView = true" />
             </q-card-actions>
         </q-card>
     </q-dialog>
     <q-dialog v-model="hashListCardView" fullWidth>
         <AddHashList :pda="collectionRewardPDA.toBase58()" :collectionName="collectionInfo!.collectionName" />
+    </q-dialog>
+    <q-dialog v-model="styleCardView" full-width>
+        <AddStyleDialog :pda="collectionRewardPDA.toBase58()" :collectionName="collectionInfo!.collectionName"
+            :style="collectionStyle!" />
     </q-dialog>
 </template>
 <style lang="scss" scoped>

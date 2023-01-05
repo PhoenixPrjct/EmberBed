@@ -1,8 +1,15 @@
 {
     "manager": "DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q",
-    "name": "TestEyes",
     "hashlist": [
         "EeRVFaFuu91ntQFwoDDTBEL4TU9ZHdzvjsAMGKhx6qK4",
         "B2vPYLHVmVrbJHZnDtA6oUGUS429czJkAvitFaW11VLR"
-    ]
+    ],
+    "style": {
+        "icon": "",
+        "colors": {
+            "primary": "#f213d1",
+            "secondary": "#9945FF",
+            "accent": "#e30909"
+        }
+    }
 }

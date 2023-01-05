@@ -7,6 +7,8 @@ import type {
     WalletNotConnectedError, MessageSignerWalletAdapterProps, SignerWalletAdapterProps, WalletAdapterProps
 } from "@solana/wallet-adapter-base";
 import { Ref } from "vue";
+import { writeFileSync } from "fs";
+import { join } from "path";
 
 export * from './accounts'
 export * from './errors'
@@ -249,4 +251,34 @@ export interface NewCollectionResponse {
     reward_mint?: string | undefined;
     reward_wallet?: string | undefined;
     paid_sig?: string | undefined;
+}
+
+export type CollectionStyle = {
+    icon: string,
+    colors: {
+        primary: string,
+        secondary: string,
+        accent: string
+    }
+}
+
+
+export interface CollectionFile {
+    pda: string;
+    manager: string;
+    hashlist: string[];
+    style?: CollectionStyle;
+}
+
+export class CollectionFile {
+    pda: string;
+    manager: string;
+    hashlist: string[];
+    style?: CollectionStyle;
+    constructor(pda: string, manager: string, hashlist: string[], style?: CollectionStyle) {
+        this.pda = pda;
+        this.manager = manager;
+        this.hashlist = hashlist;
+        this.style = style;
+    }
 }

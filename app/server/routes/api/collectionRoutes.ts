@@ -27,9 +27,9 @@ router.post("/new", async (req, res) => {
     }
 })
 
-router.post('style/add/:pda', async (req, res) => {
-    const { pda } = req.params;
-    const { wallet, style } = req.body;
+router.post('/style/add', async (req, res) => {
+    console.log('Adding Style')
+    const { wallet, pda, style } = req.body;
     const { status, response } = await CC.addStyle(pda, wallet, style);
     res.status(status).send(response);
 
