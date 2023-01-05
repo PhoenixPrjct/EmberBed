@@ -1,28 +1,35 @@
 <script lang="ts" setup>
 import axios from 'axios';
-import { useQuasar } from 'quasar';
+import { QBtn, QCard, QCardSection, QLinearProgress, QSpinner, useQuasar } from 'quasar';
 import { useChainAPI } from 'src/api/chain-api';
 import { getNftsInWallet } from 'src/helpers/nftUtils';
-import { ref, watchEffect, getCurrentInstance } from 'vue';
-import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo, EBNft, StakeAccounts, StakeStateJSON, UnstakeAccounts, UserStakeInfo, UserStakeInfoJSON } from "src/types";
+import { ref, watchEffect, getCurrentInstance, computed } from 'vue';
+import {
+    CollectionRewardInfo, RedeemRewardAccounts,
+    CollectionRewardInfoJSON, DBCollectionInfo, EBNft,
+    StakeAccounts, StakeStateJSON, StakeStateKind, UnstakeAccounts,
+    UserStakeInfo, UserStakeInfoJSON
+} from "src/types";
 import UserNftCard from "src/components/UserNftCard.vue"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { PublicKey, SystemProgram } from '@solana/web3.js';
 import { chargeFeeTx, getStakingFee } from 'src/helpers';
+import { computedAsync } from '@vueuse/core';
 
 const { notify } = useQuasar();
+
 const { api, connection } = useChainAPI();
 const props = defineProps<{
     colPda: string | null
     theme: DBCollectionInfo["style"] | null
 }>();
-
-const stakeStateRef = ref<{ info: UserStakeInfoJSON, loaded: boolean }>({ loaded: false, info: null as unknown as UserStakeInfoJSON });
+const instance = getCurrentInstance();
+const userStakeInfoRef = ref<{ info: UserStakeInfoJSON, loaded: boolean }>({ loaded: false, info: null as unknown as UserStakeInfoJSON });
 
 const { wallet } = useChainAPI();
 const nfts = ref({ loading: true, loaded: false, ebNfts: <EBNft[]>[], otherNfts: <EBNft[]>[] })
-const stakingAction = ref<{ message: string, percent: number }>({ message: '', percent: 0 })
+const stakingAction = ref<{ message: string, percent: number }>({ message: 'No Message', percent: 0 })
 
 
 
@@ -33,11 +40,11 @@ const stakingAction = ref<{ message: string, percent: number }>({ message: '', p
 
 async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) {
     try {
-        stakingAction.value = { message: 'Getting Accounts', percent: 10 }
+        stakingAction.value = { message: 'Getting Accounts', percent: .1 }
         const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint });
         console.log(`StatePDA ${accounts?.statePDA} | ebCollection ${nft.ebCollection}`)
         if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
-        stakingAction.value = { message: 'Accounts All Good, calling EmberBed Program', percent: 50 }
+        stakingAction.value = { message: 'Accounts All Good, calling EmberBed Program', percent: .5 }
         const stakeAccts: StakeAccounts = {
             user: wallet.value.publicKey,
             userRewardAta: accounts.userRewardAta,
@@ -53,12 +60,13 @@ async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Colle
             systemProgram: SystemProgram.programId,
         }
         console.log(`Staking ${nft.mint}`)
+        stakingAction.value = { message: 'Staking NFT', percent: .8 }
         const stakeTx = await api.value?.stake(stakeAccts)
         if (!stakeTx) throw new Error('TX Failed, Please Refresh The Page');
-        stakingAction.value = { message: 'Staking Complete', percent: 90 }
+        await setTimeout(() => { console.log('...') }, 2000)
         // console.log(`https://explorer.solana.com/tx/${stakeTx.tx}?cluster=devnet`)
         // refreshStakeState(nft)
-        stakingAction.value = { message: 'Refreshing UI', percent: 100 }
+        stakingAction.value = { message: 'Staking Complete', percent: 1 }
         notify({
             group: 'staking',
             type: 'success',
@@ -70,6 +78,8 @@ async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Colle
 
         })
         stakingAction.value = { message: '', percent: 0 }
+        // stakeStateRef.value.info.stakeState.kind = stakeTx.stakeStatus?.kind ? stakeTx.stakeStatus.kind : 'Staked'
+        return
     } catch (err: any) {
         stakingAction.value = { message: '', percent: 0 }
         notify({
@@ -89,7 +99,7 @@ async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Colle
 async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) {
     try {
         if (!ebCollection.info) throw new Error('Colletion not loaded')
-        stakingAction.value = { message: 'Unstaking NFT', percent: 10 }
+        stakingAction.value = { message: 'Unstaking NFT', percent: .1 }
         const feeAmount = await getStakingFee(ebCollection.info.phoenixRelation.kind)
         const paidTx = await chargeFeeTx(wallet.value.publicKey, feeAmount);
         if (!paidTx.success) throw new Error('Unstaking Fee TX Failed')
@@ -97,7 +107,8 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
         console.log(`Unstaking ${nft.name}`)
         const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint })
         if (!accounts) throw new Error('Accounts Not Validated')
-        stakeStateRef.value.loaded = false;
+        stakingAction.value.percent = 2.5;
+        userStakeInfoRef.value.loaded = false;
         const unstakeAccts: UnstakeAccounts = {
             user: wallet.value.publicKey,
             nftAta: accounts.nftTokenAddress,
@@ -110,26 +121,30 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
             metadataProgram: METADATA_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
         }
-        stakingAction.value = { message: 'Accounts All Good', percent: 50 }
-        const tx = await (await api.value?.unstake(unstakeAccts))?.tx
-        if (!tx) throw new Error('Transaction Failed')
-        stakingAction.value = { message: 'NFT Unstaked', percent: 90 }
-        console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
-        stakingAction.value = { message: 'Refreshing UI', percent: 100 }
+        stakingAction.value = { message: 'Accounts All Good', percent: .5 }
+        const unstakeTx = await (await api.value?.unstake(unstakeAccts))
+        if (!unstakeTx?.tx) throw new Error('Transaction Failed')
+        stakingAction.value = { message: 'NFT Unstaked', percent: .9 }
+        console.log(`https://explorer.solana.com/tx/${unstakeTx.tx}?cluster=devnet`)
+        stakingAction.value = { message: 'Refreshing UI', percent: 1 }
         notify({
             group: 'staking',
             type: 'success',
             icon: 'grade',
             color: 'accent',
             message: `Successfully unstaked ${nft.name}`,
-            caption: `https://explorer.solana.com/tx/${tx}?cluster=devnet`,
+            caption: `https://explorer.solana.com/tx/${unstakeTx.tx}?cluster=devnet`,
             position: 'top'
 
         })
 
         stakingAction.value = { message: '', percent: 0 }
+        // stakeStateRef.value.info.stakeState.kind = unstakeTx.stakeState?.kind ? unstakeTx.stakeState.kind : 'Unstaked'
+
+        return
     } catch (err: any) {
         stakingAction.value = { message: '', percent: 0 }
+
         notify({
             group: 'staking',
             type: 'error',
@@ -137,14 +152,61 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
             color: 'error',
             message: `Failed to unstake ${nft.name}`,
             caption: `${err.message}`,
-            position: 'top'
+            position: 'top',
+            timeout: 10000
         })
-
+        return
     }
-    return
 }
 
+async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) {
+    console.log(ebCollection.info.rewardMint.toBase58())
+    try {
+        if (!ebCollection.info) throw new Error('Collection Data is Incorrect, Please Refresh and try again')
+        const amount = (timeStaked / 86400) * ebCollection.info.ratePerDay
+        stakingAction.value = { message: 'Accounts Checkout', percent: 0.25 }
+        const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint });
+        if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
+        const redeemAccts: RedeemRewardAccounts = {
+            ...accounts,
+            user: wallet.value.publicKey,
+            collectionRewardInfo: accounts.statePDA,
+            stakeStatus: accounts.stakeStatusPda,
+            rewardMint: accounts.RewTok,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId
+        }
+        const bumpState = accounts.stateBump
+        const collectionName = ebCollection.info.collectionName
+        stakingAction.value = { message: `Redeeming  ${amount.toFixed(4)} ${ebCollection.info.rewardSymbol}`, percent: 0.75 }
+        const redeemTx = await api.value?.redeemReward(redeemAccts, collectionName, bumpState);
+        if (!redeemTx) throw new Error('TX Failed, Please Refresh The Page');
+        stakingAction.value = { message: `Complete`, percent: 1 }
+        notify({
+            message: `Redeemed ${ebCollection.info.rewardSymbol}`,
+            caption: `https://explorer.solana.com/tx/${redeemTx}?cluster=devnet`,
+            type: 'success',
+            position: 'top',
+            timeout: 10000
+        })
+        stakingAction.value = { message: '', percent: 0 }
+        return true
+    } catch (err: any) {
+        stakingAction.value = { message: '', percent: 0 }
+        console.error(err)
+        notify({
+            group: 'staking',
+            type: 'error',
+            icon: 'error',
+            color: 'error',
+            message: `Failed to redeem ${ebCollection?.info?.rewardSymbol || 'Token'}`,
+            caption: `${err.message}`,
+            position: 'top'
+        })
+        return false;
+    }
 
+}
 
 watchEffect(async () => {
     if (!nfts.value.loaded) {
@@ -168,37 +230,39 @@ watchEffect(async () => {
 </script>
 <template>
     <div v-if="nfts.loading && stakingAction.percent == 0">
-        <q-spinner />
+        <q-spinner size="5rem" />
     </div>
     <q-card dark v-if="stakingAction.percent !== 0">
         <q-card-section class="staking-action">
-            <q-card-section>
-                <pre class="text-center">
+            <q-card-section class="text-center text-h5">
                 {{ stakingAction.message }}
-                </pre>
             </q-card-section>
-            {{ stakingAction.percent }}
             <q-card-section>
-                <q-linear-progress size="25px" :value="stakingAction.percent" color="accent" class="q-mt-sm" />
+                <q-linear-progress dark size="2rem" :value="stakingAction.percent" color="accent"
+                    class="q-mt-sm special">
+                    <div class="absolute-full flex flex-center">
+                        <q-badge color="white" text-color="accent" :label="`${stakingAction.percent * 100} %`" />
+                    </div>
+                </q-linear-progress>
             </q-card-section>
         </q-card-section>
     </q-card>
-    <div v-else>
+    <div>
         <div class="eligible nft-card-container">
-            <section v-if="!nfts.ebNfts.length">
+            <section v-if="nfts.loaded && !nfts.ebNfts.length">
                 <h5>
-                    You are not holding any NFTs for this Collection.
+                    You are not holding any NFTs eligible for staking.
                 </h5>
                 <small> . . . at least not in the connected wallet.</small>
                 <div style="margin:1rem auto">
                     <q-btn push label="Go Back" @click="$router.push('/user/')" />
                 </div>
             </section>
-            <section v-if="stakingAction.percent == 0">
+            <section class="nft-card-container" v-if="nfts.ebNfts.length && stakingAction.percent == 0">
                 <div v-for="nft in nfts.ebNfts" :key="nft.mint" class="nft-card"
                     :style="theme ? `box-shadow: 0px 0px 12px 0px ${theme.colors.primary}` : `box-shadow: 0px 0px 12px 0px #ffff`">
-                    <UserNftCard :nft="nft" :eligible="true" :stakeNft="stakeNft" :stakingAction="stakingAction"
-                        :unstakeNft="unstakeNft" />
+                    <UserNftCard :nft="nft" :eligible="true" :stakeNft="stakeNft" :unstakeNft="unstakeNft"
+                        :redeem="redeem" />
                 </div>
             </section>
 
@@ -222,7 +286,6 @@ small {
 }
 
 .nft-card-container {
-
     display: flex;
     flex-flow: row wrap;
     justify-content: space-around;
@@ -230,15 +293,13 @@ small {
     gap: 1.25rem 1.25rem;
     height: 100%;
     width: 100%;
-    padding: 3rem;
-    margin: 2rem;
+    padding: 2rem;
+    margin: 1rem;
 }
 
 .nft-card {
-    max-width: 50%;
-    max-height: 50%;
-    min-width: 200px;
-    min-height: 200px;
-    flex: 0 0 200px;
+    flex: 0 0 50%;
+    max-width: 400px;
+    min-width: 320px
 }
 </style>

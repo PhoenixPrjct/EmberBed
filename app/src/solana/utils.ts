@@ -4,7 +4,7 @@ import { EmberBed } from './types/ember_bed';
 import { PublicKey, Keypair, SystemProgram, Transaction, BlockheightBasedTransactionConfirmationStrategy } from '@solana/web3.js';
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, createAssociatedTokenAccount } from "@solana/spl-token"
 import web3 = anchor.web3;
-import { Accounts, AnchorWallet, CollectionInfo, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind } from '../types'
+import { Accounts, AnchorWallet, CollectionInfo, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind, RedeemRewardAccounts } from '../types'
 import { devKP } from './wallets/devWallet'
 import { fundKP } from './wallets/fundWallet';
 import {
@@ -42,7 +42,7 @@ export function getAPI(program: Program<EmberBed>) {
             [RewTok.toBuffer(), Buffer.from(collectionName), Buffer.from("state")],
             program.programId
         );
-        console.log({ PDA: pda.toBase58() })
+        // console.log({ PDA: pda.toBase58() })
         return { pda, bump };
     }
 
@@ -125,8 +125,6 @@ export function getAPI(program: Program<EmberBed>) {
 
     async function getAccounts(data: { user: web3.PublicKey, collectionName: string, rewardMint: string, nftMint?: string, nftColAddress?: string, }): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
-
-        console.log(data.collectionName, data.rewardMint, data.nftMint)
         const RewTok: PublicKey = new PublicKey(data.rewardMint);
         let nftAccounts = {};
         let mintAddress, nft, delegatedAuthPda,
@@ -277,7 +275,6 @@ export function getAPI(program: Program<EmberBed>) {
     async function stake(data: StakeAccounts): Promise<{ tx: string, stakeStatus: StakeStateJSON | null }> {
         // const accounts = await getAccounts({ user, collectionName, rewardMint: nftMint })
         const { collectionRewardInfo } = data
-        console.log({ collectionRewardInfo })
         const tx = await program.methods.stake(collectionRewardInfo)
             .accounts({ ...data })
             .signers([])
@@ -293,23 +290,33 @@ export function getAPI(program: Program<EmberBed>) {
     async function redeemFire() {
         console.log('Hey')
     };
-    async function redeemReward() {
-        console.log('Hey')
+    async function redeemReward(accounts: RedeemRewardAccounts, collectionName: string, bumpState: number) {
+
+        const rewardTxPromise = program.methods.redeemReward(bumpState, collectionName)
+            .accounts({ ...accounts })
+        const rewardTx = await rewardTxPromise
+        const sig = await rewardTx.rpc();
+
+        console.log("Redeem tx:")
+        console.log(`https://explorer.solana.com/tx/${sig}?cluster=devnet`)
+        return sig;
+
     };
     async function unstake(accounts: UnstakeAccounts): Promise<{ tx: string, stakeState: StakeStateJSON | null }> {
-        console.log('Unstaking NFT:', accounts.nftMintAddress.toBase58());
-        console.log("Delegated Authority:", accounts.programAuthority.toBase58());
-        console.log("SystemProgram:", SystemProgram.programId.toBase58());
-        console.log("Token Program:", TOKEN_PROGRAM_ID.toBase58());
-        console.log("Delegated Authority", accounts.programAuthority.toBase58());
-        console.log("Stake Status", accounts.stakeStatus.toBase58());
+        // console.log('Unstaking NFT:', accounts.nftMintAddress.toBase58());
+        // console.log("Delegated Authority:", accounts.programAuthority.toBase58());
+        // console.log("SystemProgram:", SystemProgram.programId.toBase58());
+        // console.log("Token Program:", TOKEN_PROGRAM_ID.toBase58());
+        // console.log("Delegated Authority", accounts.programAuthority.toBase58());
+        // console.log("Stake Status", accounts.stakeStatus.toBase58());
         const unstakeTxPromise = program.methods.unstake().accounts({
-            user: accounts.user,
-            nftAta: accounts.nftAta,
-            nftMintAddress: accounts.nftMintAddress,
-            nftEdition: accounts.nftEdition,
-            stakeStatus: accounts.stakeStatus,
-            programAuthority: accounts.programAuthority,
+            ...accounts,
+            // user: accounts.user,
+            // nftAta: accounts.nftAta,
+            // nftMintAddress: accounts.nftMintAddress,
+            // nftEdition: accounts.nftEdition,
+            // stakeStatus: accounts.stakeStatus,
+            // programAuthority: accounts.programAuthority,
             // *SYSTEM Variables
             tokenProgram: TOKEN_PROGRAM_ID,
             metadataProgram: METADATA_PROGRAM_ID,
@@ -318,7 +325,7 @@ export function getAPI(program: Program<EmberBed>) {
         // console.log("Unstake tx:")
         // console.log(`https://explorer.solana.com/tx/${unstakeTx}?cluster=devnet`)
         const unstakeTx = await unstakeTxPromise;
-        // if (!unstakeTx) throw new Error(unstakeTxPromise.view()
+        // if (!unstakeTx) throw new Error('Promise Error')
         const sig = await unstakeTx.rpc();
         console.log("Signature:", sig)
         const stakeStatus = await (await UserStakeInfo.fetch(connection, accounts.stakeStatus))?.toJSON()

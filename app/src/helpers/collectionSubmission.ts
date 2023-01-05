@@ -71,8 +71,8 @@ export function getStakingFee(kind: string) {
 
 
 export async function chargeFeeTx(user: PublicKey, amount: number) {
-    if (!user) return { error: 'No public key provided, did you connect your wallet?' }
-    alert(`Initialization Fee = ${amount * LAMPORTS_PER_SOL} SOL`);
+    if (!user) throw new Error('No public key provided, did you connect your wallet?')
+    console.log(`Initialization Fee = ${amount} SOL`);
     const PhoenixWallet = new PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB')
     try {
         const latestBlockHash = await connection.getLatestBlockhash();
