@@ -26,19 +26,19 @@ pub mod ember_bed {
 
     use super::*;
 
-    pub fn staking_fee(ctx: Context<StakingFee>) -> Result<()> {
-        let amount = 50000 as u64;
+    // pub fn staking_fee(ctx: Context<StakingFee>) -> Result<()> {
+    //     let amount = 50000 as u64;
 
-        let cpi_context = CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            system_program::Transfer {
-                from: ctx.accounts.from.to_account_info().clone(),
-                to: ctx.accounts.to.to_account_info().clone(),
-            }
-        );
-        system_program::transfer(cpi_context, amount)?;
-        Ok(())
-    }
+    //     let cpi_context = CpiContext::new(
+    //         ctx.accounts.system_program.to_account_info(),
+    //         system_program::Transfer {
+    //             from: ctx.accounts.from.to_account_info().clone(),
+    //             to: ctx.accounts.to.to_account_info().clone(),
+    //         }
+    //     );
+    //     system_program::transfer(cpi_context, amount)?;
+    //     Ok(())
+    // }
     pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
         msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("Staking Program Invoked");
@@ -48,7 +48,7 @@ pub mod ember_bed {
         }
 
         // Get Clock
-        let timestamp = Clock::get().unwrap();
+        let timestamp = Clock::get().unwrap().unix_timestamp;
         // Cross Program Invocation to Approve Delegation
         let token_program_cpi_approve_program = ctx.accounts.token_program.to_account_info();
         let token_program_cpi_approve_accounts = Approve {
@@ -84,8 +84,8 @@ pub mod ember_bed {
             &[&[b"authority", &[auth_bump]]]
         )?;
 
-        ctx.accounts.stake_status.stake_start_time = timestamp.unix_timestamp;
-        ctx.accounts.stake_status.last_stake_redeem = timestamp.unix_timestamp;
+        ctx.accounts.stake_status.stake_start_time = timestamp;
+        ctx.accounts.stake_status.last_stake_redeem = timestamp;
 
         // if !ctx.accounts.stake_status.is_initialized {
         // ctx.accounts.user_account_pda.user = ctx.accounts.user.key();
@@ -138,7 +138,7 @@ pub mod ember_bed {
         }
         let user_reward_ata = ctx.accounts.user_reward_ata.key();
         msg!("Bump State: {:?}", bump_state);
-        let timestamp = Clock::get().unwrap();
+        let timestamp = Clock::get().unwrap().unix_timestamp;
         let stake_status = &ctx.accounts.stake_status;
         let state = &ctx.accounts.collection_reward_info;
         let reward_wallet = &ctx.accounts.reward_wallet.to_account_info();
@@ -162,12 +162,12 @@ pub mod ember_bed {
         msg!(
             "Last Redeem: {:?} \n\n Now: {:?} \n\n Rate per second: {:?}, Raw rate_per_second: {:?}",
             stake_status.last_stake_redeem,
-            timestamp.unix_timestamp,
+            timestamp,
             rate_per_second,
             raw_rate_per_second
         );
-        let staked_duration = (timestamp.unix_timestamp - stake_status.last_stake_redeem) as u64;
-        if timestamp.unix_timestamp == 0 || stake_status.last_stake_redeem == 0 {
+        let staked_duration = (timestamp - stake_status.last_stake_redeem) as u64;
+        if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
             ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
             return Ok(());
@@ -189,8 +189,8 @@ pub mod ember_bed {
         msg!("Start transfer");
         anchor_spl::token::transfer(cpi_ctx, rewards_earned)?;
         msg!("Successfully Transferred");
-        ctx.accounts.stake_status.last_stake_redeem = timestamp.unix_timestamp;
-        msg!("Last Redeem Set to {}", timestamp.unix_timestamp);
+        ctx.accounts.stake_status.last_stake_redeem = timestamp;
+        msg!("Last Redeem Set to {}", timestamp);
         Ok(())
     }
 
@@ -325,7 +325,7 @@ pub mod ember_bed {
         _fire_eligible: bool,
         _phoenix_collection_relation: String
     ) -> Result<()> {
-        if _ctx.accounts.funder.key() != _ctx.accounts.state_pda.manager.key() {
+        if _ctx.accounts.funder.key() != _ctx.accounts.state_pda.manager.key() && _ctx.accounts.funder.key().to_string() != PHOENIX_ADMIN_WALLET{
             msg!("Not Your Account Bruh.");
             return err!(AdminError::IncorrectManagingAccount);
         }
@@ -496,7 +496,7 @@ pub mod ember_bed {
         let fire_info = &ctx.accounts.fire_info;
         let stake_status = &ctx.accounts.stake_status;
         let user_reward_ata = &ctx.accounts.user_reward_ata;
-        let timestamp = Clock::get().unwrap();
+        let timestamp = Clock::get().unwrap().unix_timestamp;
         let fire_poa = &ctx.accounts.fire_poa;
         // let fire_collection_name = &fire_info.collection_name;
         let fire_mint = get_fire_token();
@@ -533,12 +533,12 @@ pub mod ember_bed {
         msg!(
             "Last Redeem: {:?} \n\n Now: {:?} \n\n Rate per second: {:?}, Raw rate_per_second: {:?}",
             stake_status.last_stake_redeem,
-            timestamp.unix_timestamp,
+            timestamp,
             rate_per_second,
             raw_rate_per_second
         );
-        let staked_duration = (timestamp.unix_timestamp - stake_status.last_stake_redeem) as u64;
-        if timestamp.unix_timestamp == 0 || stake_status.last_stake_redeem == 0 {
+        let staked_duration = (timestamp - stake_status.last_stake_redeem) as u64;
+        if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
             ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
             return Ok(());
@@ -567,7 +567,7 @@ pub mod ember_bed {
         ).with_signer(signer);
         anchor_spl::token::transfer(cpi_ctx, rewards_earned)?;
         msg!("Successfully Transferred");
-        ctx.accounts.stake_status.last_stake_redeem = timestamp.unix_timestamp;
+        ctx.accounts.stake_status.last_stake_redeem = timestamp;
         msg!("Last Redeem Set to {}", ctx.accounts.stake_status.last_stake_redeem);
         Ok(())
     }

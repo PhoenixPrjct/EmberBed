@@ -363,7 +363,7 @@ describe("EmberBed", async () => {
         return true;
       }
     }
-    const tx = await program.methods.stake()
+    const tx = await program.methods.stake(statePDA)
       .accounts({
         user: UserWallet.publicKey,
         userRewardAta: userRewardAta,
