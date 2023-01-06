@@ -33,6 +33,7 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       'sw',
       'axios',
+      'store'
 
     ],
 
@@ -58,7 +59,7 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
       target: {
-        browser: ['es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
+        browser: ['es2022', 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
         node: 'node16'
       },
       alias: {
@@ -120,7 +121,7 @@ module.exports = configure(function (/* ctx */) {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Notify', 'Dialog']
+      plugins: ['Notify', 'Dialog', 'LocalStorage']
     },
 
     // animations: 'all', // --- includes all animations

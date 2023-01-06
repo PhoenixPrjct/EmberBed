@@ -1,5 +1,19 @@
 <script setup lang="ts">
+import { watch } from "fs";
 import { WalletMultiButton } from "solana-wallets-vue";
+import { useUserStore } from "src/stores/userStore";
+import { watchEffect, ComputedRef } from "vue";
+import { useRouter } from "vue-router";
+import { useWallet } from "solana-wallets-vue"
+import { WalletStore } from "src/types";
+import { WalletReadyState } from "@solana/wallet-adapter-base";
+const wallet = <WalletStore>useWallet();
+const router = useRouter();
+const { type, getType } = useUserStore();
+watchEffect(() => {
+    if (!wallet.connected.value) router.push('/');
+    if (type !== 'Admin') router.push('/');
+})
 </script>
 <template>
     <q-layout view="lHh Lpr lFf">
@@ -20,6 +34,7 @@ import { WalletMultiButton } from "solana-wallets-vue";
 
         </q-header>
         <q-page-container>
+            {{ type }} | {{ getType }}
             <router-view />
         </q-page-container>
 

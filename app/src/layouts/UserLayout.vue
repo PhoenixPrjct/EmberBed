@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { WalletMultiButton } from "solana-wallets-vue";
+import { useUserStore } from "src/stores/userStore";
 
+const store = useUserStore();
 </script>
 <template>
     <q-layout view="lHh Lpr lFf">
@@ -14,6 +16,7 @@ import { WalletMultiButton } from "solana-wallets-vue";
                         </span>
                     </q-btn>
                 </q-toolbar-title>
+                {{ store.userType }}
                 <q-space />
                 <wallet-multi-button dark />
             </q-toolbar>

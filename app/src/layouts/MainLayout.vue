@@ -1,8 +1,29 @@
 <script setup lang="ts">
-// import { ref } from 'vue';
+import { watchEffect, ComputedRef } from 'vue';
 // import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue';
 import { WalletMultiButton } from 'solana-wallets-vue';
+import { useRouter } from "vue-router";
+import { useWallet } from "solana-wallets-vue"
+import { WalletStore } from "src/types";
+import { useUserStore } from 'src/stores/userStore';
+const store = useUserStore();
+const wallet = <WalletStore>useWallet();
+const router = useRouter();
 const currentYear = new Date().getFullYear();
+
+watchEffect(() => {
+  if (wallet.connected.value && wallet.publicKey.value) {
+    store.setPk(wallet.publicKey.value.toBase58())
+    store.setType('User')
+  }
+  console.log(store.getType);
+  if (!wallet.connected.value) {
+    localStorage.clear();
+    store.setPk('')
+    store.setType(null)
+  }
+})
+
 
 
 </script>
@@ -10,6 +31,7 @@ const currentYear = new Date().getFullYear();
   <q-layout view="lHh Lpr lFf">
     <q-header elevated>
       <q-toolbar>
+        UserType? {{ store.$state.type }}
         <q-toolbar-title>
           <q-avatar square>
             <img src="@/assets/logo_only.png" alt="Logo">
@@ -17,10 +39,14 @@ const currentYear = new Date().getFullYear();
           </q-avatar>
           EmberBed
         </q-toolbar-title>
+        {{ store.getType }}
+
+        {{ store.type }}
         <WalletMultiButton dark />
       </q-toolbar>
     </q-header>
     <q-page-container>
+      {{ store }}
       <router-view />
     </q-page-container>
     <q-footer reveal class="center bg-transparent">

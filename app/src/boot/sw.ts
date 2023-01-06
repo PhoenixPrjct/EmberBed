@@ -26,7 +26,7 @@ export const walletOptions = {
 // more info on params: https://v2.quasar.dev/quasar-cli/boot-files
 export default boot(async ({ app }) => {
   // something to do
-  // initWallet(walletOptions);
+  initWallet(walletOptions);
   app.use(SolanaWallets, walletOptions);
 
 })

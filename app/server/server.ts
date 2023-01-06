@@ -19,7 +19,7 @@ require('dotenv').config();
 
 const corsOptions = {
     origin: "*",
-}
+};
 
 app.use(cors(corsOptions));
 app.use(bodyParser.text());

@@ -1,3 +1,7 @@
+import verifyWallet from './verifyWallet'
+
+export { verifyWallet }
+
 export { CopyClick } from './copyToClip'
 export { camelCaseToTitleCase } from './formattingTools'
 export { getSplList, getTokenInfo } from './splTokens'

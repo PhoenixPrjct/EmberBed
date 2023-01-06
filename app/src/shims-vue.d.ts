@@ -1,5 +1,5 @@
 /* eslint-disable */
-
+import { Pinia } from "pinia";
 /// <reference types="vite/client" />
 
 // Mocks all files ending in `.vue` showing them as plain Vue instances
@@ -10,4 +10,4 @@ declare module '*.vue' {
 }
 
 declare module '@/types'
-declare module 'solana-wallets-vue'
+declare module 'solana-wallets-vue';

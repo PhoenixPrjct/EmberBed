@@ -2,13 +2,15 @@
 import { WalletMultiButton } from "solana-wallets-vue";
 import { PublicKey } from '@solana/web3.js';
 import { useChainAPI } from 'src/api/chain-api';
-import { CollectionRewardInfo, CollectionRewardInfoJSON } from 'src/types';
-import { onBeforeMount, ref, watchEffect } from 'vue';
+import { CollectionRewardInfo, CollectionRewardInfoJSON, WalletStore } from 'src/types';
+import { onBeforeMount, ref, watchEffect, ComputedRef } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useServerAPI } from "src/api/server-api";
 import { DBCollectionInfo } from 'src/types'
+import { useUserStore } from "src/stores/userStore";
+import { useWallet } from "solana-wallets-vue";
 
-
+const wallet = <ComputedRef<WalletStore>>useWallet();
 const { connection, program } = useChainAPI()
 const { server_api } = useServerAPI();
 const router = useRouter();
@@ -26,6 +28,13 @@ onBeforeMount(async () => {
 })
 
 
+const store = useUserStore();
+watchEffect(() => {
+    if (!wallet.value.connected) router.push('/');
+    if (store.userType !== 'Admin' || 'User') router.push('/');
+})
+
+
 </script>
 <template>
     <q-layout view="lHh Lpr lFf">
@@ -33,7 +42,8 @@ onBeforeMount(async () => {
             <q-toolbar>
                 <q-toolbar-title style=" font-variant: small-caps;">
                     <q-btn dark flat to="/">
-                        <span style="color:#86008f; text-shadow: #000000 1px 1px 0, #ffff54 1px 1px 1.5px; letter-spacing: .15rem; ">
+                        <span
+                            style="color:#86008f; text-shadow: #000000 1px 1px 0, #ffff54 1px 1px 1.5px; letter-spacing: .15rem; ">
                             {{ pdaInfo?.collectionName }}
                         </span>
                     </q-btn>
@@ -50,5 +60,7 @@ onBeforeMount(async () => {
     </q-layout>
 </template>
 <style scoped lang="scss">
-*{color:#8f7091a2}
+* {
+    color: #8f7091a2
+}
 </style>
