@@ -41,19 +41,6 @@ async function handleCopyClick(value: string) {
     }
 }
 
-// async function getCollectionInfo(collectionName: string, rewardMint: string) {
-//     onChainInfo.value = null as unknown as CollectionRewardInfoJSON
-//     if (!api.value) return false;
-//     accounts.value = await api.value.getAccounts(wallet.value.publicKey, collectionName, rewardMint);
-//     collectionPDA.value = accounts.value.statePDA
-//     const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
-//     console.dir(accounts.value);
-//     const res = await CollectionRewardInfo.fetch(connection, collectionPDA.value);
-//     if (!res) return
-//     onChainInfo.value = res.toJSON()
-
-// }
-
 
 
 </script>
@@ -62,57 +49,6 @@ async function handleCopyClick(value: string) {
         <CollectionCard v-for="acct in collectionPDAs" :key="acct.publicKey.toBase58()"
             :collectionRewardPDA="acct.publicKey" />
     </div>
-    <!-- <q-card dark>
-        <q-item>
-            <q-item-section>
-                $FIRE Eligible:
-            </q-item-section>
-            <q-item-section>
-                {{ onChainInfo?.fireEligible }}
-            </q-item-section>
-        </q-item>
-        <q-item>
-            <q-item-section>
-                Phoenix Relation:
-            </q-item-section>
-            <q-item-section>
-                {{ onChainInfo.phoenixRelation.kind }}
-            </q-item-section>
-        </q-item>
-        <q-item>
-            <q-item-section>
-                Collection Info Address:
-            </q-item-section>
-            <q-item-section class="pubkey" @click="handleCopyClick(address.toBase58())">
-                {{ address.toBase58() }}
-                <q-tooltip>Click to Copy to &#x1F4CB;</q-tooltip>
-            </q-item-section>
-        </q-item>
-        <q-item>
-            <q-item-section>
-                Reward Wallet For {{ onChainInfo?.rewardSymbol }}:
-
-            </q-item-section>
-            <q-item-section class="pubkey" @click="handleCopyClick(onChainInfo.rewardWallet)">
-                {{ onChainInfo.rewardWallet }}
-                <q-tooltip>Click to Copy to &#x1F4CB;</q-tooltip>
-            </q-item-section>
-        </q-item>
-        <q-item>
-            <q-item-section>
-
-                Staking Rate Per Day :
-                <q-tooltip>
-
-                    For {{ onChainInfo.collectionName }} Holders
-                </q-tooltip>
-            </q-item-section>
-            <q-item-section>
-                {{ onChainInfo.ratePerDay }}
-            </q-item-section>
-        </q-item>
-    </q-card> -->
-
 </template>
 <style scoped>
 .collection-card--container {

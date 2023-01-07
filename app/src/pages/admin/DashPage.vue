@@ -6,7 +6,7 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { useChainAPI } from '../../api/chain-api';
 import axios from 'src/boot/axios';
-import { CollectionInfo, CollectionRewardInfo, Accounts, CollectionRewardInfoJSON, CollectionRewardInfoFields, PhoenixRelation } from '../../types';
+import { CollectionInfo, CollectionRewardInfo, Accounts, CollectionRewardInfoJSON, CollectionRewardInfoFields, PhoenixRelation, UserStakeInfo } from '../../types';
 
 import { CopyClick } from 'src/helpers';
 import CollectionOnChainInfo from 'src/components/CollectionContainer.vue';
@@ -44,9 +44,9 @@ const demoRewardMint = new PublicKey("REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpk
 
 // const nftMint = "B2vPYLHVmVrbJHZnDtA6oUGUS429czJkAvitFaW11VLR"
 watchEffect(async () => {
+    const walletString = wallet.value?.publicKey.toBase58()
     console.log(onChainInfo.value)
     if (!collectionPDAs.value?.length) {
-        const walletString = wallet.value.publicKey
         await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
             console.log(acct.account)
             if (acct.account.manager.toBase58() == walletString) {
@@ -60,39 +60,16 @@ watchEffect(async () => {
 async function getCollectionInfo(collectionName: string, rewardMint: string) {
     onChainInfo.value = null as unknown as CollectionRewardInfoJSON
     if (!api.value) return false;
-    accounts.value = await api.value.getAccounts({ user: wallet.value.publicKey, collectionName, rewardMint });
+    accounts.value = await api.value.getAccounts({ user: wallet.value!.publicKey, collectionName, rewardMint });
     const { RewTok, stateBump, statePDA, rewardWallet, funderTokenAta, userAccountPDA, userRewardAta, nftCollectionAddress } = accounts.value;
-    console.dir(accounts.value);
+
     const res = await CollectionRewardInfo.fetch(connection, statePDA);
     if (!res) return
-    console.dir(res.toJSON())
+
     onChainInfo.value = res.toJSON()
 
 }
 
-
-async function handleInitCollectionPDAClick() {
-    console.log(!!accounts.value)
-    if (wallet.publicKey && api.value) {
-        try {
-
-            const tx = (await api.value.initStatePda(wallet.publicKey, collectionInfo.value)).tx
-            if (!tx) {
-                throw new Error('Possible TX Failure')
-            }
-
-        } catch (err: any) {
-            console.log(err)
-            return $q.notify({
-                type: 'negative',
-                message: err.message,
-                timeout: 3000
-            })
-
-        }
-
-    }
-}
 async function handleCopyClick(e: any, v?: string) {
     e.target.innerText ?
         v = e.target.innerText :

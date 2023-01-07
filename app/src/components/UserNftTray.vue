@@ -6,16 +6,16 @@ import { getNftsInWallet } from 'src/helpers/nftUtils';
 import { ref, watchEffect, getCurrentInstance, computed } from 'vue';
 import {
     CollectionRewardInfo, RedeemRewardAccounts,
-    CollectionRewardInfoJSON, DBCollectionInfo, EBNft,
-    StakeAccounts, StakeStateJSON, StakeStateKind, UnstakeAccounts,
-    UserStakeInfo, UserStakeInfoJSON
+    DBCollectionInfo, EBNft,
+    StakeAccounts, UnstakeAccounts,
+    UserStakeInfoJSON
 } from "src/types";
 import UserNftCard from "src/components/UserNftCard.vue"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
-import { PublicKey, SystemProgram } from '@solana/web3.js';
+import { SystemProgram } from '@solana/web3.js';
 import { chargeFeeTx, getStakingFee } from 'src/helpers';
-import { computedAsync } from '@vueuse/core';
+
 
 const { notify } = useQuasar();
 
@@ -24,18 +24,12 @@ const props = defineProps<{
     colPda: string | null
     theme: DBCollectionInfo["style"] | null
 }>();
-const instance = getCurrentInstance();
-const userStakeInfoRef = ref<{ info: UserStakeInfoJSON, loaded: boolean }>({ loaded: false, info: null as unknown as UserStakeInfoJSON });
+
+// const userStakeInfoRef = ref<{ info: UserStakeInfoJSON, loaded: boolean }>({ loaded: false, info: null as unknown as UserStakeInfoJSON });
 
 const { wallet } = useChainAPI();
 const nfts = ref({ loading: true, loaded: false, ebNfts: <EBNft[]>[], otherNfts: <EBNft[]>[] })
 const stakingAction = ref<{ message: string, percent: number }>({ message: 'No Message', percent: 0 })
-
-
-
-
-
-
 
 
 async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) {
@@ -108,7 +102,7 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
         const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint })
         if (!accounts) throw new Error('Accounts Not Validated')
         stakingAction.value.percent = 2.5;
-        userStakeInfoRef.value.loaded = false;
+        // userStakeInfoRef.value.loaded = false;
         const unstakeAccts: UnstakeAccounts = {
             user: wallet.value.publicKey,
             nftAta: accounts.nftTokenAddress,
@@ -160,7 +154,6 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
 }
 
 async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) {
-    console.log(ebCollection.info.rewardMint.toBase58())
     try {
         if (!ebCollection.info) throw new Error('Collection Data is Incorrect, Please Refresh and try again')
         const amount = (timeStaked / 86400) * ebCollection.info.ratePerDay

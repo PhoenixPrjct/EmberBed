@@ -1,9 +1,9 @@
     
 <script setup lang="ts">
-import TestPage from 'src/components/TestPage.vue'
+import SplashPage from 'src/components/SplashPage.vue'
 </script>
 <template>
   <q-page class="row items-center justify-evenly">
-    <TestPage />
+    <SplashPage />
   </q-page>
 </template>

@@ -117,7 +117,6 @@ async function getStakeState(nft: EBNft) {
     try {
 
         const s = await api.value?.getStakeStatusPda(wallet.value.publicKey, nft.mint)
-
         if (!s) throw new Error('Failed to get stake status PDA')
         const { pda } = s
         const status = await UserStakeInfo.fetch(connection, pda)

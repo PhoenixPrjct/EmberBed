@@ -4,6 +4,7 @@ import { AnchorWallet, WalletStore } from "src/types";
 import { useUserStore } from "src/stores/userStore";
 import { ComputedRef } from "vue";
 import { sign } from 'tweetnacl'
+import { publicKey } from "@project-serum/anchor/dist/cjs/utils";
 
 const store = useUserStore();
 const wallet = <WalletStore>useWallet();
@@ -26,8 +27,13 @@ export default async (pKey: PublicKey) => {
         // Verify that the bytes were signed using the private key that matches the known public key
         if (!sign.detached.verify(message, signature, pKey.toBytes())) throw new Error('Invalid signature!');
         console.log("success")
-        store.setType('Admin');
-        return true
+
+        async function setStore() {
+            store.setUser(pKey.toBase58(), 'Admin');
+            return store.getType
+        }
+        const storeUserType = await setStore()
+        return storeUserType
     } catch (err) {
         console.dir(err)
         return false

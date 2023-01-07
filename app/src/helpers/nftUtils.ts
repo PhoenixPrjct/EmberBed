@@ -1,5 +1,5 @@
 import { Metaplex, Nft } from "@metaplex-foundation/js"
-import { PublicKey } from "@solana/web3.js";
+import { ConfirmedSignatureInfo, PublicKey } from "@solana/web3.js";
 import axios from "axios";
 import { getParsedNftAccountsByOwner } from "@nfteyez/sol-rayz";
 import { useServerAPI } from "src/api/server-api";
@@ -52,7 +52,6 @@ export async function getNftsInWallet(wallet: PublicKey) {
         let ebCollection: string = await server_api.nft.getCollectionFor(nft.mint);
         const meta = await getNftMeta(nft.data.uri);
         if (!ebCollection) {
-
             ebCollection = collections.find(async (c) => await checkNftCollectionAddress(c, nft.mint))
         }
 

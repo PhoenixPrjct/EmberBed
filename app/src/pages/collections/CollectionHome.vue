@@ -42,37 +42,49 @@ watchEffect(async () => {
         <q-spinner size="50%" />
     </div>
     <q-page v-else class="page"
-        :style="` background-image: url(${theme?.icon}); background-position:center; background-size:contain; background-repeat: no-repeat;`">
-        <section class="section">
-            <div class="flex justify-around">
-                <!-- <q-item> -->
-                <!-- <q-item-section style="background-color:#1d1d1d50">
+        :style="`background-image: url(${theme?.icon}); background-position:center; background-size:contain; background-repeat: no-repeat;`">
+        <div class="wrapper">
+
+            <section class="section">
+                <div class="flex justify-around">
+                    <!-- <q-item> -->
+                    <!-- <q-item-section style="background-color:#1d1d1d50">
                             <h5 style="color:white">
                                 {{ pdaInfo?.collectionName }}
                             </h5>
                         </q-item-section> -->
-                <!-- </q-item> -->
-                <span class="chips special">
+                    <!-- </q-item> -->
+                    <span class="chips special">
 
-                    <q-chip dark square :style="styles.chips" class="special"
-                        :label="dbInfo?.hashlist ? `Collection Size: ${dbInfo?.hashlist.length}` : 'Collection Size: Not Available'" />
-                    <q-chip dark square :style="styles.chips" class="special"
-                        :label="pdaInfo?.rewardSymbol ? `Token: ${pdaInfo?.rewardSymbol}` : 'Token: Not Available'" />
-                    <q-chip dark square :style="styles.chips" class="special"
-                        :label="pdaInfo?.fireEligible ? '$Fire Eligible' : 'Not $Fire Eligible '" />
-                    <q-chip dark square :style="styles.chips" class="special"
-                        :label="pdaInfo?.ratePerDay ? `Base Rate/Day: ${pdaInfo?.ratePerDay}` : 'Base Rate/Day Unavailable'" />
-                </span>
-            </div>
-            
-            <UserNftTray :colPda="(pda as string)" :theme="theme" />
-        </section>
+                        <q-chip dark square :style="styles.chips" class="special"
+                            :label="dbInfo?.hashlist ? `Collection Size: ${dbInfo?.hashlist.length}` : 'Collection Size: Not Available'" />
+                        <q-chip dark square :style="styles.chips" class="special"
+                            :label="pdaInfo?.rewardSymbol ? `Token: ${pdaInfo?.rewardSymbol}` : 'Token: Not Available'" />
+                        <q-chip dark square :style="styles.chips" class="special"
+                            :label="pdaInfo?.fireEligible ? '$Fire Eligible' : 'Not $Fire Eligible '" />
+                        <q-chip dark square :style="styles.chips" class="special"
+                            :label="pdaInfo?.ratePerDay ? `Base Rate/Day: ${pdaInfo?.ratePerDay}` : 'Base Rate/Day Unavailable'" />
+                    </span>
+                </div>
+
+                <UserNftTray :colPda="(pda as string)" :theme="theme" />
+            </section>
+        </div>
     </q-page>
 </template>
 <style scoped lang="scss">
 main {
     margin-top: 1rem;
     color: #1d1d1d50
+}
+
+.wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right, #000000, rgba(0, 0, 0, 0.5), #000000);
 }
 
 .page {

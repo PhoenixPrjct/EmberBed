@@ -10,7 +10,7 @@ import { DBCollectionInfo } from 'src/types'
 import { useUserStore } from "src/stores/userStore";
 import { useWallet } from "solana-wallets-vue";
 
-const wallet = <ComputedRef<WalletStore>>useWallet();
+const wallet = <WalletStore>useWallet();
 const { connection, program } = useChainAPI()
 const { server_api } = useServerAPI();
 const router = useRouter();
@@ -30,8 +30,8 @@ onBeforeMount(async () => {
 
 const store = useUserStore();
 watchEffect(() => {
-    if (!wallet.value.connected) router.push('/');
-    if (store.userType !== 'Admin' || 'User') router.push('/');
+    if (!wallet.connected.value) router.push('/');
+    if (store.getType !== 'Admin' && store.getType !== 'User') router.push('/');
 })
 
 

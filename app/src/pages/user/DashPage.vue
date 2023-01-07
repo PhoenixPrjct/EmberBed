@@ -59,11 +59,15 @@ watchEffect(async () => {
 <template>
     <section class="search-section">
         <div class="flex justify-center">
-            <q-btn outline :label="!selectColProxy ? 'Go to Collection Page:' : 'Reset Selection'"
+
+            <q-btn v-if="$q.screen.gt.sm" outline
+                :label="!selectColProxy ? 'Go to Collection Page:' : 'Reset Selection'"
+                @click="selectColProxy = undefined" />
+            <q-btn v-if="!$q.screen.gt.sm && selectColProxy" outline icon="'clear_all'"
                 @click="selectColProxy = undefined" />
             <q-select filled style="border-top:1px solid #fff;min-width:200px; flex: 1 0 65%;" dark
                 v-model="selectColProxy" :label="!selectColProxy ? 'EmberBed Collections' : void 0"
-                :options="collectionOptions" />
+                :options="collectionOptions" @click="selectColProxy = undefined" />
             <q-btn :outline="!!selectColProxy" style="padding-left:1rem;flex: 0 0 10%;" label="Go"
                 :disable="!selectColProxy" @click="handleCollectionGoClick()"></q-btn>
         </div>
