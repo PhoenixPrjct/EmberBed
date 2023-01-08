@@ -17,7 +17,7 @@ import { useWallet } from 'solana-wallets-vue';
 
 const router = useRouter();
 const { wallet, api, connection, program } = useChainAPI();
-const $wallet =useWallet().wallet
+const $wallet = useWallet().wallet
 const { server_api } = useServerAPI();
 const $q = useQuasar();
 
@@ -26,7 +26,10 @@ const relations = ref<RelationsServerResponse | null>(null)
 const showSubmit = ref(false);
 const fireDialogShow = ref(false);
 const manualSplEntryToggle = ref(false);
-// const makeRegToken = ref(null)
+const showWhyVerify = ref(false)
+function handleShowWhyVerify() {
+    showWhyVerify.value = true;
+}
 // const makeRegTokenOptions = ['Create & Register', 'Register Existing Token']
 const findSplToken = ref({
     loading: false,
@@ -320,9 +323,9 @@ watchEffect(async () => {
                     <div class="verify-collection--div">
                         <q-input class="verify-collection--input" dense dark filled hide-hint
                             hint="Check out Metaplex Collection Standards for More Info."
-                            v-model="collectionInfo.collectionAddress" placeholder="Verified Collection Address"
-                            lazy-rules :rules="[val => val && val.length > 0 || 'This Must Have a Value']" />
+                            v-model="collectionInfo.collectionAddress" placeholder="Verified Collection Address" />
                         <span>
+                            <q-btn icon="info" @click="handleShowWhyVerify()" />
                             <q-btn v-if="!collectionInfo.collectionAddress" class="center" target="_blank" dark flat
                                 icon="policy" href="https://collections.metaplex.com" />
                             <q-tooltip> Verify Your Collection on Metaplex</q-tooltip>
@@ -490,6 +493,37 @@ watchEffect(async () => {
                             <q-icon name="fab fa-twitter" />
                         </q-btn>
                     </q-card-actions>
+                </q-card-section>
+            </q-card>
+        </q-dialog>
+        <q-dialog v-model="showWhyVerify">
+            <q-card dark>
+                <q-card-section title class="text-h6">
+                    Why Verify?
+                </q-card-section>
+                <q-separator spaced dark />
+                <q-card-section>
+                    <q-item>
+                        <q-item-section side>
+                            <q-icon name="grade" />
+                        </q-item-section>
+                        <q-item-section>
+                            Verified Collections Don't Need to Add a Hashlist.
+                        </q-item-section>
+                    </q-item>
+                    <q-item>
+                        <q-item-section side>
+                            <q-icon name="grade" />
+                        </q-item-section>
+                        <q-item-section>
+                            If you are a PrjctPhoenix Affiliate, this is how EmberBed verifies this and adds the
+                            proper
+                            relationship on-chain.
+                        </q-item-section>
+                    </q-item>
+
+
+
                 </q-card-section>
             </q-card>
         </q-dialog>
