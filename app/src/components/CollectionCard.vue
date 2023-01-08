@@ -97,7 +97,7 @@ function handleDialogShow() {
 }
 
 function isRelevant(k: string): boolean {
-    console.log(k)
+    // console.log(k)
     let result
     switch (k) {
         case 'bump':
@@ -115,7 +115,7 @@ function isRelevant(k: string): boolean {
 }
 
 function handleCollectionRouteClick(pda: string) {
-    console.log(pda)
+    // console.log(pda)
     router.push(`/c/${pda}`)
 }
 
@@ -151,7 +151,7 @@ function handleCollectionRouteClick(pda: string) {
                         {{ collectionInfo.rewardMint }}
                     </div>
                 </q-item-label>
-                <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
+                <q-tooltip>Copy Full Address to Clipboard</q-tooltip>
             </q-item>
             <q-item>
                 <q-item-label header class="card-section-title">
@@ -167,7 +167,7 @@ function handleCollectionRouteClick(pda: string) {
                         {{ collectionInfo.rewardWallet }}
                     </div>
                 </q-item-label>
-                <q-tooltip>Copy Full Address to Clipbaord</q-tooltip>
+                <q-tooltip>Copy Full Address to Clipboard</q-tooltip>
             </q-item>
             <q-item>
                 <q-item-label header class="card-section-title">
@@ -213,7 +213,8 @@ function handleCollectionRouteClick(pda: string) {
 
                 </q-list>
             </q-card-section>
-            <q-card-actions
+            <q-separator dark spaced />
+            <q-card-actions class="collection-add-ons"
                 v-if="collectionInfo?.manager == wallet.publicKey.toBase58() && collectionInfo?.collectionName && collectionRewardPDA">
                 <q-btn dark label="Add Hashlist" @click="handleAddHashlistClick()" />
                 <q-btn dark label="Customization" :disable="!styleReady" @click="styleCardView = true" />
@@ -233,6 +234,13 @@ function handleCollectionRouteClick(pda: string) {
 
 .no-select {
     user-select: none;
+}
+
+.collection-add-ons {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    align-items: center;
 }
 
 .collectionInfo-key {

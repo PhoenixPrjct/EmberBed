@@ -54,7 +54,7 @@ watchEffect(() => {
             </q-toolbar>
         </q-header>
         <q-page-container style="background-color:#1D1D1D">
-            <router-view />
+            <router-view :fire-eligible="pdaInfo?.fireEligible"/>
         </q-page-container>
 
     </q-layout>

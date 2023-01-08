@@ -330,6 +330,9 @@ watchEffect(async () => {
                         </span>
                     </div>
                 </section>
+                <q-space />
+                <q-separator dark spaced />
+                <q-space />
                 <section class="tokenInfo">
 
                     <h6>Reward Token Info</h6>
@@ -393,20 +396,23 @@ watchEffect(async () => {
 
                                 {{ findSplToken.info[0].name }}
                             </q-item-section>
-                            <q-item-section side>
-                                <q-btn v-if="findSplToken.info?.length == 1" color="secondary" class="special" flat dark
-                                    label="Reset Token Info" @click="handleSplTokenClick()" />
-                            </q-item-section>
                         </q-item>
 
                         <q-input dark dense readonly v-model="collectionInfo.rewardMint" label="Mint Address" />
                         <q-input dark dense readonly v-model="collectionInfo.rewardSymbol" label="Token Symbol" />
+                        <q-item-section side>
+                            <q-btn v-if="findSplToken.info?.length == 1" color="secondary" class="special" flat dark
+                                label="Reset Token Info" @click="handleSplTokenClick()" />
+                        </q-item-section>
+                    </div>
+                    <q-item>
+
                         <q-btn flat icon-color="accent" icon="info" @click="fireDialogShow = true">
                             <q-tooltip>
                                 Allow your community to stake for $FIRE tokens.
                             </q-tooltip>
                         </q-btn>
-                    </div>
+                    </q-item>
                     <q-toggle dark v-if="findSplToken.info?.length == 1 || manualSplEntryToggle"
                         v-model="collectionInfo.fireEligible" class="special" color="accent"
                         label="$FIRE Redemption?" />
@@ -421,7 +427,72 @@ watchEffect(async () => {
         </div>
         <q-dialog v-model="fireDialogShow">
             <q-card class="dialog">
-                This is info about staking for $fire.
+                <q-card-section title class="text-h6">
+                    Allowing $FIRE Staking
+                </q-card-section>
+                <q-separator dark />
+                <q-card-section class="fire-content">
+                    <q-item class="fire-item">
+                        <q-item-section class="fire-title text-subtitle1">
+                            What does this mean?
+                        </q-item-section>
+                        <q-item-section class="fire-list text-body-2">
+                            <q-list>
+                                <q-item>
+                                    Your holders will have the option to redeem for $FIRE tokens if they desire.
+                                </q-item>
+                                <q-item>
+                                    would be instead of redeeming your native token.
+                                </q-item>
+                                <q-item>
+                                    It is a choice for them each time they go to redeem their yield from staking.
+                                </q-item>
+                            </q-list>
+                        </q-item-section>
+                    </q-item>
+                    <!-- </q-card-section>
+                <q-card-section> -->
+                    <q-item class="fire-item">
+                        <q-item-section class="fire-title text-subtitle1">
+                            Why Might This Be a Good Idea?
+                        </q-item-section>
+                        <q-item-section class="fire-list text-body-2">
+                            <q-list>
+                                <q-item>
+                                    Added Utility to Holding Your NFTs
+                                </q-item>
+                                <q-item>
+                                    Reduced Upfront Cost to use EmberBed (50% off!)
+                                </q-item>
+                                <q-item>
+                                    $FIRE tokens will be available to cover all platform fees **
+
+                                </q-item>
+                            </q-list>
+                        </q-item-section>
+                    </q-item>
+                    **After the PrjctPhoenix:Founder collection mint
+                </q-card-section>
+                <q-card-section>
+                    <q-item class="fire-item">
+                        <q-item-section class="fire-title text-subtitle1">
+                            Have More Questions?
+                        </q-item-section>
+                        <q-item-section class="fire-list text-body-2">
+                            Hop in our discord and ask, or @ us on Twitter.
+
+                        </q-item-section>
+                    </q-item>
+                    <q-card-actions class="justify-around">
+
+                        <q-btn dark flat href="https://discord.gg/s9SUKBWKuQ" target="_blank">
+                            <q-icon name="fab fa-discord" />
+                        </q-btn>
+                        <q-btn dark flat href="https://twitter.com/PrjctPhoenix" target="_blank">
+                            <q-icon name="fab fa-twitter" />
+                        </q-btn>
+                    </q-card-actions>
+                </q-card-section>
             </q-card>
         </q-dialog>
     </q-page>
@@ -460,6 +531,7 @@ watchEffect(async () => {
 
 
 .token-card {
+    flex: 0 0 90%;
     display: flex;
     justify-content: space-around;
     gap: 3px;
@@ -514,7 +586,40 @@ watchEffect(async () => {
     }
 }
 
+.fire-content {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.fire-title {
+    font-weight: 900;
+    flex: 1 0 20%;
+    min-width: 100px
+}
+
+.fire-list {
+    flex: 1;
+    min-width: 270px;
+}
+
+.fire-item {
+    flex-wrap: wrap;
+}
+
 .special {
     font-size: smaller;
+}
+
+@media screen and (max-width:400px) {
+    .dialog {
+        width: 95%;
+        min-height: 300px;
+        background: linear-gradient(to right, $secondary, $accent);
+        color: #1d1d1d;
+    }
+
 }
 </style>

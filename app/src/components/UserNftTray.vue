@@ -10,6 +10,7 @@ import {
     StakeAccounts, UnstakeAccounts,
     UserStakeInfoJSON
 } from "src/types";
+import { useRoute, useRouter } from 'vue-router';
 import UserNftCard from "src/components/UserNftCard.vue"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
@@ -18,12 +19,17 @@ import { chargeFeeTx, getStakingFee } from 'src/helpers';
 
 
 const { notify } = useQuasar();
+const route = useRoute();
+const router = useRouter();
 
+const loading = ref(false);
 const { api, connection } = useChainAPI();
 const props = defineProps<{
     colPda: string | null
     theme: DBCollectionInfo["style"] | null
+    // eligible: boolean | null
 }>();
+
 
 // const userStakeInfoRef = ref<{ info: UserStakeInfoJSON, loaded: boolean }>({ loaded: false, info: null as unknown as UserStakeInfoJSON });
 
@@ -201,6 +207,15 @@ async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: Collect
 
 }
 
+function handleGoBackClick() {
+    if (route.path == '/user/') {
+        router.push('/')
+    }
+    else {
+        router.back();
+    }
+}
+
 watchEffect(async () => {
     if (!nfts.value.loaded) {
         const { ebNfts, other } = await getNftsInWallet(wallet.value.publicKey);
@@ -242,20 +257,21 @@ watchEffect(async () => {
     </q-card>
     <div>
         <div class="eligible">
-            <section v-if="nfts.loaded && !nfts.ebNfts.length">
-                <h5>
-                    You are not holding any NFTs eligible for staking.
-                </h5>
-                <small> . . . at least not in the connected wallet.</small>
-                <div style="margin:1rem auto">
-                    <q-btn push label="Go Back" @click="$router.push('/user/')" />
+            <section class="not-holding" v-if="nfts.loaded && !nfts.ebNfts.length">
+                <div class="message">
+                    <h5>
+                        You are not holding any NFTs eligible for staking.
+                    </h5>
+                    <p> . . . at least not in the connected wallet.</p>
+                </div>
+                <div style="margin:1rem auto; flex:0 0 30%">
+                    <q-btn push label="Go Back" @click="handleGoBackClick()" />
                 </div>
             </section>
             <section class="nft-card-container" v-if="nfts.ebNfts.length && stakingAction.percent == 0">
                 <div v-for="nft in nfts.ebNfts" :key="nft.mint" class="nft-card"
                     :style="theme ? `box-shadow: 0px 0px 12px 0px ${theme.colors.primary}` : `box-shadow: 0px 0px 12px 0px #ffff`">
-                    <UserNftCard :nft="nft" :eligible="true" :stakeNft="stakeNft" :unstakeNft="unstakeNft"
-                        :redeem="redeem" />
+                    <UserNftCard :nft="nft" :stakeNft="stakeNft" :unstakeNft="unstakeNft" :redeem="redeem" />
                 </div>
             </section>
 
@@ -274,8 +290,19 @@ h5 {
     padding-bottom: 0;
 }
 
-small {
+p {
     color: $accent;
+}
+
+.message {
+    flex: 0 0 80%;
+}
+
+.not-holding {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-flow: row wrap;
 }
 
 .nft-card-container {

@@ -6,6 +6,7 @@ import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from
 import { useRoute } from 'vue-router';
 import UserNftTray from 'src/components/UserNftTray.vue';
 import { PublicKey } from '@solana/web3.js';
+
 const { server_api } = useServerAPI();
 const { connection } = useChainAPI();
 const route = useRoute();
@@ -67,7 +68,8 @@ watchEffect(async () => {
                     </span>
                 </div>
 
-                <UserNftTray :colPda="(pda as string)" :theme="theme" />
+                <UserNftTray :colPda="(pda as string)" :eligible="!pdaInfo?.fireEligible ? false : pdaInfo.fireEligible"
+                    :theme="theme" />
             </section>
         </div>
     </q-page>

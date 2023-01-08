@@ -16,7 +16,7 @@ const { notify, dialog } = useQuasar();
 
 const props = defineProps<{
     nft: EBNft,
-    eligible: boolean,
+    // eligible: boolean,
     stakeNft: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<void>,
     unstakeNft: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<void>,
     redeem: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) => Promise<boolean>
@@ -258,11 +258,12 @@ watchEffect(async () => {
             <div v-else class="flex justify-center">
                 <q-card-actions class="flex justify-around">
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
-                        v-if="showUnstakeButton" icon="&#x1F525;" :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0"
+                        v-if="showUnstakeButton && ebCollection.info?.fireEligible" icon="&#x1F525;"
+                        :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0"
                         @click="handleRedeemRewards(nft, ebCollection, true)" />
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
-                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info.rewardSymbol}` : 'Redeem Tokens'"
+                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : 'Redeem Tokens'"
                         @click="handleRedeemRewards(nft, ebCollection, false)" />
 
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark

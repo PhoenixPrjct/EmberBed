@@ -47,13 +47,21 @@ watchEffect(async () => {
     const walletString = wallet.value?.publicKey.toBase58()
     console.log(onChainInfo.value)
     if (!collectionPDAs.value?.length) {
-        await (await program.value.account.collectionRewardInfo.all()).map((acct: ProgramAccount) => {
-            console.log(acct.account)
-            if (acct.account.manager.toBase58() == walletString) {
+        const collectionsRaw = await program.value.account.collectionRewardInfo.all()
+        if (wallet.value?.publicKey.toBase58() == 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') {
+            await collectionsRaw.map((acct: ProgramAccount) => {
                 collectionPDAs.value = [...collectionPDAs.value, acct];
-            }
+            })
+        } else {
+            await collectionsRaw.map((acct: ProgramAccount) => {
+                console.log(acct.account)
+                if (acct.account.manager.toBase58() == walletString) {
+                    collectionPDAs.value = [...collectionPDAs.value, acct];
+                }
+
+            })
             return;
-        })
+        }
     }
 })
 
