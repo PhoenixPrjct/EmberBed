@@ -3,6 +3,7 @@ import express from "express";
 import userRoutes from './userRoutes'
 import collectionRoutes from './collectionRoutes'
 import { GC } from "../../controllers";
+import { PhoenixRelation, PhoenixRelationKind } from "src/types";
 const router = express.Router();
 
 router.get("/", (req, res) => {
@@ -22,6 +23,18 @@ router.get('/relations', async (req, res) => {
 
 router.post('/relations/update', async (req, res) => {
     const { status, response } = await GC.updateRelations({ ...req.body })
+    res.status(status).json(response)
+})
+router.post('/relations/update/bulk', async (req, res) => {
+    const { auth, updates } = req.body;
+    const { status, response } = await GC.updateRelationsBulk(auth, updates)
+
+    res.status(status).json(response);
+});
+
+router.post('/relations/remove', async (req, res) => {
+    const { auth, address } = req.body
+    const { status, response } = await GC.removeRelations(auth, address)
     res.status(status).json(response)
 })
 

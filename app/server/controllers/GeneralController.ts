@@ -54,12 +54,12 @@ export const GC = {
             const relationObj = JSON.parse(relations)
 
             // Check if the address is already in any category
-            let found = false;
             Object.keys(relationObj).forEach((key) => {
-                if (relationObj[key].includes(address)) {
-                    console.log(key)
-                    // Remove the address from the category if it exists
-                    relationObj[key] = relationObj[key].filter((a: string) => a !== address);
+                const index = relationObj[key].indexOf(address);
+                if (index !== -1) {
+                    console.log('Removing', address, 'from', key);
+                    // Remove the address from the category using splice
+                    relationObj[key].splice(index, 1);
                 }
             });
 
@@ -76,5 +76,71 @@ export const GC = {
             console.log(e)
             return { status: 500, response: e.message }
         }
+    },
+    updateRelationsBulk: async (auth: string, updates: Array<{ relationship: PhoenixRelationKind['kind'], address: string }>) => {
+        try {
+            if (auth !== process.env.SERVER_AUTH) {
+                throw new Error('Authentication Failed');
+            }
+            const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');
+            const relationObj = JSON.parse(relations);
+
+            updates.forEach((update) => {
+                const { relationship, address } = update;
+
+                // Check if the address is already in any category
+                Object.keys(relationObj).forEach((key) => {
+                    const index = relationObj[key].indexOf(address);
+                    if (index !== -1) {
+                        // Remove the address from the category using splice
+                        relationObj[key].splice(index, 1);
+                    }
+                });
+
+                // Add the address to the specified category
+                relationObj[relationship] = [...relationObj[relationship], address];
+            });
+
+            // Save the updated relations object to the file
+            await writeFileSync(path.join(__dirname, '../data/Relations.json'), JSON.stringify(relationObj));
+
+            return { status: 200, response: relationObj };
+        } catch (e: any) {
+            console.log(e)
+            return { status: 500, response: e.message }
+        }
+    },
+    removeRelations: async (auth: string, address: string) => {
+        try {
+            if (auth !== process.env.SERVER_AUTH) {
+                throw new Error('Authentication Failed');
+            }
+            const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');
+            const relationObj = JSON.parse(relations);
+
+            // Check if the address is in any category
+            let found = false;
+            Object.keys(relationObj).forEach((key) => {
+                const index = relationObj[key].indexOf(address);
+                if (index !== -1) {
+                    found = true;
+                    // Remove the address from the category using splice
+                    relationObj[key].splice(index, 1);
+                }
+            });
+
+            if (!found) {
+                throw new Error(`Address ${address} not found in any category`);
+            }
+
+            // Save the updated relations object to the file
+            await writeFileSync(path.join(__dirname, '../data/Relations.json'), JSON.stringify(relationObj));
+
+            return { status: 200, response: relationObj };
+        } catch (e: any) {
+            console.log(e);
+            return { status: 500, response: e.message };
+        }
     }
+
 }
