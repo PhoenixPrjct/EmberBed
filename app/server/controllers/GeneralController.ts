@@ -1,5 +1,6 @@
-import { readdirSync, readFileSync } from "fs";
+import { readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
+import { PhoenixRelationKind } from "src/types";
 
 export const GC = {
     getRelations: async () => {
@@ -42,6 +43,38 @@ export const GC = {
         } catch (err: any) {
             console.log(err)
             return err
+        }
+    },
+    updateRelations: async (data: { auth: string, relationship: PhoenixRelationKind['kind'], address: string }) => {
+        try {
+            console.log(data.auth)
+            const { relationship, auth, address } = data
+            if (data.auth !== process.env.SERVER_AUTH) throw new Error('Authentication Failed')
+            const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');
+            const relationObj = JSON.parse(relations)
+
+            // Check if the address is already in any category
+            let found = false;
+            Object.keys(relationObj).forEach((key) => {
+                if (relationObj[key].includes(address)) {
+                    console.log(key)
+                    // Remove the address from the category if it exists
+                    relationObj[key] = relationObj[key].filter((a: string) => a !== address);
+                }
+            });
+
+
+            // Add the address to the specified category
+            relationObj[relationship] = [...relationObj[relationship], address];
+
+            // Save the updated relations object to the file
+            await writeFileSync(path.join(__dirname, '../data/Relations.json'), JSON.stringify(relationObj));
+
+            return { status: 200, response: relationObj };
+
+        } catch (e: any) {
+            console.log(e)
+            return { status: 500, response: e.message }
         }
     }
 }

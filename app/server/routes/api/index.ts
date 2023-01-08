@@ -20,6 +20,10 @@ router.get('/relations', async (req, res) => {
     }
 })
 
+router.post('/relations/update', async (req, res) => {
+    const { status, response } = await GC.updateRelations({ ...req.body })
+    res.status(status).json(response)
+})
 
 
 

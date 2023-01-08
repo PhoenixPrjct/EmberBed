@@ -17,7 +17,7 @@ import { useWallet } from 'solana-wallets-vue';
 
 const router = useRouter();
 const { wallet, api, connection, program } = useChainAPI();
-const $wallet: ComputedRef<WalletStore> = useWallet().wallet
+const $wallet =useWallet().wallet
 const { server_api } = useServerAPI();
 const $q = useQuasar();
 
@@ -480,11 +480,9 @@ watchEffect(async () => {
                         </q-item-section>
                         <q-item-section class="fire-list text-body-2">
                             Hop in our discord and ask, or @ us on Twitter.
-
                         </q-item-section>
                     </q-item>
                     <q-card-actions class="justify-around">
-
                         <q-btn dark flat href="https://discord.gg/s9SUKBWKuQ" target="_blank">
                             <q-icon name="fab fa-discord" />
                         </q-btn>
