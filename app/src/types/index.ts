@@ -233,7 +233,6 @@ export interface MutableTokenInfo {
 // Server Response Types
 
 export interface RelationsServerResponse {
-
     Affiliates: string[];
     Saved: string[];
     Founders: string[];
