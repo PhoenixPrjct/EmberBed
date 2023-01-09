@@ -1,7 +1,7 @@
 import verifyWallet from './verifyWallet'
 
 export { verifyWallet }
-
+export { getAllEBCollections } from './platformUtils'
 export { CopyClick } from './copyToClip'
 export { camelCaseToTitleCase } from './formattingTools'
 export { getSplList, getTokenInfo } from './splTokens'

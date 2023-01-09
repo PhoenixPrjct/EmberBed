@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { watchEffect } from 'vue';
-// import EssentialLink, { EssentialLinkProps } from 'components/EssentialLink.vue';
+import CollectionCarousel from 'src/components/CollectionsCarousel.vue';
 import { WalletMultiButton } from 'solana-wallets-vue';
 import { useRouter } from "vue-router";
 import { useWallet } from "solana-wallets-vue"
@@ -40,6 +40,9 @@ watchEffect(() => {
         </q-toolbar-title>
         <WalletMultiButton dark />
       </q-toolbar>
+      <q-toolbar dark inset>
+        <CollectionCarousel />
+      </q-toolbar>
     </q-header>
     <q-page-container>
       <router-view />
@@ -57,7 +60,6 @@ watchEffect(() => {
           </a>
         </span>
       </q-toolbar>
-
 
       <small inset class="flex justify-center bg-primary copyright">&copy; Copyright {{ currentYear }}, Prjct Phoenix.
         All rights reserved.</small>

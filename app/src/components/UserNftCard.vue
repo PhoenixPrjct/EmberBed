@@ -122,7 +122,7 @@ async function getStakeState(nft: EBNft) {
         const status = await UserStakeInfo.fetch(connection, pda)
         if (!status) throw new Error('Failed to fetch Stake State from PDA')
         statusRef.value = status.toJSON()
-        console.log("Stake status:", status.toJSON().stakeState.kind)
+        console.log(`Stake status:\n ${nft.name} - ${status.toJSON().stakeState.kind} \n`)
         stakeStatus.value.loaded = true;
         return
     } catch (err: any) {
@@ -179,12 +179,12 @@ if (counterDisplay.value.seconds == 0 && stakeStartRef.value) {
 watchEffect(async () => {
     // console.log(stakeStartRef.value)
     if (!stakeStatus.value.loaded) {
-        console.log({ [props.nft.name]: stakeStatus.value.loaded })
+        // console.log({ [props.nft.name]: stakeStatus.value.loaded })
         setTimeout(async () => await getStakeState(props.nft), 12000)
 
     }
 
-    if (props.eligible && props.nft.ebCollection && !ebCollection.value.loaded) {
+    if (props.nft.ebCollection && !ebCollection.value.loaded) {
         const pda = new PublicKey(props.nft.ebCollection)
         const collectionInfo = await CollectionRewardInfo.fetch(connection, pda);
         if (collectionInfo) {
@@ -221,7 +221,7 @@ watchEffect(async () => {
                     <span>
                         ~ {{ yieldRef.native?.toFixed(4) }} {{ ebCollection.info?.rewardSymbol }}
                     </span>
-                    <span v-if="props.eligible && ebCollection.info?.rewardSymbol !== '$FIRE'">
+                    <span v-if="ebCollection.info?.fireEligible && ebCollection.info?.rewardSymbol !== '$FIRE'">
                         || ~{{ yieldRef.fire?.toFixed(4) }} $FIRE
                     </span>
                 </div>
@@ -252,7 +252,6 @@ watchEffect(async () => {
                 <br />
                 <span> {{ props.nft.name }}
                 </span>
-
             </div>
             <q-spinner v-if="!stakeStateRef" size="2rem" style="flex:0 0 100%;" />
             <div v-else class="flex justify-center">
