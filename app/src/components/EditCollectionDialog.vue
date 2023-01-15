@@ -83,6 +83,12 @@ watchEffect(() => {
                         <q-input dark v-model="collectionInfoProxy[key]" />
                     </q-item-section>
                 </q-item>
+                <q-item v-if="isRelevant(key) && key == 'fireEligible'">
+                    <q-item-section>
+                        {{ camelCaseToTitleCase(key) }}
+                        <q-toggle dark v-model="collectionInfoProxy[key]" class="special" color="accent" />
+                    </q-item-section>
+                </q-item>
             </div>
         </q-card-section>
         <q-card-actions>

@@ -314,14 +314,14 @@ p {
     gap: 3rem 1rem;
     height: 100%;
     width: 100%;
-    padding: 1rem;
+    padding: .5rem;
     margin: 1rem;
 }
 
 .nft-card {
     margin: 1rem;
-    flex: 0 0 20%;
-    max-width: 400px;
+    flex: 0 0 22%;
+    max-width: 425px;
     // min-width: 320px
 }
 
@@ -331,7 +331,7 @@ p {
     }
 
     .nft-card {
-        flex: 0 0 15%;
+        flex: 0 0 20%;
     }
 
 }
