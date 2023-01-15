@@ -323,9 +323,13 @@ pub mod ember_bed {
         _reward_symbol: String,
         _collection_name: String,
         _fire_eligible: bool,
-        _phoenix_collection_relation: String
+        _phoenix_collection_relation: String,
+        _new_manager: String
     ) -> Result<()> {
-        if _ctx.accounts.funder.key() != _ctx.accounts.state_pda.manager.key() && _ctx.accounts.funder.key().to_string() != PHOENIX_ADMIN_WALLET{
+        if
+            _ctx.accounts.funder.key() != _ctx.accounts.state_pda.manager.key() &&
+            _ctx.accounts.funder.key().to_string() != PHOENIX_ADMIN_WALLET
+        {
             msg!("Not Your Account Bruh.");
             return err!(AdminError::IncorrectManagingAccount);
         }
@@ -340,6 +344,11 @@ pub mod ember_bed {
         let pr = _phoenix_collection_relation.parse().unwrap();
         if _fire_eligible {
             _ctx.accounts.state_pda._phoenix_relation = pr;
+        }
+        if !_new_manager.is_empty() {
+            msg!("{:?} is the new Manager", _new_manager);
+            let _manager = str_to_pubkey(&_new_manager);
+            _ctx.accounts.state_pda.manager = _manager;
         }
         _ctx.accounts.state_pda.bump = _bump;
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();

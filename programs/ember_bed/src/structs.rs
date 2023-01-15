@@ -199,7 +199,7 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String )]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String , _new_manager:String)]
 pub struct UpdateStatePda<'info> {
     #[account(mut)]
     pub state_pda: Account<'info, CollectionRewardInfo>,
@@ -210,8 +210,8 @@ pub struct UpdateStatePda<'info> {
     pub nft_collection_address: AccountInfo<'info>,
     #[account(mut)]
     pub funder: Signer<'info>,
-    #[account(mut)]
-    pub funder_ata: Account<'info, TokenAccount>,
+    // #[account(mut)]
+    // pub funder_ata: Account<'info, TokenAccount>,
     pub system_program: Program<'info, System>,
 }
 
