@@ -11,6 +11,7 @@ export interface UpdateStatePdaArgs {
   collectionName: string
   fireEligible: boolean
   phoenixCollectionRelation: string
+  newManager: string
 }
 
 export interface UpdateStatePdaAccounts {
@@ -19,7 +20,6 @@ export interface UpdateStatePdaAccounts {
   tokenPoa: PublicKey
   nftCollectionAddress: PublicKey
   funder: PublicKey
-  funderAta: PublicKey
   systemProgram: PublicKey
 }
 
@@ -30,6 +30,7 @@ export const layout = borsh.struct([
   borsh.str("collectionName"),
   borsh.bool("fireEligible"),
   borsh.str("phoenixCollectionRelation"),
+  borsh.str("newManager"),
 ])
 
 export function updateStatePda(
@@ -46,7 +47,6 @@ export function updateStatePda(
       isWritable: false,
     },
     { pubkey: accounts.funder, isSigner: true, isWritable: true },
-    { pubkey: accounts.funderAta, isSigner: false, isWritable: true },
     { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
   ]
   const identifier = Buffer.from([180, 66, 121, 31, 165, 135, 192, 94])
@@ -59,6 +59,7 @@ export function updateStatePda(
       collectionName: args.collectionName,
       fireEligible: args.fireEligible,
       phoenixCollectionRelation: args.phoenixCollectionRelation,
+      newManager: args.newManager,
     },
     buffer
   )

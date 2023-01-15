@@ -230,6 +230,41 @@ export interface MutableTokenInfo {
     tags?: string[];
 }
 
+export interface EditCollectionInfo {
+    ratePerDay: number
+    rewardWallet: string
+    rewardSymbol: string
+    collectionName: string
+    collectionAddress: string
+    fireEligible: boolean
+    rewardMint: string
+    manager: string
+
+}
+export class EditCollectionInfo {
+    ratePerDay: number;
+    rewardWallet: string;
+    rewardSymbol: string;
+    collectionName: string;
+    collectionAddress: string;
+    fireEligible: boolean;
+    rewardMint: string;
+    manager: string;
+
+    constructor(ratePerDay: number, rewardWallet: string, rewardSymbol: string, collectionName: string, collectionAddress: string, fireEligible: boolean, rewardMint: string, manager: string) {
+        this.ratePerDay = ratePerDay;
+        this.rewardWallet = rewardWallet;
+        this.rewardSymbol = rewardSymbol;
+        this.collectionName = collectionName;
+        this.collectionAddress = collectionAddress;
+        this.fireEligible = fireEligible;
+        this.rewardMint = rewardMint;
+        this.manager = manager;
+    }
+}
+
+
+
 // Server Response Types
 
 export interface RelationsServerResponse {

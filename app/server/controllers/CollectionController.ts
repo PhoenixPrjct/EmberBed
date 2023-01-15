@@ -22,6 +22,7 @@ type CollectionStyle = {
 interface CollectionFile {
     pda: string;
     manager: string;
+    name: string;
     hashlist: string[];
     style?: CollectionStyle;
 }
@@ -29,19 +30,24 @@ interface CollectionFile {
 class CollectionFile {
     pda: string;
     manager: string;
+    name: string;
     hashlist: string[];
     style?: CollectionStyle;
 
-    constructor(pda: string, manager: string, hashlist: string[], style?: CollectionStyle) {
+    constructor(pda: string, manager: string, name: string, hashlist: string[], style?: CollectionStyle) {
         this.pda = pda;
         this.manager = manager;
+        this.name = this.name
         this.hashlist = hashlist;
         this.style = style;
     }
 
-    static toDB(pda: string, manager: string, hashlist: string[], style?: CollectionStyle) {
-        const cleanedHashlist = hashlist.map(hash => hash.trim())
-        const data = { manager: manager, hashlist: cleanedHashlist, style: style };
+    static toDB(pda: string, manager: string, collectionName?: string, hashlist?: string[], style?: CollectionStyle) {
+        let data: any = { manager: manager, name: collectionName, style: style };
+        if (hashlist) {
+            const cleanedHashlist = hashlist.map(hash => hash.trim())
+            data = { manager: manager, hashlist: cleanedHashlist, style: style };
+        }
         writeFileSync(
             join(__dirname, '../collections', pda + '.json'),
             JSON.stringify(data)
@@ -90,7 +96,7 @@ export const CC = {
             return { status: 500, err }
         }
     },
-    addHashlist: async (wallet: string, hashlist: string[], pda: string) => {
+    addHashlist: async (wallet: string, name: string, hashlist: string[], pda: string) => {
         console.log({ wallet, hashlist, pda })
         try {
             const files = await readdirSync(join(__dirname, `../collections`));
@@ -104,11 +110,11 @@ export const CC = {
                     return { status: 400, error: 'Manager does not match' };
                 }
                 collectionFile.hashlist = hashlist;
-                CollectionFile.toDB(pda, wallet, hashlist);
+                CollectionFile.toDB(pda, wallet, collectionFile.name, hashlist);
                 return { status: 200, response: 'Hashlist updated' };
             } else {
-                const col = new CollectionFile(pda, wallet, hashlist);
-                CollectionFile.toDB(pda, wallet, hashlist);
+                const col = new CollectionFile(pda, wallet, name, hashlist);
+                CollectionFile.toDB(pda, wallet, name, hashlist);
                 return { status: 200, response: 'Hashlist added' };
             }
         } catch (err) {
@@ -147,10 +153,38 @@ export const CC = {
 
                 const collectionFile = JSON.parse(fileContents) as CollectionFile;
                 if (collectionFile.manager !== wallet) throw new Error('Not Your Collection to Be Styling Dog.')
+
                 collectionFile.style = style
-                CollectionFile.toDB(pda, collectionFile.manager, collectionFile.hashlist, collectionFile.style);
+
+                CollectionFile.toDB(pda, collectionFile.manager, collectionFile.name, collectionFile.hashlist, collectionFile.style);
             }
             return { status: 200, response: 'Style added' };
+
+        } catch (err: any) {
+            console.log(err);
+            return { status: 500, response: err.message };
+        }
+    },
+    updateCollection: async (pda: string, wallet: string, data: CollectionRewardInfoJSON) => {
+        try {
+
+            const files = await readdirSync(join(__dirname, `../collections`));
+            if (files.includes(pda + '.json')) {
+                const fileContents = await readFileSync(
+                    join(__dirname, `../collections/${pda}.json`),
+                    'utf-8'
+                );
+
+                let collectionFile = JSON.parse(fileContents) as CollectionFile;
+                console.log({ wallet, manager: collectionFile.manager })
+                if (collectionFile.manager !== wallet && wallet !== 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') throw new Error('Not Your Collection to Be Styling Dog.')
+                collectionFile = { ...collectionFile, manager: data.manager, name: data.collectionName }
+
+
+                CollectionFile.toDB(pda, data.manager, data.collectionName, collectionFile.hashlist, collectionFile.style)
+                return { status: 200, response: collectionFile };
+            }
+            throw new Error('No Collection Exists')
 
         } catch (err: any) {
             console.log(err);

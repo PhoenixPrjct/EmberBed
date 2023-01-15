@@ -1,4 +1,4 @@
-import { computed, watchEffect, ComputedRef } from 'vue'
+import { computed, watchEffect, ComputedRef, Ref } from 'vue'
 import { useAnchorWallet } from 'solana-wallets-vue'
 import { clusterApiUrl, Connection, PublicKey } from '@solana/web3.js'
 import { Provider, Program } from '@project-serum/anchor'
@@ -18,7 +18,7 @@ const commitment = 'processed';
 const programID = new PublicKey(EmberBedAddress);
 
 export function _createChainAPI() {
-    const wallet: ComputedRef<AnchorWallet> = useAnchorWallet();
+    const wallet: Ref<AnchorWallet> = useAnchorWallet();
     const connection = new Connection(clusterApiUrl('devnet'));
     const provider = computed(() => wallet ? new anchor.AnchorProvider(connection, wallet.value, { preflightCommitment, commitment }) : null)
     const program = computed(() => provider.value ? new Program(IDL, programID, provider.value) : null);

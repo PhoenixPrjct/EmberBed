@@ -10,6 +10,7 @@ import { CopyClick, camelCaseToTitleCase } from 'src/helpers';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { AddHashList, AddStyleDialog } from 'src/components'
 import { useRouter } from 'vue-router';
+import EditCollectionDialog from './EditCollectionDialog.vue';
 
 type PR =
     | PhoenixRelationKind
@@ -26,14 +27,17 @@ const { notify } = useQuasar();
 const dialogShow = ref(false);
 const hashListCardView = ref(false);
 const styleCardView = ref(false);
+const editCollectionView = ref(false);
 const styleReady = ref(false);
 const { connection, wallet } = useChainAPI();
 const { CollectionRewardInfo } = types
-const props = defineProps<{ collectionRewardPDA: PublicKey }>()
 const collectionStyle = ref<types.DBCollectionInfo['style']>();
+const props = defineProps<{ collectionRewardPDA: PublicKey }>();
 const collectionRewardPDA = ref(props.collectionRewardPDA)
 const _collectionInfo = computedAsync(() => CollectionRewardInfo.fetch(connection, collectionRewardPDA.value), null);
-const collectionInfo = ref(_collectionInfo.value?.toJSON())
+const collectionInfo = ref(_collectionInfo.value?.toJSON());
+
+
 watchEffect(async () => {
     if (!collectionInfo.value && _collectionInfo.value) {
         collectionInfo.value = _collectionInfo.value.toJSON();
@@ -114,6 +118,7 @@ function isRelevant(k: string): boolean {
     return result;
 }
 
+
 function handleCollectionRouteClick(pda: string) {
     // console.log(pda)
     router.push(`/c/${pda}`)
@@ -181,9 +186,10 @@ function handleCollectionRouteClick(pda: string) {
             </q-item>
         </q-list>
         <q-card-actions class="flex justify-between">
-            <q-btn flat dark @click="handleDialogShow">Details</q-btn>
-            <q-btn flat dark @click="handleCollectionRouteClick(collectionRewardPDA.toBase58())">Go to
-                {{ collectionInfo.collectionName }} Page</q-btn>
+            <q-btn dark @click="handleDialogShow">Details</q-btn>
+            <q-btn dark label="Edit Info" @click="() => editCollectionView = true" />
+            <q-btn dark @click="handleCollectionRouteClick(collectionRewardPDA.toBase58())" label="Go to
+                Page" />
         </q-card-actions>
     </q-card>
     <q-dialog v-model="dialogShow">
@@ -220,6 +226,9 @@ function handleCollectionRouteClick(pda: string) {
                 <q-btn dark label="Customization" :disable="!styleReady" @click="styleCardView = true" />
             </q-card-actions>
         </q-card>
+    </q-dialog>
+    <q-dialog v-model="editCollectionView" full-width>
+        <EditCollectionDialog :pda="props.collectionRewardPDA" :collection="collectionInfo!" />
     </q-dialog>
     <q-dialog v-model="hashListCardView" fullWidth>
         <AddHashList :pda="collectionRewardPDA.toBase58()" :collectionName="collectionInfo!.collectionName" />

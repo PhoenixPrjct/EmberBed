@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { createGlobalState } from '@vueuse/core'
-import { DBCollectionInfo } from 'src/types';
+import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types';
 export function _createServerAPI() {
   const baseURL = 'http://localhost:3000/api';
 
@@ -21,9 +21,10 @@ export function _createServerAPI() {
           hashlist: async (query: string) => await (await axios.get(`${baseURL}/collection/hashlist/${query}`)).data
         },
         add: {
-          hashlist: async (data: { wallet: string, hashlist: string[], pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data,
+          hashlist: async (data: { wallet: string, name: string, hashlist: string[], pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data,
           style: async (pda: string, wallet: string, style: DBCollectionInfo['style']) => await (await axios.post(`${baseURL}/collection/style/add`, { wallet, style, pda })).data
         },
+        update: async (data: { wallet: string, pda: string, data: CollectionRewardInfoJSON }) => await (await axios.post(`${baseURL}/collection/update`, data)).data,
         post: async (data: any) => await (await axios.post(`${baseURL}/collection`, data)).data,
         new: async (data: any) => await (await axios.post(`${baseURL}/collection/new`, data)).data
         // other API endpoints go here...

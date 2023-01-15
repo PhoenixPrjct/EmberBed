@@ -4,7 +4,7 @@ import { EmberBed } from './types/ember_bed';
 import { PublicKey, Keypair, SystemProgram, Transaction, BlockheightBasedTransactionConfirmationStrategy } from '@solana/web3.js';
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, createAssociatedTokenAccount } from "@solana/spl-token"
 import web3 = anchor.web3;
-import { Accounts, AnchorWallet, CollectionInfo, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind, RedeemRewardAccounts } from '../types'
+import { Accounts, AnchorWallet, UpdateStatePdaArgs, UpdateStatePdaAccounts, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind, RedeemRewardAccounts, updateStatePda } from '../types'
 import { devKP } from './wallets/devWallet'
 import { fundKP } from './wallets/fundWallet';
 import {
@@ -20,6 +20,7 @@ import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-toke
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { ComputedRef } from 'vue';
 import { useWallet } from 'solana-wallets-vue';
+import { api } from 'src/boot/axios';
 
 
 // const { connection, wallet } = useChainAPI();
@@ -110,11 +111,6 @@ export function getAPI(program: Program<EmberBed>) {
     }
 
 
-    // async function findRewardMintForCollection(collection: string) {
-    //     const info = await getCollectionInfo(collection)
-    //     return new PublicKey(info.)
-
-    // }
 
     async function getNftTokenAddress(user: web3.PublicKey, nftMint: string) {
         const mintAddress = new PublicKey(nftMint);
@@ -123,7 +119,7 @@ export function getAPI(program: Program<EmberBed>) {
     }
 
 
-    async function getAccounts(data: { user: web3.PublicKey, collectionName: string, rewardMint: string, nftMint?: string, nftColAddress?: string, }): Promise<Accounts> {
+    async function getAccounts(data: { user: PublicKey, collectionName: string, rewardMint: string, nftMint?: string, nftColAddress?: string, }): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
         const RewTok: PublicKey = new PublicKey(data.rewardMint);
         let nftAccounts = {};
@@ -234,6 +230,28 @@ export function getAPI(program: Program<EmberBed>) {
     }
 
 
+    async function updateCollectionRewardPDA(user: PublicKey, collectionInfo: CollectionRewardInfo) {
+        try {
+            const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint, manager } = collectionInfo;
+            const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58() })
+            const { statePDA, RewTok, stateBump, } = accounts;
+            const rewardWallet = await getRewardWallet(RewTok, statePDA);
+
+
+            const tx = await program.methods.updateStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind, manager.toBase58())
+                .accounts({ statePda: statePDA, rewardMint: RewTok, tokenPoa: rewardWallet.address, nftCollectionAddress: collectionAddress, funder: user, systemProgram: SystemProgram.programId })
+                .signers([])
+                .rpc();
+            const account = await CollectionRewardInfo.fetch(connection, statePDA);//await program.account.collectionRewardInfo.getAccountInfo(statePDA)
+
+            console.dir({ tx })
+            return { tx: tx, pdas: { collectionInfoPDA: statePDA.toBase58(), rewardWallet: rewardWallet.address.toBase58() }, account: account }
+        } catch (e: any) {
+            console.log(e)
+            return { error: e?.message }
+        }
+
+    }
     async function initStatePda(user: web3.PublicKey, collectionInfo: CollectionRewardInfo) {
         try {
 
@@ -347,6 +365,7 @@ export function getAPI(program: Program<EmberBed>) {
         console.log('Hey')
     };
     return {
+        updateCollectionRewardPDA,
         initializeFirePda,
         initStatePda,
         depositToFireAta,

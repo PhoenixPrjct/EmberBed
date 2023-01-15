@@ -27,6 +27,19 @@ router.post("/new", async (req, res) => {
     }
 })
 
+router.post('/update', async (req, res) => {
+    try {
+        console.log('update')
+        const { pda, wallet, data } = req.body
+        const { status, response } = await CC.updateCollection(pda, wallet, data);
+        res.status(status).send(response);
+    } catch (err) {
+        console.log(err);
+        res.status(500).send(err);
+
+    }
+})
+
 router.post('/style/add', async (req, res) => {
     console.log('Adding Style')
     const { wallet, pda, style } = req.body;
@@ -42,8 +55,8 @@ router.get('/hashlist/:pda', async (req, res) => {
     res.status(status).send(response);
 })
 router.post('/hashlist/add', async (req, res) => {
-    const { hashlist, wallet, pda } = req.body;
-    const { status, response } = await CC.addHashlist(wallet, hashlist, pda)
+    const { hashlist, wallet, name, pda } = req.body;
+    const { status, response } = await CC.addHashlist(wallet, name, hashlist, pda)
     res.status(status).send(response);
 })
 

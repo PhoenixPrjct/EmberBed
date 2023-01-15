@@ -120,7 +120,7 @@ async function handleCopyClick(e: any, v?: string) {
             <q-card-section class="text-h5 text-center">
                 No Collections Found for <div class="pubkey" @click="(e) => handleCopyClick(e)">
 
-                    {{ wallet.publicKey }}
+                    {{ wallet?.publicKey }}
                 </div>
 
             </q-card-section>

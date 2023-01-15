@@ -1,5 +1,3 @@
-export { stakingFee } from "./stakingFee"
-export type { StakingFeeAccounts } from "./stakingFee"
 export { stake } from "./stake"
 export type { StakeArgs, StakeAccounts } from "./stake"
 export { redeemReward } from "./redeemReward"

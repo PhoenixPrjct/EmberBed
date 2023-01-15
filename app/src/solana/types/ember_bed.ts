@@ -3,27 +3,6 @@ export type EmberBed = {
   "name": "ember_bed",
   "instructions": [
     {
-      "name": "stakingFee",
-      "accounts": [
-        {
-          "name": "from",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "to",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "stake",
       "accounts": [
         {
@@ -426,11 +405,6 @@ export type EmberBed = {
           "isSigner": true
         },
         {
-          "name": "funderAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -459,6 +433,10 @@ export type EmberBed = {
         },
         {
           "name": "phoenixCollectionRelation",
+          "type": "string"
+        },
+        {
+          "name": "newManager",
           "type": "string"
         }
       ]
@@ -1026,27 +1004,6 @@ export const IDL: EmberBed = {
   "name": "ember_bed",
   "instructions": [
     {
-      "name": "stakingFee",
-      "accounts": [
-        {
-          "name": "from",
-          "isMut": true,
-          "isSigner": true
-        },
-        {
-          "name": "to",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "systemProgram",
-          "isMut": false,
-          "isSigner": false
-        }
-      ],
-      "args": []
-    },
-    {
       "name": "stake",
       "accounts": [
         {
@@ -1449,11 +1406,6 @@ export const IDL: EmberBed = {
           "isSigner": true
         },
         {
-          "name": "funderAta",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
           "name": "systemProgram",
           "isMut": false,
           "isSigner": false
@@ -1482,6 +1434,10 @@ export const IDL: EmberBed = {
         },
         {
           "name": "phoenixCollectionRelation",
+          "type": "string"
+        },
+        {
+          "name": "newManager",
           "type": "string"
         }
       ]
