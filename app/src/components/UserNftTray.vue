@@ -237,7 +237,7 @@ watchEffect(async () => {
 
 </script>
 <template>
-    <div v-if="nfts.loading && stakingAction.percent == 0">
+    <div class="flex justify-center" v-if="nfts.loading && stakingAction.percent == 0">
         <q-spinner size="5rem" />
     </div>
     <q-card dark v-if="stakingAction.percent !== 0">
@@ -275,14 +275,7 @@ watchEffect(async () => {
                     <UserNftCard :nft="nft" :stakeNft="stakeNft" :unstakeNft="unstakeNft" :redeem="redeem" />
                 </div>
             </section>
-
         </div>
-
-        <!-- <div class="eligible nft-card-container">
-            <div v-for="nft in nfts.otherNfts" :key="nft.mint" class="nft-card">
-                <UserNftCard :nft="nft" :eligible="false" />
-            </div>
-        </div> -->
     </div>
 </template>
 <style lang="scss" scoped>
@@ -321,7 +314,8 @@ p {
 .nft-card {
     margin: 1rem;
     flex: 0 0 22%;
-    max-width: 425px;
+    max-width: 300px;
+    // max-height: 300px;
     // min-width: 320px
 }
 

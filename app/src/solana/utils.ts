@@ -4,7 +4,7 @@ import { EmberBed } from './types/ember_bed';
 import { PublicKey, Keypair, SystemProgram, Transaction, BlockheightBasedTransactionConfirmationStrategy } from '@solana/web3.js';
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, createAssociatedTokenAccount } from "@solana/spl-token"
 import web3 = anchor.web3;
-import { Accounts, AnchorWallet, UpdateStatePdaArgs, UpdateStatePdaAccounts, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind, RedeemRewardAccounts, updateStatePda } from '../types'
+import { Accounts, AnchorWallet, UpdateStatePdaArgs, UpdateStatePdaAccounts, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind, RedeemRewardAccounts, updateStatePda, RedeemFireAccounts } from '../types'
 import { devKP } from './wallets/devWallet'
 import { fundKP } from './wallets/fundWallet';
 import {
@@ -305,7 +305,9 @@ export function getAPI(program: Program<EmberBed>) {
         const stakeState = stakeStatusInfo?.toJSON().stakeState
         return { tx: tx, stakeStatus: stakeState }
     }
-    async function redeemFire() {
+    async function redeemFire(accounts: RedeemFireAccounts, collectionName: string, bumpFire: string) {
+
+        const txPromise = program.methods.redeemFire(bumpFire,)
         console.log('Hey')
     };
     async function redeemReward(accounts: RedeemRewardAccounts, collectionName: string, bumpState: number) {
@@ -361,9 +363,7 @@ export function getAPI(program: Program<EmberBed>) {
     async function managerWithdrawal() {
         console.log('Hey')
     };
-    async function getUsersStakedNfts() {
-        console.log('Hey')
-    };
+
     return {
         updateCollectionRewardPDA,
         initializeFirePda,

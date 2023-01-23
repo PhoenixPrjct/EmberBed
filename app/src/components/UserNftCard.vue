@@ -93,8 +93,6 @@ async function handleStakeNft(nft: EBNft, eb: { loaded: boolean, info: Collectio
     return
 }
 
-
-
 async function handleUnstakeNft(nft: EBNft, eb: { loaded: boolean, info: CollectionRewardInfo | null }, force?: boolean) {
     stakeStatus.value.loaded = false;
     if (!force) {
@@ -105,6 +103,8 @@ async function handleUnstakeNft(nft: EBNft, eb: { loaded: boolean, info: Collect
     delayedRefresh(nft)
     return
 }
+
+
 
 function delayedRefresh(nft: EBNft) {
     console.log("delayedRefresh");
@@ -276,22 +276,17 @@ watchEffect(async () => {
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showStakeButton"
                         style="flex:0 0 90%" label="Stake" @click="handleStakeNft(nft, ebCollection)" />
                     <!-- <q-btn dark label="Check PDA" @click="checkPDA()" /> -->
-
-
-
-
                 </q-card-actions>
             </div>
             <q-btn flat class='refresh-btn' dark icon="refresh" @click="getStakeState(nft)" />
         </q-card-section>
     </q-card>
-
-
 </template>
 <style lang="scss" scoped>
 .nft-card-local {
     width: 100%;
     height: 100%;
+    // max-height: 300px;
 
 }
 

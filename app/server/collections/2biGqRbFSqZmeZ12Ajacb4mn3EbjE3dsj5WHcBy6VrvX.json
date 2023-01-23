@@ -1,1 +1,14 @@
-{"manager":"3dJKKSazHSZw6GwBEX9cXcGZgC4P6oUqi6fbBgM3N2qL","hashlist":["4tbD8FN8kyqhJ1f1UFDbQuBN3wKJvxYxG7mDDC1qsGqf"],"style":{"icon":"https://cdn.discordapp.com/attachments/906000295182610533/1058234644119691356/logo.png","colors":{"primary":"#14f195","secondary":"#9945FF","accent":"#ffffff"}}}
+{
+    "manager": "3dJKKSazHSZw6GwBEX9cXcGZgC4P6oUqi6fbBgM3N2qL",
+    "hashlist": [
+        "4tbD8FN8kyqhJ1f1UFDbQuBN3wKJvxYxG7mDDC1qsGqf"
+    ],
+    "style": {
+        "icon": "https://cdn.discordapp.com/attachments/906000295182610533/1058234644119691356/logo.png",
+        "colors": {
+            "primary": "#14f195",
+            "secondary": "#9945FF",
+            "accent": "#ffffff"
+        }
+    }
+}

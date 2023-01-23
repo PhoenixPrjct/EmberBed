@@ -101,28 +101,22 @@ async function handleCopyClick(e: any, v?: string) {
 <template>
     <section class="btn-container">
         <q-btn dark label="Add New" icon="add" :class="!collectionPDAs.length ? 'add-btn' : void 0" to="/admin/new" />
-
         <q-btn dark label="Stats" icon="query_stats">
             <q-tooltip>Coming Soon.</q-tooltip>
         </q-btn>
-
         <q-btn dark label="Active Collections" @click="getCollectionInfo('TestEyes', demoRewardMint.toBase58())"
             icon="person" />
     </section>
     <section class="info-container">
         <h4>This is where info will go on how to use this page.</h4>
     </section>
-
-
     <CollectionOnChainInfo v-if="collectionPDAs" :collectionPDAs="collectionPDAs" />
     <section v-else>
         <q-card dark class="no-collections ">
             <q-card-section class="text-h5 text-center">
                 No Collections Found for <div class="pubkey" @click="(e) => handleCopyClick(e)">
-
                     {{ wallet?.publicKey }}
                 </div>
-
             </q-card-section>
         </q-card>
     </section>
