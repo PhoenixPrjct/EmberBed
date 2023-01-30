@@ -11,7 +11,7 @@ import { AnchorWallet } from 'src/types'
 
 // import { AnchorWallet } from 'solana-wallets-vue/src/useAnchorWallet'
 
-const EmberBedAddress = "BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z"
+const EmberBedAddress = "6Gn1WEdLCAiC7JfMekmWHsEeEwoByn1JP5VV3n2sWLKz"
 
 const preflightCommitment = 'processed';
 const commitment = 'processed';

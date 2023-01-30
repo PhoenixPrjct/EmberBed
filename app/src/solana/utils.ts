@@ -1,26 +1,34 @@
 import * as anchor from '@project-serum/anchor';
 import { Program, Idl } from '@project-serum/anchor';
 import { EmberBed } from './types/ember_bed';
-import { PublicKey, Keypair, SystemProgram, Transaction, BlockheightBasedTransactionConfirmationStrategy } from '@solana/web3.js';
-import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getAccount, getOrCreateAssociatedTokenAccount, getAssociatedTokenAddressSync, createAssociatedTokenAccount } from "@solana/spl-token"
+import { PublicKey, Keypair, SystemProgram /*,Transaction, BlockheightBasedTransactionConfirmationStrategy*/ } from '@solana/web3.js';
+import {
+    getAssociatedTokenAddress,
+    // Account,
+    TOKEN_PROGRAM_ID,
+    // getAccount, 
+    getOrCreateAssociatedTokenAccount,
+    // getAssociatedTokenAddressSync, 
+    // createAssociatedTokenAccount 
+} from "@solana/spl-token"
 import web3 = anchor.web3;
-import { Accounts, AnchorWallet, UpdateStatePdaArgs, UpdateStatePdaAccounts, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeState, StakeStateJSON, UserStakeInfo, UserStakeInfoJSON, StakeStateKind, RedeemRewardAccounts, updateStatePda, RedeemFireAccounts } from '../types'
+import { Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeStateJSON, UserStakeInfo, RedeemRewardAccounts, RedeemFireAccounts } from '../types'
 import { devKP } from './wallets/devWallet'
 import { fundKP } from './wallets/fundWallet';
 import {
     Metaplex,
     bundlrStorage,
     keypairIdentity,
-    useNftOperationHandler,
-    Nft,
-    walletAdapterIdentity,
+    // useNftOperationHandler,
+    // Nft,
+    // walletAdapterIdentity,
 } from "@metaplex-foundation/js"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { ComputedRef } from 'vue';
-import { useWallet } from 'solana-wallets-vue';
-import { api } from 'src/boot/axios';
+// import { useWallet } from 'solana-wallets-vue';
+// import { api } from 'src/boot/axios';
 
 
 // const { connection, wallet } = useChainAPI();
@@ -303,7 +311,7 @@ export function getAPI(program: Program<EmberBed>) {
     }
     async function redeemFire(accounts: RedeemFireAccounts, collectionName: string, bumpFire: string) {
 
-        const txPromise = program.methods.redeemFire(bumpFire,0).accounts(accounts).rpc();
+        const txPromise = program.methods.redeemFire(bumpFire, 0).accounts(accounts).rpc();
         console.log('Hey')
     };
     async function redeemReward(accounts: RedeemRewardAccounts, collectionName: string, bumpState: number) {

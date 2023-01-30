@@ -16,7 +16,7 @@ mod constants;
 mod structs;
 mod errors;
 mod state_and_relations;
-declare_id!("BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z");
+declare_id!("6Gn1WEdLCAiC7JfMekmWHsEeEwoByn1JP5VV3n2sWLKz");
 // const LPS: u64 = 1_000_000_000;
 
 #[program]

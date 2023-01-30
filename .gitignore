@@ -6,6 +6,9 @@
 .crates
 
 target
+target_BAK
+
+.coderrect
 
 **/*.rs.bk
 
