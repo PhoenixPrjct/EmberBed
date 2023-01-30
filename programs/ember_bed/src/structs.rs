@@ -21,7 +21,6 @@ pub struct Stake<'info> {
     pub user: Signer<'info>,
     #[account(mut)]
     pub user_reward_ata: Box<Account<'info, TokenAccount>>,
-    // pub phoenix_wallet: AccountInfo<'info>,
     #[account(
         mut, 
         associated_token::mint = nft_mint_address, 
@@ -38,14 +37,7 @@ pub struct Stake<'info> {
         space = std::mem::size_of::<UserStakeInfo>() + 8
     )]
     pub stake_status: Box<Account<'info, UserStakeInfo>>,
-    // #[account(
-    //     init_if_needed,
-    //     payer = user,
-    //     seeds = [user.key.as_ref()],
-    //     bump,
-    //     space = std::mem::size_of::<UserAccount>() + 1024
-    // )]
-    // pub user_account_pda: Account<'info, UserAccount>,
+
     #[account(mut)]
     pub collection_reward_info: Box<Account<'info, CollectionRewardInfo>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
@@ -264,8 +256,8 @@ pub struct DepositToTokenPda<'info> {
     )]
     pub token_poa: Account<'info, TokenAccount>,
 
-    #[account(mut)]
-    pub state_pda: Account<'info, CollectionRewardInfo>,
+    // #[account(mut)]
+    // pub state_pda: Account<'info, CollectionRewardInfo>,
     pub mint: Account<'info, Mint>,
     #[account(mut)]
     pub funder: Signer<'info>,
@@ -275,14 +267,6 @@ pub struct DepositToTokenPda<'info> {
     pub rent: Sysvar<'info, Rent>,
     pub token_program: Program<'info, Token>,
 }
-
-// #[derive(Accounts)]
-// pub struct InitializeFireInfo<'info> {
-//     /// CHECK
-//     pub user: Signer<'info>,
-//     #[account(mut)]
-//     pub fire_info: Account<'info, FireInfo>,
-// }
 
 #[derive(Accounts)]
 #[instruction(_bump_fire:u8, nfts_held:u8)]
@@ -308,11 +292,4 @@ pub struct RedeemFire<'info> {
     pub collection_info: Account<'info, CollectionRewardInfo>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
-}
-
-#[account]
-#[derive(Default)]
-pub struct UserAccount {
-    pub user: Pubkey,
-    pub stake_status_pks: Vec<Pubkey>,
 }

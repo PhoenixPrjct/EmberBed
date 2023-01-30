@@ -110,14 +110,11 @@ export function getAPI(program: Program<EmberBed>) {
         return fireTokenATA
     }
 
-
-
     async function getNftTokenAddress(user: web3.PublicKey, nftMint: string) {
         const mintAddress = new PublicKey(nftMint);
         const nftTokenAddress = await getAssociatedTokenAddress(mintAddress, user);
         return nftTokenAddress;
     }
-
 
     async function getAccounts(data: { user: PublicKey, collectionName: string, rewardMint: string, nftMint?: string, nftColAddress?: string, }): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
@@ -229,7 +226,6 @@ export function getAPI(program: Program<EmberBed>) {
         }
     }
 
-
     async function updateCollectionRewardPDA(user: PublicKey, collectionInfo: CollectionRewardInfo) {
         try {
             const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint, manager } = collectionInfo;
@@ -307,7 +303,7 @@ export function getAPI(program: Program<EmberBed>) {
     }
     async function redeemFire(accounts: RedeemFireAccounts, collectionName: string, bumpFire: string) {
 
-        const txPromise = program.methods.redeemFire(bumpFire,)
+        const txPromise = program.methods.redeemFire(bumpFire,0).accounts(accounts).rpc();
         console.log('Hey')
     };
     async function redeemReward(accounts: RedeemRewardAccounts, collectionName: string, bumpState: number) {
