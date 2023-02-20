@@ -24,7 +24,7 @@ import {
     // walletAdapterIdentity,
 } from "@metaplex-foundation/js"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
-
+import { getExplorerURL } from 'src/helpers';
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { Ref } from 'vue';
 // import { useWallet } from 'solana-wallets-vue';
@@ -40,7 +40,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 // const DevWallet = Keypair.fromSecretKey(DevSecret as Uint8Array, { skipValidation: true });
 const EBWallet = Keypair.fromSecretKey(FundSecret as Uint8Array);
-const wallet: Ref<AnchorWallet> = useAnchorWallet();
+const wallet: Ref<AnchorWallet | undefined> = useAnchorWallet();
 
 
 export function getAPI(program: Program<EmberBed>) {
@@ -48,7 +48,7 @@ export function getAPI(program: Program<EmberBed>) {
     const metaplex = Metaplex.make(connection)
         .use(keypairIdentity(EBWallet))
         .use(bundlrStorage())
-    const FireTok = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
+    const FireTok = new PublicKey("F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8")
 
     async function getStatePda(RewTok: web3.PublicKey, collectionName: string): Promise<{ pda: web3.PublicKey, bump: number }> {
         const [pda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
@@ -69,6 +69,10 @@ export function getAPI(program: Program<EmberBed>) {
         return { pda, bump };
     }
 
+    async function getFireMint(): Promise<PublicKey> {
+        return FireTok
+    }
+
     async function getDelegatedAuthPda(): Promise<{ pda: web3.PublicKey, bump: number }> {
         const [delegatedAuthPda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
             [Buffer.from("authority")],
@@ -86,13 +90,13 @@ export function getAPI(program: Program<EmberBed>) {
         return { pda: userAccountPDA, bump: bumpAccount }
     }
 
-    async function getUserRewardInfoPda(user: web3.PublicKey, RewTok: web3.PublicKey): Promise<{ pda: web3.PublicKey, bump: number }> {
-        const [userRewardInfoPda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
-            [user.toBuffer(), RewTok.toBuffer()],
-            program.programId
-        );
-        return { pda: userRewardInfoPda, bump: bump };
-    }
+    // async function getUserRewardInfoPda(user: web3.PublicKey, RewTok: web3.PublicKey): Promise<{ pda: web3.PublicKey, bump: number }> {
+    //     const [userRewardInfoPda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
+    //         [user.toBuffer(), RewTok.toBuffer()],
+    //         program.programId
+    //     );
+    //     return { pda: userRewardInfoPda, bump: bump };
+    // }
     async function getStakeStatusPda(user: web3.PublicKey, nftMint: string): Promise<{ pda: web3.PublicKey, bump: number }> {
         const mintAddress: PublicKey = new PublicKey(nftMint);
         const nftTokenAddress = await getAssociatedTokenAddress(mintAddress, user)
@@ -128,7 +132,7 @@ export function getAPI(program: Program<EmberBed>) {
         return nftTokenAddress;
     }
 
-    async function getAccounts(data: { user: PublicKey, collectionName: string, rewardMint: string, nftMint?: string, nftColAddress?: string, }): Promise<Accounts> {
+    async function getAccounts(data: { user: PublicKey, collectionName: string, rewardMint: string, nftMint?: string, nftColAddress?: string, isFire?: boolean }): Promise<Accounts> {
         let accounts: Accounts = {} as Accounts;
         const RewTok: PublicKey = new PublicKey(data.rewardMint);
         let nftAccounts = {};
@@ -174,7 +178,13 @@ export function getAPI(program: Program<EmberBed>) {
             const nftCollectionAddress = new PublicKey(data.nftColAddress);
             accounts = { ...accounts, nftCollectionAddress: nftCollectionAddress }
         }
-
+        const fireInfo = await getFirePda();
+        const firePoa = await getFireTokenAta();
+        const fireMint = await getFireMint();
+        const userFireAta = await getUserFireAta(data.user);
+        if (data.isFire) {
+            accounts = { ...accounts, firePoa: firePoa, fireInfo: fireInfo.pda, fireBump: fireInfo.bump, fireMint: fireMint, userFireAta: userFireAta };
+        }
         // console.log('REWTOK:', accounts.RewTok.toBase58())
 
         return accounts;
@@ -204,13 +214,13 @@ export function getAPI(program: Program<EmberBed>) {
             systemProgram: SystemProgram.programId,
         }).signers(signers).rpc();
         console.log("Initialize Fire PDA tx:")
-        console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+        console.log(getExplorerURL(tx))
         return tx;
     }
 
     async function chargeInitFee(user: PublicKey, amount: number) {
         const PhoenixWallet = EBWallet.publicKey// new web3.PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB');
-        console.log(PhoenixWallet.toBase58(), `\n`, wallet.value.publicKey)
+        console.log(PhoenixWallet.toBase58(), `\n`, wallet?.value?.publicKey)
         try {
             async function getTx() {
 
@@ -307,16 +317,20 @@ export function getAPI(program: Program<EmberBed>) {
             .rpc();
 
         console.log("Stake tx:")
-        console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
+        console.log(getExplorerURL(tx));
         const stakeStatusInfo: UserStakeInfo | null = await UserStakeInfo.fetch(connection, data.stakeStatus);
         if (!stakeStatusInfo) return { tx: tx, stakeStatus: null as unknown as StakeStateJSON }
         const stakeState = stakeStatusInfo?.toJSON().stakeState
         return { tx: tx, stakeStatus: stakeState }
     }
-    async function redeemFire(accounts: RedeemFireAccounts, collectionName: string, bumpFire: number) {
+    async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, nftsHeld?: number, collectionName?: string) {
+        const fireTxPromise = program.methods.redeemFire(bumpFire, 0).accounts({ ...accounts })
+        const fireTx = await fireTxPromise;
+        const sig = await fireTx.rpc();
+        console.log("Redeem tx:")
+        console.log(getExplorerURL(sig));
+        return sig;
 
-        const txPromise = program.methods.redeemFire(bumpFire, 0).accounts(accounts).rpc();
-        console.log('Hey')
     };
     async function redeemReward(accounts: RedeemRewardAccounts, collectionName: string, bumpState: number) {
 
@@ -326,7 +340,7 @@ export function getAPI(program: Program<EmberBed>) {
         const sig = await rewardTx.rpc();
 
         console.log("Redeem tx:")
-        console.log(`https://explorer.solana.com/tx/${sig}?cluster=devnet`)
+        console.log(getExplorerURL(sig))
         return sig;
 
     };
@@ -340,12 +354,12 @@ export function getAPI(program: Program<EmberBed>) {
                 metadataProgram: METADATA_PROGRAM_ID,
                 systemProgram: SystemProgram.programId,
             });
-            console.log("Unstake tx:")
-            console.log(`https://explorer.solana.com/tx/${unstakeTx}?cluster=devnet`)
             const unstakeTx = await unstakeTxPromise;
             if (!unstakeTx) throw new Error('Promise Error')
             const sig = await unstakeTx.rpc();
             console.log("Signature:", sig)
+            console.log("Unstake tx:")
+            console.log(`DevNet: https://explorer.solana.com/tx/${sig}?cluster=devnet \n\n Main: https://explorer.solana.com/tx/${sig}`)
             const stakeStatus = await (await UserStakeInfo.fetch(connection, accounts.stakeStatus))?.toJSON()
             const stakeState = stakeStatus?.stakeState || null
 

@@ -103,6 +103,7 @@ export type DBCollectionInfo = {
     manager: string;
     name: string;
     hashlist: string[];
+    collectionAddress?: string;
     style: {
         icon: string,
         colors: {
@@ -217,6 +218,11 @@ export type Accounts = {
     nftCollectionAddress: PublicKey,
     funderTokenAta: PublicKey
     rewardWallet: PublicKey
+    firePoa?: PublicKey,
+    fireInfo?: PublicKey,
+    fireMint?: PublicKey,
+    fireBump?: number,
+    userFireAta?: PublicKey,
 }
 
 

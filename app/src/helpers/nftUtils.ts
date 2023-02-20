@@ -62,6 +62,7 @@ export async function getNftsInWallet(wallet: PublicKey) {
     });
 
     const nfts = await Promise.all(nftsPromises);
+    // const holderStatus = nfts.forEach((nft)=> { if (nft.ebCollection)})
     const ebnfts = nfts.filter((nft) => nft.ebCollection);
     const otherNfts = nfts.filter((nft) => !nft.ebCollection);
     return { ebNfts: ebnfts, other: otherNfts };

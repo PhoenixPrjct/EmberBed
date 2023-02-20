@@ -17,9 +17,23 @@ const preflightCommitment = 'processed';
 const commitment = 'processed';
 const programID = new PublicKey(EmberBedAddress);
 
+
+
+function getConnection() {
+    let url = process.env.QUICK_NODE_HTTP
+    if (!url) {
+        url = 'https://solana-api.projectserum.com'
+    }
+    if (process.env.NODE_ENV !== 'production') {
+        url = clusterApiUrl('devnet')
+    }
+    return url
+}
+
+
 export function _createChainAPI() {
     const wallet: Ref<AnchorWallet> = useAnchorWallet();
-    const connection = new Connection(clusterApiUrl('devnet'));
+    const connection = new Connection(getConnection());
     const provider = computed(() => wallet ? new anchor.AnchorProvider(connection, wallet.value, { preflightCommitment, commitment }) : null)
     const program = computed(() => provider.value ? new Program(IDL, programID, provider.value) : null);
     const newProgram = program as unknown as ComputedRef<Program<EmberBed>>;

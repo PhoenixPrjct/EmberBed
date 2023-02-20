@@ -47,7 +47,7 @@ export function getInitCost(kind: string) {
 
 export function getStakingFee(kind: string) {
     let amount
-    const baseAmount = 0.05
+    const baseAmount = 0.0095
 
     switch (kind) {
         case 'EmberBed':
@@ -63,11 +63,35 @@ export function getStakingFee(kind: string) {
             amount = baseAmount;
             break;
         default:
-            amount = 0.05
+            amount = 0.0095
             break;
     }
     return amount;
 }
+
+// export function getUserRate(nftsHeld: number) {
+//     let amount
+//     const baseRPD = 1
+
+//     switch (kind) {
+//         case 'EmberBed':
+//             amount = baseRPD * 2;
+//             break;
+//         case 'Affiliate':
+//             amount = baseRPD * 5;
+//             break;
+//         case 'Saved':
+//             amount = baseRPD * 10;
+//             break;
+//         case 'None':
+//             amount = baseRPD;
+//             break;
+//         default:
+//             amount = 0.0095
+//             break;
+//     }
+//     return amount;
+// }
 
 
 export async function chargeFeeTx(user: PublicKey, amount: number) {

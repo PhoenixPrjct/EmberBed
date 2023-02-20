@@ -6,7 +6,7 @@ import { getNftsInWallet } from 'src/helpers/nftUtils';
 import { ref, watchEffect, getCurrentInstance, computed } from 'vue';
 import {
     CollectionRewardInfo, RedeemRewardAccounts,
-    DBCollectionInfo, EBNft,
+    DBCollectionInfo, EBNft, RedeemFireAccounts,
     StakeAccounts, UnstakeAccounts,
     UserStakeInfoJSON
 } from "src/types";
@@ -15,8 +15,8 @@ import UserNftCard from "src/components/UserNftCard.vue"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { SystemProgram } from '@solana/web3.js';
-import { chargeFeeTx, getStakingFee } from 'src/helpers';
-
+import { chargeFeeTx, getStakingFee, getExplorerURL } from 'src/helpers';
+import { FIRE_MINT_PUB } from "src/helpers/constants";
 
 const { notify } = useQuasar();
 const route = useRoute();
@@ -73,7 +73,7 @@ async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Colle
             icon: 'grade',
             color: 'accent',
             message: `Successfully staked ${nft.name}`,
-            caption: `https://explorer.solana.com/tx/${stakeTx.tx}?cluster=devnet`,
+            caption: getExplorerURL(stakeTx.tx),
             position: 'top'
 
         })
@@ -133,7 +133,7 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
             icon: 'grade',
             color: 'accent',
             message: `Successfully unstaked ${nft.name}`,
-            caption: `https://explorer.solana.com/tx/${unstakeTx.tx}?cluster=devnet`,
+            caption: getExplorerURL(unstakeTx.tx),
             position: 'top'
 
         })
@@ -183,7 +183,7 @@ async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: Collect
         stakingAction.value = { message: `Complete`, percent: 1 }
         notify({
             message: `Redeemed ${ebCollection.info.rewardSymbol}`,
-            caption: `https://explorer.solana.com/tx/${redeemTx}?cluster=devnet`,
+            caption: getExplorerURL(redeemTx),
             type: 'success',
             position: 'top',
             timeout: 10000
@@ -207,6 +207,56 @@ async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: Collect
 
 }
 
+async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) {
+    try {
+        if (!ebCollection.info) throw new Error('Collection Data is Incorrect, Please Refresh and try again')
+        if (!ebCollection.info.fireEligible) throw new Error('This collection is not eligible for Fire Rewards, talk to your community leaders');
+        stakingAction.value = { message: 'Accounts Checkout', percent: 0.25 }
+        const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint, isFire: true });
+        if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
+        const redeemAccts: RedeemFireAccounts = {
+            user: wallet.value.publicKey,
+            collectionInfo: accounts.statePDA,
+            fireInfo: accounts.fireInfo!,
+            firePoa: accounts.firePoa!,
+            stakeStatus: accounts.stakeStatusPda,
+            fireMint: FIRE_MINT_PUB,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            userRewardAta: accounts.userFireAta!,
+            systemProgram: SystemProgram.programId
+        }
+        const bumpFire = accounts.fireBump!
+        const collectionName = ebCollection.info.collectionName
+        stakingAction.value = { message: `Redeeming for $FIRE`, percent: 0.75 }
+        const redeemTx = await api.value?.redeemFire(redeemAccts, bumpFire, 0, collectionName);
+        if (!redeemTx) throw new Error('TX Failed, Please Refresh The Page');
+        stakingAction.value = { message: `Complete`, percent: 1 }
+        notify({
+            message: `Redeemed ${ebCollection.info.rewardSymbol}`,
+            caption: getExplorerURL(redeemTx),
+            type: 'success',
+            position: 'top',
+            timeout: 10000
+        })
+        stakingAction.value = { message: '', percent: 0 }
+        return true
+
+    } catch (err: any) {
+        stakingAction.value = { message: '', percent: 0 }
+        console.error(err)
+        notify({
+            group: 'staking',
+            type: 'error',
+            icon: 'error',
+            color: 'error',
+            message: `Failed to redeem $FIRE'}`,
+            caption: `${err.message}`,
+            position: 'top'
+        })
+        return false;
+    }
+
+}
 function handleGoBackClick() {
     if (route.path == '/user/') {
         router.push('/')
@@ -272,7 +322,8 @@ watchEffect(async () => {
 
                 <div v-for="nft in nfts.ebNfts" :key="nft.mint" class="nft-card"
                     :style="theme ? `box-shadow: 0px 0px 12px 0px ${theme.colors.primary}` : `box-shadow: 0px 0px 12px 0px #ffff`">
-                    <UserNftCard :nft="nft" :stakeNft="stakeNft" :unstakeNft="unstakeNft" :redeem="redeem" />
+                    <UserNftCard :nft="nft" :stakeNft="stakeNft" :unstakeNft="unstakeNft" :redeem="redeem"
+                        :redeemFire="redeemFire" />
                 </div>
             </section>
         </div>

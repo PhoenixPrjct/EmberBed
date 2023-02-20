@@ -16,6 +16,7 @@ mod constants;
 mod structs;
 mod errors;
 mod state_and_relations;
+
 declare_id!("6Gn1WEdLCAiC7JfMekmWHsEeEwoByn1JP5VV3n2sWLKz");
 // const LPS: u64 = 1_000_000_000;
 
@@ -344,9 +345,9 @@ pub mod ember_bed {
     pub fn deposit_to_fire_ata(ctx: Context<DepositToFirePda>, amount: u64) -> Result<()> {
         let state = &mut ctx.accounts.fire_pda;
 
-        let collection_name = &state.collection_name;
+        // let _collection_name = &state.collection_name;
+        // let _reward_mint = &ctx.accounts.mint.to_account_info();
         let sender = &ctx.accounts.funder;
-        let reward_mint = &ctx.accounts.mint.to_account_info();
 
         let transfer_instruction = Transfer {
             from: ctx.accounts.funder_ata.to_account_info(),
@@ -435,12 +436,7 @@ pub mod ember_bed {
         Ok(())
     }
 
-    pub fn redeem_fire(
-        ctx: Context<RedeemFire>,
-
-        _bump_fire: u8,
-        nfts_held: u8
-    ) -> Result<()> {
+    pub fn redeem_fire(ctx: Context<RedeemFire>, _bump_fire: u8, nfts_held: u8) -> Result<()> {
         let _collection_info_pda = &ctx.accounts.collection_info;
         let fire_info = &ctx.accounts.fire_info;
         let stake_status = &ctx.accounts.stake_status;
@@ -456,7 +452,7 @@ pub mod ember_bed {
             msg!("Stake account is not staking anything");
             return err!(StakeError::InvalidStakeState);
         }
-        // Check if Collection is $Fire Eligble and return value
+        // Check if Collection is $Fire Eligible and return value
         let stored_relation = &ctx.accounts.collection_info._phoenix_relation;
         let mut relation_value = phoenix_relation_value(stored_relation);
         if relation_value == 0 {

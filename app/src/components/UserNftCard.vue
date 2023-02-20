@@ -16,10 +16,10 @@ const { notify, dialog } = useQuasar();
 
 const props = defineProps<{
     nft: EBNft,
-    // eligible: boolean,
     stakeNft: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<void>,
     unstakeNft: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<void>,
-    redeem: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) => Promise<boolean>
+    redeem: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) => Promise<boolean>,
+    redeemFire: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<boolean>
 }>();
 const statusRef = ref<UserStakeInfoJSON | null>(null)
 const phoenixUserRelation = ref<PhoenixUserRelationJSON['kind'] | null>(null)
@@ -140,13 +140,17 @@ async function getStakeState(nft: EBNft) {
 
 }
 
-async function handleRedeemRewards(nft: EBNft, eb: { loaded: boolean, info: CollectionRewardInfo | null }, fire?: boolean) {
-    if (!fire) {
-        await props.redeem(nft, eb, timeStaked.value)
-        delayedRefresh(nft)
-        return
-    }
+async function handleRedeemRewards(nft: EBNft, eb: { loaded: boolean, info: CollectionRewardInfo | null }) {
     console.log(`Redeeming ${nft.name} Reward`)
+    await props.redeem(nft, eb, timeStaked.value)
+    delayedRefresh(nft)
+    return
+
+}
+
+async function handleRedeemFire(nft: EBNft, eb: { loaded: boolean, info: CollectionRewardInfo | null }) {
+    await props.redeemFire(nft, eb)
+    delayedRefresh(nft)
     return
 }
 
@@ -259,11 +263,11 @@ watchEffect(async () => {
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.fireEligible" icon="&#x1F525;"
                         :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0"
-                        @click="handleRedeemRewards(nft, ebCollection, true)" />
+                        @click="handleRedeemFire(nft, ebCollection)" />
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
                         :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : 'Redeem Tokens'"
-                        @click="handleRedeemRewards(nft, ebCollection, false)" />
+                        @click="handleRedeemRewards(nft, ebCollection)" />
 
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton" icon="remove" :label="$q.screen.gt.md ? 'Unstake' : void 0"
