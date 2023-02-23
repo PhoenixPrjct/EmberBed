@@ -64,6 +64,7 @@ router.get('/info/:pda', async (req, res) => {
     const { pda } = req.params;
     console.log(`Getting Info for ${pda}`)
     const { status, response } = await CC.getByPDA(pda)
+    console.log({ response })
     res.status(status).json(response)
 })
 

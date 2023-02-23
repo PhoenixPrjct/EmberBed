@@ -268,7 +268,7 @@ function handleGoBackClick() {
 
 watchEffect(async () => {
     if (!nfts.value.loaded) {
-        const { ebNfts, other } = await getNftsInWallet(wallet.value.publicKey);
+        const { ebNfts, other } = await getNftsInWallet(wallet.value!.publicKey);
         if (props.colPda) {
             nfts.value.ebNfts = ebNfts.filter(nft => nft.ebCollection == props.colPda)
         } else {
@@ -296,8 +296,7 @@ watchEffect(async () => {
                 {{ stakingAction.message }}
             </q-card-section>
             <q-card-section>
-                <q-linear-progress dark size="2rem" :value="stakingAction.percent" color="accent"
-                    class="q-mt-sm special">
+                <q-linear-progress dark size="2rem" :value="stakingAction.percent" color="accent" class="q-mt-sm special">
                     <div class="absolute-full flex flex-center">
                         <q-badge color="white" text-color="accent" :label="`${stakingAction.percent * 100} %`" />
                     </div>

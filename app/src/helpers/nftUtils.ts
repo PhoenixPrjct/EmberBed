@@ -26,49 +26,50 @@ async function checkNftCollectionAddress(pda: string, nftMint: string, collectio
     const collectionAddress = await (await CollectionRewardInfo.fetch(connection, pdaPk))?.toJSON().collectionAddress;
     if (!collectionAddress) return false;
     const nft = await metaplex.nfts().findByMint({ mintAddress: nftMintPk });
-    console.log({ nft_Collection_Address: nft.collection?.address.toBase58() })
+    // console.log({ nft_Collection_Address: nft.collection?.address.toBase58() })
     const nftCA = nft.collection?.address.toBase58()
     if (collectionAddress !== nftCA) return false;
-    console.log({ checkNftCollectionAddress: '', nftCA, collectionAddress });
+
 
     if (!nftCA) {
         console.log("nftCA is null")
         return false
     }
-    console.log({ nftCA, collectionAddress })
+    console.log({ nftMint, nftCA, collectionAddress })
     return true
 }
 
 
 export async function getNftsInWallet(wallet: PublicKey) {
     const publicAddress = wallet.toBase58();
+
     let collections: any[] = await program.value.account.collectionRewardInfo.all();
     collections = await Promise.all(collections.map(async (col) => {
         const c = await server_api.collection.get.one(col.publicKey.toBase58());
-        return c.hashlist.length ? undefined : col.publicKey.toBase58();
+        return !c.hashlist ? undefined : { ebCollection: col.publicKey.toBase58(), verifiedCollectionAddress: c.collectionAddress };
     }));
 
-    console.log({ collections });
     // Remove undefined values from the collections array
     collections = collections.filter(col => col !== undefined);
+    console.log({ collections });
     const _nfts = await getParsedNftAccountsByOwner({ publicAddress, connection })
     const nftsPromises = _nfts.map(async (nft) => {
-        let ebCollection: string = await server_api.nft.getCollectionFor(nft.mint);
+        const ebCollection: string = await server_api.nft.getCollectionFor(nft.mint);
         const meta = await getNftMeta(nft.data.uri);
+        // if (!ebCollection) {
+        //     const exists = collections.find(async (c) => { await checkNftCollectionAddress(c.ebCollection, nft.mint, collections) });
+        //     if (exists) {
+        //         ebCollection = exists;
+        //     }
+        //     // console.log({ nft: nft.data.name, collection: ebCollection })
+        // }
+
+
         if (!ebCollection) {
-            const exists = collections.find(async (c) => { console.log(c); await checkNftCollectionAddress(c, nft.mint, collections) });
-            if (exists) {
-                ebCollection = exists;
-            }
-            console.log({ nft: nft.data.name, collection: ebCollection })
-        }
-
-
-        if (ebCollection) {
+            return new EBNft({ ...nft, updateAuthority: nft.updateAuthority, data: { ...meta } });
             // console.log({ nft, ebCollection })
-            return new EBNft({ ...nft, ebCollection: ebCollection, updateAuthority: nft.updateAuthority, data: { ...meta } });
         }
-        return new EBNft({ ...nft, updateAuthority: nft.updateAuthority, data: { ...meta } });
+        return new EBNft({ ...nft, ebCollection: ebCollection, updateAuthority: nft.updateAuthority, data: { ...meta } });
     });
 
     const nfts = await Promise.all(nftsPromises);

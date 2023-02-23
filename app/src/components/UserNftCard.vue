@@ -5,11 +5,12 @@ import { ref, watchEffect, getCurrentInstance, computed, onBeforeUnmount, onMoun
 import { Dialog, QNotifyCreateOptions, useDialogPluginComponent, useQuasar } from 'quasar';
 import { useChainAPI } from 'src/api/chain-api';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
-import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
-import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
-import { computedAsync } from '@vueuse/core';
-import BN from 'bn.js';
-const instance = getCurrentInstance();
+// import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
+// import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
+// import { computedAsync } from '@vueuse/core';
+// import BN from 'bn.js';
+// import { bindConstructorLayout } from '@solana/buffer-layout';
+// const instance = getCurrentInstance();
 
 const { wallet, connection, api, program } = useChainAPI();
 const { notify, dialog } = useQuasar();
@@ -21,7 +22,7 @@ const props = defineProps<{
     redeem: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) => Promise<boolean>,
     redeemFire: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<boolean>
 }>();
-const statusRef = ref<UserStakeInfoJSON | null>(null)
+const statusRef = ref<UserStakeInfoJSON | null>()
 const phoenixUserRelation = ref<PhoenixUserRelationJSON['kind'] | null>(null)
 const stakeStartRef = ref()
 const yieldRef = ref<{ native: number | null, fire: number | null }>({ native: null, fire: null })
@@ -116,10 +117,12 @@ async function getStakeState(nft: EBNft) {
     console.log('getStakeState');
     try {
 
-        const s = await api.value?.getStakeStatusPda(wallet.value.publicKey, nft.mint)
-        if (!s) throw new Error('Failed to get stake status PDA')
+        const s = await api.value?.getStakeStatusPda(wallet.value!.publicKey, nft.mint)
+        // console.log(s?.pda);
+        if (!s?.pda) throw new Error('Failed to get stake status PDA')
         const { pda } = s
         const status = await UserStakeInfo.fetch(connection, pda)
+        console.log({ status })
         if (!status) throw new Error('Failed to fetch Stake State from PDA')
         statusRef.value = status.toJSON()
         console.log(`Stake status:\n ${nft.name} - ${status.toJSON().stakeState.kind} \n`)
@@ -133,9 +136,8 @@ async function getStakeState(nft: EBNft) {
             icon: 'alert',
             position: 'top',
         })
-
-
-        return 'Unstaked'
+        // stakeStateRef.value = "Unstaked"
+        return
     }
 
 }
@@ -204,14 +206,13 @@ watchEffect(async () => {
     if (statusRef.value) {
         stakeStartRef.value = statusRef.value.lastStakeRedeem;
         phoenixUserRelation.value = statusRef.value.phoenixStatus.kind
-        stakeStateRef.value = statusRef.value.stakeState.kind;
+        stakeStateRef.value = statusRef.value.stakeState.kind || 'Unstaked';
     }
 })
 
 
 </script>
 <template>
-
     <q-card class="nft-card-local" dark>
         <q-card-section v-if="!showNftDetails" @click="toggleShowNftDetails()">
             <q-img :src="nft.image" :ratio="1 / 1" width="100%" height="100%">
@@ -264,15 +265,14 @@ watchEffect(async () => {
                 <q-card-actions class="flex justify-around">
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.fireEligible" icon="&#x1F525;"
-                        :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0"
-                        @click="handleRedeemFire(nft, ebCollection)" />
+                        :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0" @click="handleRedeemFire(nft, ebCollection)" />
                     <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
                         :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : 'Redeem Tokens'"
                         @click="handleRedeemRewards(nft, ebCollection)" />
 
-                    <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
-                        v-if="showUnstakeButton" icon="remove" :label="$q.screen.gt.md ? 'Unstake' : void 0"
+                    <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showUnstakeButton"
+                        icon="remove" :label="$q.screen.gt.md ? 'Unstake' : void 0"
                         @click="handleUnstakeNft(nft, ebCollection, forceUnstake)" />
                     <span class="action-btn" v-if="showUnstakeButton">
                         <q-checkbox id="force" dark keep-color v-model="forceUnstake" />

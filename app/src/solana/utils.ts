@@ -98,13 +98,17 @@ export function getAPI(program: Program<EmberBed>) {
     //     return { pda: userRewardInfoPda, bump: bump };
     // }
     async function getStakeStatusPda(user: web3.PublicKey, nftMint: string): Promise<{ pda: web3.PublicKey, bump: number }> {
+
         const mintAddress: PublicKey = new PublicKey(nftMint);
         const nftTokenAddress = await getAssociatedTokenAddress(mintAddress, user)
         const [stakeStatusPda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
             [user.toBuffer(), nftTokenAddress.toBuffer()],
             program.programId
         );
+
+        console.log(stakeStatusPda.toBase58());
         return { pda: stakeStatusPda, bump: bump }
+
     }
 
     async function getUserFireAta(user: web3.PublicKey) {
@@ -167,6 +171,7 @@ export function getAPI(program: Program<EmberBed>) {
             delegatedAuthPda = await getDelegatedAuthPda();
             nftTokenAddress = await getNftTokenAddress(data.user, data.nftMint);
             stakeStatusPDA = await getStakeStatusPda(data.user, data.nftMint);
+
             nftAccounts = {
                 nftTokenAddress: nftTokenAddress, nft: nft, stakeStatusPda: stakeStatusPDA.pda, stakeStatusBump: stakeStatusPDA.bump, delegatedAuthPda: delegatedAuthPda.pda,
                 authBump: delegatedAuthPda.bump,
