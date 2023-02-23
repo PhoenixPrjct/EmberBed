@@ -48,13 +48,13 @@ const submissionStatus = ref({
 const collectionInfo = ref<CollectionInfo>({
     // rewardWallet: '',
     manager: '',
-    rewardMint: "F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw",
-    collectionName: "PrjctPhoenix: Member",
-    collectionAddress: "9xVireFnLBZ3ZCjLS29EzF632YbpSFwsKvwsqCLxefxr",
+    rewardMint: "REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko",
+    collectionName: "TEST_EYES",
+    collectionAddress: "CG4KDtfDDvYWP4ChqxKVLXjxjrg8VT28RoMpJgjYosFs",
     ratePerDay: 2,
     fireEligible: true,
     phoenixRelation: null as unknown as PhoenixRelationKind,
-    rewardSymbol: "$FIRE",
+    rewardSymbol: "$REW",
 }) as Ref<CollectionRewardInfoJSON>
 
 async function getRewardWallet() {
@@ -109,6 +109,7 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
             const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
             if (!initState || initState.error) throw new Error(`${initState?.error.message}`)
             const { account, tx } = await initState
+            console.log({ tx, account })
             submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
         }
         const data = {

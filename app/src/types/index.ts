@@ -3,13 +3,12 @@ import { Nft } from "@metaplex-foundation/js"
 import { PublicKey } from "@solana/web3.js"
 import type {
     Adapter, WalletReadyState, WalletName,
-    WalletNotReadyError,
-    WalletNotConnectedError, MessageSignerWalletAdapterProps, SignerWalletAdapterProps, WalletAdapterProps
+    MessageSignerWalletAdapterProps, SignerWalletAdapterProps, WalletAdapterProps
 } from "@solana/wallet-adapter-base";
 import { Ref } from "vue";
-import { writeFileSync } from "fs";
-import { join } from "path";
 
+
+export * from './ember_bed'
 export * from './accounts'
 export * from './errors'
 export * from './types'

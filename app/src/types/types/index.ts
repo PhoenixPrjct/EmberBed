@@ -5,9 +5,9 @@ import * as GenErrors from "./GenErrors"
 import * as StakeState from "./StakeState"
 import * as PhoenixRelation from "./PhoenixRelation"
 import * as PhoenixUserRelation from "./PhoenixUserRelation"
-
+import * as CollectionId from "./CollectionId"
 export { StakeError }
-
+export { CollectionId }
 export type StakeErrorKind =
   | StakeError.AccountAlreadyInitialized
   | StakeError.UnintializedAccount

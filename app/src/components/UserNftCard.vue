@@ -190,6 +190,8 @@ watchEffect(async () => {
 
     if (props.nft.ebCollection && !ebCollection.value.loaded) {
         const pda = new PublicKey(props.nft.ebCollection)
+
+        console.log('ebCollection.value.loaded', pda.toBase58())
         const collectionInfo = await CollectionRewardInfo.fetch(connection, pda);
         if (collectionInfo) {
             if (collectionInfo.fireEligible) {

@@ -1,12 +1,14 @@
 import { PublicKey } from "@solana/web3.js";
-import { useAnchorWallet, useWallet } from "solana-wallets-vue";
+import { useWallet, initWallet } from "solana-wallets-vue";
+import { walletOptions } from "src/boot/sw";
 import { AnchorWallet, WalletStore } from "src/types";
 import { useUserStore } from "src/stores/userStore";
 import { ComputedRef } from "vue";
 import { sign } from 'tweetnacl'
 import { publicKey } from "@project-serum/anchor/dist/cjs/utils";
-
+initWallet(walletOptions);
 const store = useUserStore();
+
 const wallet = <WalletStore>useWallet();
 const { signMessage } = wallet
 export default async (pKey: PublicKey) => {

@@ -146,7 +146,7 @@ function handleCollectionRouteClick(pda: string) {
 
             </q-item>
             <!-- </q-card-section>
-            <q-card-section> -->
+                <q-card-section> -->
 
             <q-item>
                 <q-item-label header class="card-section-title">
@@ -189,7 +189,7 @@ function handleCollectionRouteClick(pda: string) {
             <q-btn dark @click="handleDialogShow">Details</q-btn>
             <q-btn dark label="Edit Info" @click="() => editCollectionView = true" />
             <q-btn dark @click="handleCollectionRouteClick(collectionRewardPDA.toBase58())" label="Go to
-                Page" />
+                    Page" />
         </q-card-actions>
     </q-card>
     <q-dialog v-model="dialogShow">

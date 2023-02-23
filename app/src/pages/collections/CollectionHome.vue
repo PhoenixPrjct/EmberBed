@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useServerAPI } from 'src/api/server-api';
-import { useChainAPI } from 'src/api/chain-api';
-import { ref, watchEffect } from 'vue';
-import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types'
-import { useRoute } from 'vue-router';
-import UserNftTray from 'src/components/UserNftTray.vue';
-import { PublicKey } from '@solana/web3.js';
+import { useServerAPI } from "src/api/server-api";
+import { useChainAPI } from "src/api/chain-api";
+import { ref, watchEffect } from "vue";
+import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from "src/types"
+import { useRoute } from "vue-router";
+import UserNftTray from "src/components/UserNftTray.vue";
+import { PublicKey } from "@solana/web3.js";
 
 const { server_api } = useServerAPI();
 const { connection } = useChainAPI();

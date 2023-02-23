@@ -7,16 +7,16 @@ import { verifyWallet } from 'src/helpers';
 import { WalletStore } from 'src/types';
 import { useRouter } from 'vue-router';
 import { PublicKey } from '@solana/web3.js';
-
 import { useUserStore } from 'src/stores/userStore'
 
+const { wallet } = useChainAPI();
 const { server_api } = useServerAPI()
 const router = useRouter();
 const store = useUserStore();
-const wallet = useWallet();
-const connected = computed(() => wallet.connected.value);
-const msg = ref('');
-const collectionList = ref([]);
+// const wallet = useWallet();
+const connected = computed(() => !!wallet.value?.publicKey);
+// const msg = ref('');
+// const collectionList = ref([]);
 
 
 async function handleAdminClick(pk: PublicKey) {
@@ -31,8 +31,8 @@ async function handleAdminClick(pk: PublicKey) {
 
 }
 watchEffect(() => {
-    if (wallet.publicKey.value && store.getType !== 'Admin') {
-        store.setUser(wallet.publicKey.value.toBase58(), 'User');
+    if (wallet.value?.publicKey && store.getType !== 'Admin') {
+        store.setUser(wallet.value.publicKey.toBase58(), 'User');
     }
 
 })
@@ -44,8 +44,8 @@ watchEffect(() => {
     <section class="connected" v-if="connected">
         <q-btn dark class="half left" label="User" to="/user" />
         <div class="midline"></div>
-        <q-btn dark v-if="wallet.publicKey.value" class="half right" label="Admin"
-            @click="handleAdminClick(wallet.publicKey.value!)" />
+        <q-btn dark v-if="wallet?.publicKey" class="half right" label="Admin"
+            @click="handleAdminClick(wallet!.publicKey)" />
     </section>
     <section v-else>
         <div class="text-center text-h4 directions">

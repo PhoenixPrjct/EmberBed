@@ -21,7 +21,7 @@ export function _createServerAPI() {
           hashlist: async (query: string) => await (await axios.get(`${baseURL}/collection/hashlist/${query}`)).data
         },
         add: {
-          hashlist: async (data: { wallet: string, name: string, hashlist: string[], pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data,
+          hashlist: async (data: { wallet: string, name?: string, hashlist: string[], pda: string }) => await (await axios.post(`${baseURL}/collection/hashlist/add`, data)).data,
           style: async (pda: string, wallet: string, style: DBCollectionInfo['style']) => await (await axios.post(`${baseURL}/collection/style/add`, { wallet, style, pda })).data
         },
         update: async (data: { wallet: string, pda: string, data: CollectionRewardInfoJSON }) => await (await axios.post(`${baseURL}/collection/update`, data)).data,

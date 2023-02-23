@@ -1,10 +1,10 @@
 import { Metaplex, Nft } from "@metaplex-foundation/js"
-import { ConfirmedSignatureInfo, PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import axios from "axios";
 import { getParsedNftAccountsByOwner } from "@nfteyez/sol-rayz";
 import { useServerAPI } from "src/api/server-api";
 import { useChainAPI } from "src/api/chain-api";
-import { MetadataKey } from "@nfteyez/sol-rayz/dist/config/metaplex";
+// import { MetadataKey } from "@nfteyez/sol-rayz/dist/config/metaplex";
 import { CollectionRewardInfo, EBNft } from "src/types";
 const { connection, program } = useChainAPI();
 const metaplex = new Metaplex(connection);
@@ -20,19 +20,23 @@ async function getNftMeta(uri: string) {
 
 }
 
-async function checkNftCollectionAddress(pda: string, nftMint: string): Promise<boolean> {
+async function checkNftCollectionAddress(pda: string, nftMint: string, collections: string[]): Promise<boolean | string> {
     const pdaPk = new PublicKey(pda);
     const nftMintPk = new PublicKey(nftMint);
     const collectionAddress = await (await CollectionRewardInfo.fetch(connection, pdaPk))?.toJSON().collectionAddress;
     if (!collectionAddress) return false;
     const nft = await metaplex.nfts().findByMint({ mintAddress: nftMintPk });
-    // console.log(nft.collection?.address.toBase58())
+    console.log({ nft_Collection_Address: nft.collection?.address.toBase58() })
     const nftCA = nft.collection?.address.toBase58()
+    if (collectionAddress !== nftCA) return false;
+    console.log({ checkNftCollectionAddress: '', nftCA, collectionAddress });
+
     if (!nftCA) {
+        console.log("nftCA is null")
         return false
     }
-    if (nftCA == collectionAddress) return true
-    return false
+    console.log({ nftCA, collectionAddress })
+    return true
 }
 
 
@@ -44,25 +48,30 @@ export async function getNftsInWallet(wallet: PublicKey) {
         return c.hashlist.length ? undefined : col.publicKey.toBase58();
     }));
 
+    console.log({ collections });
     // Remove undefined values from the collections array
     collections = collections.filter(col => col !== undefined);
-
     const _nfts = await getParsedNftAccountsByOwner({ publicAddress, connection })
     const nftsPromises = _nfts.map(async (nft) => {
         let ebCollection: string = await server_api.nft.getCollectionFor(nft.mint);
         const meta = await getNftMeta(nft.data.uri);
         if (!ebCollection) {
-            ebCollection = collections.find(async (c) => await checkNftCollectionAddress(c, nft.mint))
+            const exists = collections.find(async (c) => { console.log(c); await checkNftCollectionAddress(c, nft.mint, collections) });
+            if (exists) {
+                ebCollection = exists;
+            }
+            console.log({ nft: nft.data.name, collection: ebCollection })
         }
 
+
         if (ebCollection) {
+            // console.log({ nft, ebCollection })
             return new EBNft({ ...nft, ebCollection: ebCollection, updateAuthority: nft.updateAuthority, data: { ...meta } });
         }
         return new EBNft({ ...nft, updateAuthority: nft.updateAuthority, data: { ...meta } });
     });
 
     const nfts = await Promise.all(nftsPromises);
-    // const holderStatus = nfts.forEach((nft)=> { if (nft.ebCollection)})
     const ebnfts = nfts.filter((nft) => nft.ebCollection);
     const otherNfts = nfts.filter((nft) => !nft.ebCollection);
     return { ebNfts: ebnfts, other: otherNfts };

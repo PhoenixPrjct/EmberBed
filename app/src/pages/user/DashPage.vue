@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { ProgramAccount } from '@project-serum/anchor';
-import { useChainAPI } from 'src/api/chain-api';
-import { CollectionContainer } from 'src/components';
-import UserNftTray from 'src/components/UserNftTray.vue';
-import { EmberBed } from 'src/solana/types/ember_bed';
-import { CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types';
-import { watchEffect, ref } from 'vue';
-import { useServerAPI } from 'src/api/server-api';
-import { useRouter } from 'vue-router';
-import { useQuasar } from 'quasar';
+import { ProgramAccount } from "@project-serum/anchor";
+import { useChainAPI } from "src/api/chain-api";
+import { CollectionContainer } from "src/components";
+import UserNftTray from "src/components/UserNftTray.vue";
+import { EmberBed } from "src/solana/types/ember_bed";
+import { CollectionRewardInfoJSON, DBCollectionInfo } from "src/types";
+import { watchEffect, ref } from "vue";
+import { useServerAPI } from "src/api/server-api";
+import { useRouter } from "vue-router";
+import { useQuasar } from "quasar";
 
 
 const { notify } = useQuasar();
@@ -23,10 +23,10 @@ const selectColProxy = ref<string>()
 function handleCollectionGoClick() {
     const item = userCollections.value.find(i => i.name == selectColProxy.value)
     if (!item) return notify({
-        type: 'error',
-        message: 'Collection not found',
-        caption: 'Collection Page Not Found',
-        position: 'top',
+        type: "error",
+        message: "Collection not found",
+        caption: "Collection Page Not Found",
+        position: "top",
     })
     router.push(`/c/${item?.account}`)
 }
@@ -51,7 +51,7 @@ watchEffect(async () => {
         userCollections.value = await Promise.all(pdas);
         collectionOptions.value = userCollections.value.map(item => item.name)
     }
-    console.log(userCollections.value)
+    // console.log(userCollections.value)
 })
 
 

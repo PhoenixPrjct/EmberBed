@@ -38,7 +38,7 @@ export const GC = {
                     }
                 })
             }
-
+            console.log(file)
             return { status: 200, response: file };
         } catch (err: any) {
             console.log(err)

@@ -11,7 +11,7 @@ watchEffect(async () => {
 })
 </script>
 <template>
-    <div class="wrapper" v-if="collections">
+    <div class="wrapper" v-if="collections?.length">
         <div id="marquee">
             <q-icon name="grade" />
             <span v-for="collection in collections" :key="collection">

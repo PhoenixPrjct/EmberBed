@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor';
-import { Program, Idl } from '@project-serum/anchor';
-import { EmberBed } from './types/ember_bed';
+import { Program } from '@project-serum/anchor';
+import { EmberBed } from 'src/types';
 import { PublicKey, Keypair, SystemProgram /*,Transaction, BlockheightBasedTransactionConfirmationStrategy*/ } from '@solana/web3.js';
 import {
     getAssociatedTokenAddress,
@@ -30,7 +30,7 @@ import { Ref } from 'vue';
 // import { useWallet } from 'solana-wallets-vue';
 // import { api } from 'src/boot/axios';
 // let devKP = process.env.DEV_KP
-let prjctKP = process.env.PRJCT_KP
+const prjctKP = process.env.PRJCT_KP
 
 // let DevSecret = devKP ? Uint8Array.from(JSON.parse(devKP)) : void 0
 let FundSecret = prjctKP ? Uint8Array.from(JSON.parse(prjctKP)) : void 0
@@ -190,33 +190,33 @@ export function getAPI(program: Program<EmberBed>) {
         return accounts;
     }
 
-    async function initializeFirePda(signers: web3.Keypair[] = []) {
-        const fire = await getFirePda()
-        const firePDA = fire.pda
-        const bumpFire = fire.bump
-        const fireTokenAta = await getAssociatedTokenAddress(FireTok, EBWallet.publicKey);
-        const fireRewardWallet = await getOrCreateAssociatedTokenAccount(
-            connection, EBWallet, FireTok, firePDA, true);
-        const stateExists = await program.account.fireRewardInfo.getAccountInfo(firePDA.toBase58())
-        const stateStatus = stateExists ? await program.account.fireRewardInfo.fetch(firePDA) : <any>{};
+    // async function initializeFirePda(signers: web3.Keypair[] = []) {
+    //     const fire = await getFirePda()
+    //     const firePDA = fire.pda
+    //     const bumpFire = fire.bump
+    //     const fireTokenAta = await getAssociatedTokenAddress(FireTok, EBWallet.publicKey);
+    //     const fireRewardWallet = await getOrCreateAssociatedTokenAccount(
+    //         connection, EBWallet, FireTok, firePDA, true);
+    //     const stateExists = await program.account.fireRewardInfo.getAccountInfo(firePDA.toBase58())
+    //     const stateStatus = stateExists ? await program.account.fireRewardInfo.fetch(firePDA) : <any>{};
 
-        console.log({ bumpFire: bumpFire })
-        if (stateStatus.isInitialized) {
-            console.log("Fire Account", firePDA.toBase58(), "Already Initialized")
-            return true;
-        }
-        const tx = await program.methods.initializeFirePda(bumpFire).accounts({
-            firePda: firePDA,
-            tokenPoa: fireRewardWallet.address,
-            rewardMint: FireTok,
-            funder: EBWallet.publicKey,
-            funderAta: fireTokenAta,
-            systemProgram: SystemProgram.programId,
-        }).signers(signers).rpc();
-        console.log("Initialize Fire PDA tx:")
-        console.log(getExplorerURL(tx))
-        return tx;
-    }
+    //     console.log({ bumpFire: bumpFire })
+    //     if (stateStatus.isInitialized) {
+    //         console.log("Fire Account", firePDA.toBase58(), "Already Initialized")
+    //         return true;
+    //     }
+    //     const tx = await program.methods.initializeFirePda(bumpFire).accounts({
+    //         firePda: firePDA,
+    //         tokenPoa: fireRewardWallet.address,
+    //         rewardMint: FireTok,
+    //         funder: EBWallet.publicKey,
+    //         funderAta: fireTokenAta,
+    //         systemProgram: SystemProgram.programId,
+    //     }).signers(signers).rpc();
+    //     console.log("Initialize Fire PDA tx:")
+    //     console.log(getExplorerURL(tx))
+    //     return tx;
+    // }
 
     async function chargeInitFee(user: PublicKey, amount: number) {
         const PhoenixWallet = EBWallet.publicKey// new web3.PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB');
@@ -382,7 +382,7 @@ export function getAPI(program: Program<EmberBed>) {
 
     return {
         updateCollectionRewardPDA,
-        initializeFirePda,
+        // initializeFirePda,
         initStatePda,
         depositToFireAta,
         depositToRewardAta,

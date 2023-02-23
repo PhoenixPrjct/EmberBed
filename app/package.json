@@ -20,7 +20,8 @@
     "@metaplex-foundation/js": "^0.17.9",
     "@metaplex-foundation/mpl-token-metadata": "^2.5.2",
     "@nfteyez/sol-rayz": "^0.10.2",
-    "@project-serum/anchor": "^0.25.0",
+    "@project-serum/anchor": "^0.26.0",
+    "@project-serum/borsh": "^0.2.5",
     "@quasar/extras": "^1.0.0",
     "@solana/spl-token": "^0.3.6",
     "@solana/spl-token-registry": "^0.2.4574",
@@ -39,7 +40,7 @@
     "nodemon": "^2.0.20",
     "pinia": "^2.0.11",
     "quasar": "^2.6.0",
-    "solana-wallets-vue": "^0.5.2",
+    "solana-wallets-vue": "^0.6.0",
     "tweetnacl": "^1.0.3",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0"

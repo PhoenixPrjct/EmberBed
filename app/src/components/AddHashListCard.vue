@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
-import { useChainAPI } from 'src/api/chain-api';
-import { useServerAPI } from 'src/api/server-api';
-import { saveAs } from 'file-saver';
+import { ref, watchEffect } from "vue"
+import { useChainAPI } from "src/api/chain-api";
+import { useServerAPI } from "src/api/server-api";
+import { saveAs } from "file-saver";
 const { server_api } = useServerAPI();
 const { wallet } = useChainAPI();
 
@@ -19,6 +19,7 @@ async function addHashlist() {
 
     const info = await server_api.collection.add.hashlist({
         wallet: wallet.value.publicKey.toBase58(),
+        name: props.collectionName,
         hashlist: inputHashlist.value.split(',').map(item => item.replace(/[\[\]',\n"]/g, '')
         ), pda: pda.value
     });

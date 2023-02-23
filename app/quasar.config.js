@@ -33,7 +33,8 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       'sw',
       'axios',
-      'store'
+      'store',
+      // 'chain-api'
 
     ],
 

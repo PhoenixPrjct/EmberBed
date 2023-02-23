@@ -1,9 +1,9 @@
-import { useChainAPI } from "src/api/chain-api";
+import { getConnection } from "src/api/chain-api";
 import { CollectionRewardInfoJSON, CollectionRewardInfo } from "src/types";
-import { LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useWallet } from "solana-wallets-vue";
 
-const { connection } = useChainAPI();
+const connection = new Connection(getConnection());;
 const wallet = useWallet();
 
 export async function validateCollectionInfo(
@@ -23,7 +23,7 @@ export async function validateCollectionInfo(
 
 export function getInitCost(kind: string) {
     let amount
-    const baseAmount = 10
+    const baseAmount = 5
 
     switch (kind) {
         case 'EmberBed':

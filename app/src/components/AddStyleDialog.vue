@@ -83,7 +83,6 @@ watchEffect(() => {
             <q-btn dark flat label="cancel" v-close-popup />
         </q-card-actions>
     </q-card>
-
 </template>
 <style lang="scss" scoped>
 .label {
