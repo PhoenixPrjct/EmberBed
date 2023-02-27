@@ -320,9 +320,9 @@ watchEffect(async () => {
             <section class="nft-card-container" v-if="nfts.ebNfts.length && stakingAction.percent == 0">
 
                 <div v-for="nft in nfts.ebNfts" :key="nft.mint" class="nft-card"
-                    :style="theme ? `box-shadow: 0px 0px 12px 0px ${theme.colors.primary}` : `box-shadow: 0px 0px 12px 0px #ffff`">
+                    :style="theme ? `box-shadow: 0px 0px 12px 0px ${theme.colors.accent}` : `box-shadow: 0px 0px 12px 0px #ffff`">
                     <UserNftCard :nft="nft" :stakeNft="stakeNft" :unstakeNft="unstakeNft" :redeem="redeem"
-                        :redeemFire="redeemFire" />
+                        :redeemFire="redeemFire" :theme="theme" />
                 </div>
             </section>
         </div>

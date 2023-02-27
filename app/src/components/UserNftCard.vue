@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { CollectionRewardInfo, EBNft, PhoenixUserRelation, PhoenixUserRelationJSON, PhoenixUserRelationKind, stake, StakeAccounts, StakeState, StakeStateJSON, StakeStateKind, UnstakeAccounts, UserStakeInfo, UserStakeInfoJSON } from 'src/types';
+import { CollectionRewardInfo, DBCollectionInfo, EBNft, PhoenixUserRelation, PhoenixUserRelationJSON, PhoenixUserRelationKind, stake, StakeAccounts, StakeState, StakeStateJSON, StakeStateKind, UnstakeAccounts, UserStakeInfo, UserStakeInfoJSON } from 'src/types';
 import { camelCaseToTitleCase, CopyClick, getStakingFee, chargeFeeTx } from 'src/helpers';
 import { ref, watchEffect, getCurrentInstance, computed, onBeforeUnmount, onMounted, Ref } from 'vue';
 import { Dialog, QNotifyCreateOptions, useDialogPluginComponent, useQuasar } from 'quasar';
@@ -17,6 +17,7 @@ const { notify, dialog } = useQuasar();
 
 const props = defineProps<{
     nft: EBNft,
+    theme: DBCollectionInfo["style"] | null,
     stakeNft: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<void>,
     unstakeNft: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) => Promise<void>,
     redeem: (nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }, timeStaked: number) => Promise<boolean>,
@@ -263,15 +264,18 @@ watchEffect(async () => {
             <q-spinner v-if="!stakeStateRef" size="2rem" style="flex:0 0 100%;" />
             <div v-else class="flex justify-center">
                 <q-card-actions class="flex justify-around">
-                    <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
+                    <q-btn :style="/*theme?.colors.accent ? `background-color:${theme?.colors.accent}` : */void 0"
+                        :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.fireEligible" icon="&#x1F525;"
                         :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0" @click="handleRedeemFire(nft, ebCollection)" />
-                    <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
+                    <q-btn :style="/*theme ? `background-color:${theme?.colors.accent}` :*/ void 0"
+                        :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
                         :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : 'Redeem Tokens'"
                         @click="handleRedeemRewards(nft, ebCollection)" />
 
-                    <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showUnstakeButton"
+                    <q-btn :style="/*theme ? `background-color:${theme?.colors.accent}` : */void 0"
+                        :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showUnstakeButton"
                         icon="remove" :label="$q.screen.gt.md ? 'Unstake' : void 0"
                         @click="handleUnstakeNft(nft, ebCollection, forceUnstake)" />
                     <span class="action-btn" v-if="showUnstakeButton">
@@ -279,7 +283,8 @@ watchEffect(async () => {
                         <label for="force">Force Unstake</label>
 
                     </span>
-                    <q-btn :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showStakeButton"
+                    <q-btn :style="theme ? `background-color:${theme?.colors.accent}` : void 0"
+                        :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showStakeButton"
                         style="flex:0 0 90%" label="Stake" @click="handleStakeNft(nft, ebCollection)" />
                     <!-- <q-btn dark label="Check PDA" @click="checkPDA()" /> -->
                 </q-card-actions>

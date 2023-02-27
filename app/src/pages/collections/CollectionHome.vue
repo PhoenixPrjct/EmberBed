@@ -27,7 +27,7 @@ watchEffect(async () => {
         theme.value = dbInfo.value.style
         !theme.value ?
             styles.value.chips = `width: 175px; text-align:center; color:#ffffff; box-shadow:  0 0 3px 1px #ffffff; font-variant: small-caps;` :
-            styles.value.chips = `width: 175px; text-align:center; color:${theme.value.colors.primary}; box-shadow:  0 0 0 1px ${theme.value.colors.secondary}; font-variant: small-caps;`
+            styles.value.chips = `width: 175px; text-align:center; color:${theme.value.colors.secondary}; box-shadow:  0 0 0 1px ${theme.value.colors.accent}; font-variant: small-caps;`
         themeLoaded.value = true;
     }
     if (!pdaInfo.value) {
@@ -43,17 +43,17 @@ watchEffect(async () => {
         <q-spinner size="50%" />
     </div>
     <q-page v-else class="page"
-        :style="`background-image: url(${theme?.icon}); background-position:center; background-size:contain; background-repeat: no-repeat;`">
+        :style="`background-color: ${theme?.colors.primary}; background-image: url(${theme?.icon}); background-position:center; background-size:contain; background-repeat: no-repeat;`">
         <div class="wrapper">
 
             <section class="section">
                 <div class="flex justify-around">
                     <!-- <q-item> -->
                     <!-- <q-item-section style="background-color:#1d1d1d50">
-                            <h5 style="color:white">
-                                {{ pdaInfo?.collectionName }}
-                            </h5>
-                        </q-item-section> -->
+                                        <h5 style="color:white">
+                                            {{ pdaInfo?.collectionName }}
+                                        </h5>
+                                    </q-item-section> -->
                     <!-- </q-item> -->
                     <span class="chips special">
 
