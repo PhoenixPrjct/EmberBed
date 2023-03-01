@@ -271,14 +271,14 @@ watchEffect(async () => {
                     <q-btn :style="/*theme ? `background-color:${theme?.colors.accent}` :*/ void 0"
                         :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
                         v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
-                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : 'Redeem Tokens'"
+                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : void 0"
                         @click="handleRedeemRewards(nft, ebCollection)" />
 
                     <q-btn :style="/*theme ? `background-color:${theme?.colors.accent}` : */void 0"
                         :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showUnstakeButton"
-                        icon="remove" :label="$q.screen.gt.md ? 'Unstake' : void 0"
+                        :icon="$q.screen.lt.lg ? 'remove' : void 0" :label="$q.screen.gt.md ? 'Unstake' : void 0"
                         @click="handleUnstakeNft(nft, ebCollection, forceUnstake)" />
-                    <span class="action-btn" v-if="showUnstakeButton">
+                    <span class="action-span action-btn" v-if="showUnstakeButton">
                         <q-checkbox id="force" dark keep-color v-model="forceUnstake" />
                         <label for="force">Force Unstake</label>
 
@@ -316,7 +316,18 @@ watchEffect(async () => {
 
 .action-btn {
     flex: 0 0 100%;
-    // max-width: 200px
+    display: flex;
+
+    :not(.action-span) {
+        justify-content: space-around;
+        // max-width: 200px
+    }
+}
+
+.action-span {
+    margin-top: 1rem;
+    justify-content: center;
+    align-items: center;
 }
 
 .refresh-btn {
