@@ -317,19 +317,22 @@ watchEffect(async () => {
                     <h6>EmberBed Info</h6>
                     <small>This is how we categorize your NFT collection on the platform.</small>
                     <q-separator dark spaced />
-                    <q-input dense dark filled v-model="collectionInfo.collectionName"
-                        placeholder="Name of Nft Collection" hide-hint
-                        hint="Collection Name: Bored Ape Yacht Club, DeGods, etc. " lazy-rules
+                    <q-input dense dark filled v-model="collectionInfo.collectionName" placeholder="Name of Nft Collection"
+                        hide-hint hint="Collection Name: Bored Ape Yacht Club, DeGods, etc. " lazy-rules
                         :rules="[val => val && val.length > 0 || 'This Must Have a Value']" />
                     <div class="verify-collection--div">
                         <q-input class="verify-collection--input" dense dark filled hide-hint
-                            hint="Check out Metaplex Collection Standards for More Info."
-                            v-model="collectionInfo.collectionAddress" placeholder="Verified Collection Address" />
-                        <span>
+                            v-model="collectionInfo.collectionAddress" placeholder="Verified Collection Address">
                             <q-btn icon="info" @click="handleShowWhyVerify()" />
-                            <q-btn v-if="!collectionInfo.collectionAddress" class="center" target="_blank" dark flat
-                                icon="policy" href="https://collections.metaplex.com" />
-                            <q-tooltip> Verify Your Collection on Metaplex</q-tooltip>
+                        </q-input>
+                        <span>
+                            <div>
+
+                                <q-btn v-if="!collectionInfo.collectionAddress" class="center" target="_blank" dark flat
+                                    icon="policy" href="https://collections.metaplex.com/create-collection"
+                                    label="Create Collection On Metaplex" />
+                                <q-tooltip> Verify Your Collection on Metaplex</q-tooltip>
+                            </div>
 
                         </span>
                     </div>
@@ -338,11 +341,9 @@ watchEffect(async () => {
                 <q-separator dark spaced />
                 <q-space />
                 <section class="tokenInfo">
-
                     <h6>Reward Token Info</h6>
                     <span class="flex justify-between">
                         <small>What token is your community staking for?</small>
-
                     </span>
                     <q-separator dark spaced />
                     <small v-if="!collectionInfo.rewardSymbol">
@@ -352,8 +353,7 @@ watchEffect(async () => {
                     </small>
                     <div class="flex justify-around">
                         <q-toggle dark v-model="manualSplEntryToggle" class="special"
-                            onchange="()=> findSplToken.key = '' && findSplToken.val = ''"
-                            label="Manual Token Entry?" />
+                            onchange="()=> findSplToken.key = '' && findSplToken.val = ''" label="Manual Token Entry?" />
                     </div>
                     <div class="flex justify-around" v-if="!manualSplEntryToggle">
                         <span class="splToken-query" v-if="!findSplToken.info?.length">
@@ -395,13 +395,10 @@ watchEffect(async () => {
                                 <q-avatar size="75px" :icon="`img:${findSplToken.info[0].logoURI}`" />
                             </q-item-section>
                             <!-- <q-img fit="contain" :src="findSplToken.info[0].logoURI" ratio="1:1" /> -->
-
                             <q-item-section>
-
                                 {{ findSplToken.info[0].name }}
                             </q-item-section>
                         </q-item>
-
                         <q-input dark dense readonly v-model="collectionInfo.rewardMint" label="Mint Address" />
                         <q-input dark dense readonly v-model="collectionInfo.rewardSymbol" label="Token Symbol" />
                         <q-item-section side>
@@ -410,7 +407,6 @@ watchEffect(async () => {
                         </q-item-section>
                     </div>
                     <q-item>
-
                         <q-btn flat icon-color="accent" icon="info" @click="fireDialogShow = true">
                             <q-tooltip>
                                 Allow your community to stake for $FIRE tokens.
@@ -418,8 +414,7 @@ watchEffect(async () => {
                         </q-btn>
                     </q-item>
                     <q-toggle dark v-if="findSplToken.info?.length == 1 || manualSplEntryToggle"
-                        v-model="collectionInfo.fireEligible" class="special" color="accent"
-                        label="$FIRE Redemption?" />
+                        v-model="collectionInfo.fireEligible" class="special" color="accent" label="$FIRE Redemption?" />
                     <q-input v-if="collectionInfo.rewardSymbol && collectionInfo.rewardMint" class="rate" type="number"
                         v-model="collectionInfo.ratePerDay" dark label="Rate Per day" />
                     <div>
@@ -455,7 +450,7 @@ watchEffect(async () => {
                         </q-item-section>
                     </q-item>
                     <!-- </q-card-section>
-                <q-card-section> -->
+                                        <q-card-section> -->
                     <q-item class="fire-item">
                         <q-item-section class="fire-title text-subtitle1">
                             Why Might This Be a Good Idea?
@@ -545,7 +540,7 @@ watchEffect(async () => {
 
     & a {
         flex: 0 0 auto;
-        padding: 8px;
+        padding: 1rem;
         // box-shadow: -1px 0px 1.5px $accent;
         // align-self: flex-start;
         // align-items: flex-start;

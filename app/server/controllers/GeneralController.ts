@@ -6,6 +6,7 @@ export const GC = {
     getRelations: async () => {
         try {
             const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');
+            console.log(relations);
             return {
                 status: 200, response: JSON.parse(relations)
             }
