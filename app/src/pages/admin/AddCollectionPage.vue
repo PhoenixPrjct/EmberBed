@@ -48,13 +48,13 @@ const submissionStatus = ref({
 const collectionInfo = ref<CollectionInfo>({
     // rewardWallet: '',
     manager: '',
-    rewardMint: "REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko",
-    collectionName: "TEST_EYES",
-    collectionAddress: "CG4KDtfDDvYWP4ChqxKVLXjxjrg8VT28RoMpJgjYosFs",
-    ratePerDay: 2,
-    fireEligible: true,
+    rewardMint: "",
+    collectionName: "",
+    collectionAddress: "",
+    ratePerDay: 1,
+    fireEligible: false,
     phoenixRelation: null as unknown as PhoenixRelationKind,
-    rewardSymbol: "$REW",
+    rewardSymbol: "",
 }) as Ref<CollectionRewardInfoJSON>
 
 async function getRewardWallet() {
