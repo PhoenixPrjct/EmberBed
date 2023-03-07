@@ -6,7 +6,7 @@ export const GC = {
     getRelations: async () => {
         try {
             const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');
-            console.log(relations);
+            // console.log(relations);
             return {
                 status: 200, response: JSON.parse(relations)
             }
@@ -48,7 +48,7 @@ export const GC = {
     },
     updateRelations: async (data: { auth: string, relationship: PhoenixRelationKind['kind'], address: string }) => {
         try {
-            console.log(data.auth)
+            // console.log(data.auth)
             const { relationship, auth, address } = data
             if (data.auth !== process.env.SERVER_AUTH) throw new Error('Authentication Failed')
             const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');

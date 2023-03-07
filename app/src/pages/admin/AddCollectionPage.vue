@@ -61,7 +61,7 @@ async function getRewardWallet() {
     const rw = new PublicKey(collectionInfo.value.rewardMint);
     const colInfo = await api.value?.getStatePda(rw, collectionInfo.value.collectionName);
     if (!colInfo) return null;
-    console.log(colInfo.pda.toBase58());
+    console.log({ getRewardWallet_infoPDA: colInfo.pda.toBase58() });
     const rewardWallet = await api.value?.getRewardWallet(rw, colInfo.pda);
     if (rewardWallet) {
         console.log(rewardWallet.address.toBase58())
@@ -169,18 +169,6 @@ function onReset() {
     manualSplEntryToggle.value = false;
     collectionInfo.value = {} as CollectionRewardInfoJSON
 }
-
-function isPK(v: PublicKey | string): boolean {
-    try {
-        v = new PublicKey(v);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
-
-
 
 function findPhoenixRelation(collectionAddress: string) {
     if (!relations.value) {
@@ -450,7 +438,7 @@ watchEffect(async () => {
                         </q-item-section>
                     </q-item>
                     <!-- </q-card-section>
-                                        <q-card-section> -->
+                                            <q-card-section> -->
                     <q-item class="fire-item">
                         <q-item-section class="fire-title text-subtitle1">
                             Why Might This Be a Good Idea?
