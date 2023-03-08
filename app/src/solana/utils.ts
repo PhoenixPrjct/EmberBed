@@ -27,7 +27,6 @@ import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-toke
 import { getExplorerURL } from 'src/helpers';
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { Ref } from 'vue';
-import CollectionsCarouselVue from 'src/components/CollectionsCarousel.vue';
 
 // import { useWallet } from 'solana-wallets-vue';
 // import { api } from 'src/boot/axios';
