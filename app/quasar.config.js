@@ -20,7 +20,7 @@ module.exports = configure(function (/* ctx */) {
       // include = [],
       // exclude = [],
       // rawOptions = {},
-      warnings: true,
+      warnings: false,
       errors: true
     },
 
@@ -81,7 +81,7 @@ module.exports = configure(function (/* ctx */) {
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
-      // minify: false,
+      minify: true,
       polyfillModulePreload: true,
       // distDir
 
@@ -163,18 +163,18 @@ module.exports = configure(function (/* ctx */) {
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
-    pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
-      injectPwaMetaTags: true,
-      swFilename: 'sw.js',
-      manifestFilename: 'manifest.json',
-      useCredentialsForManifestTag: false,
-      // useFilenameHashes: true,
-      // extendGenerateSWOptions (cfg) {}
-      // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
-      // extendPWACustomSWConf (esbuildConf) {}
-    },
+    // pwa: {
+    //   workboxMode: 'generateSW', // or 'injectManifest'
+    //   injectPwaMetaTags: true,
+    //   swFilename: 'sw.js',
+    //   manifestFilename: 'manifest.json',
+    //   useCredentialsForManifestTag: false,
+    // useFilenameHashes: true,
+    // extendGenerateSWOptions (cfg) {}
+    // extendInjectManifestOptions (cfg) {},
+    // extendManifestJson (json) {}
+    // extendPWACustomSWConf (esbuildConf) {}
+    // },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
     cordova: {
@@ -211,7 +211,7 @@ module.exports = configure(function (/* ctx */) {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'app'
+        appId: 'EmberBed'
       }
     },
 

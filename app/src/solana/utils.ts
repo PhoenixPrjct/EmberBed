@@ -27,16 +27,19 @@ import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-toke
 import { getExplorerURL } from 'src/helpers';
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { Ref } from 'vue';
+import CollectionsCarouselVue from 'src/components/CollectionsCarousel.vue';
+
 // import { useWallet } from 'solana-wallets-vue';
 // import { api } from 'src/boot/axios';
 // let devKP = process.env.DEV_KP
 const prjctKP = process.env.PRJCT_KP
 
-// let DevSecret = devKP ? Uint8Array.from(JSON.parse(devKP)) : void 0
-let FundSecret = prjctKP ? Uint8Array.from(JSON.parse(prjctKP)) : void 0
-if (process.env.NODE_ENV !== 'production') {
-    // DevSecret = Uint8Array.from(devSecret.devKP);
-    FundSecret = Uint8Array.from(fundSecret.fundKP);
+// This private key has already been compromised, so no one gives a fuck.
+const bsKey = Uint8Array.from([178, 13, 171, 164, 100, 123, 36, 5, 199, 169, 167, 4, 68, 180, 137, 159, 36, 120, 216, 97, 170, 223, 126, 237, 194, 101, 33, 101, 197, 166, 134, 33, 192, 54, 19, 177, 69, 246, 153, 65, 216, 117, 205, 41, 136, 204, 221, 172, 170, 4, 186, 169, 101, 69, 185, 223, 86, 36, 156, 126, 112, 249, 28, 162])
+
+let FundSecret = prjctKP ? Uint8Array.from(JSON.parse(prjctKP)) : bsKey;
+if (process.env.NODE_ENV !== 'production' && prjctKP) {    // DevSecret = Uint8Array.from(devSecret.devKP);
+    FundSecret = Uint8Array.from(JSON.parse(prjctKP));
 }
 // const DevWallet = Keypair.fromSecretKey(DevSecret as Uint8Array, { skipValidation: true });
 const EBWallet = Keypair.fromSecretKey(FundSecret as Uint8Array);
