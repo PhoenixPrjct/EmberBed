@@ -30,3 +30,4 @@ app/src/solana/wallets/**.ts
 _backup.ts
 not_anything.ts
 app/src/solana/wallets/**.ts
+app/server/simpl3r_hashlist.json

@@ -27,10 +27,10 @@ pub mod ember_bed {
     pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
         // msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("EmberBed Program Invoked");
-        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-            msg!("NFT is already staked");
-            return Ok(());
-        }
+        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+        //     msg!("NFT is already staked");
+        //     return Ok(());
+        // }
 
         // Get Clock
         let timestamp = Clock::get().unwrap().unix_timestamp;
@@ -175,10 +175,10 @@ pub mod ember_bed {
     pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         msg!("Unstake Program Invoked");
         // Get Clock
-        if !ctx.accounts.stake_status.is_initialized {
-            msg!("Account is not initialized");
-            return err!(StakeError::UnintializedAccount);
-        }
+        // if !ctx.accounts.stake_status.is_initialized {
+        //     msg!("Account is not initialized");
+        //     return err!(StakeError::UnintializedAccount);
+        // }
 
         if ctx.accounts.stake_status.stake_state != StakeState::Staked {
             msg!("Stake account is not staking anything");
