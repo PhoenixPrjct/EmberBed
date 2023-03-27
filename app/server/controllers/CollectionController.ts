@@ -76,6 +76,24 @@ export const CC = {
             return { status: 400, response: err.message }
         }
     },
+    getAll: async () => {
+        try {
+            const collections = readdirSync(join(__dirname, '../collections'));
+            console.log("Get ALL Collections");
+            // console.log(collections);
+            if (!collections) throw new Error('No CollectionsFound');
+
+            const data = collections.map(file => {
+                const content = readFileSync(join(__dirname, '../collections', file), 'utf-8');
+                return JSON.parse(content);
+            });
+
+            return { status: 200, response: data };
+        } catch (err: any) {
+            console.log(err);
+            return { status: 400, response: err?.message };
+        }
+    },
     getByPDA: async (pda: string) => {
         try {
             const collections = readdirSync(join(__dirname, '../collections'));

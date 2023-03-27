@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { WalletMultiButton } from "solana-wallets-vue";
-import { useUserStore } from "src/stores/userStore";
+// import { useUserStore } from "../stores/userStore";
 
-const store = useUserStore();
+// const store = useUserStore();
 </script>
 <template>
     <q-layout view="lHh Lpr lFf">

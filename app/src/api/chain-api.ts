@@ -19,13 +19,13 @@ const programID = new PublicKey(EmberBedAddress);
 
 
 export function getConnection() {
-    let url = process.env.QUICK_NODE_HTTP
-    if (!url) {
-        url = 'https://solana-api.projectserum.com'
-    }
+    let url = process.env.QUICK_NODE_HTTP || 'https://solana-api.projectserum.com'
+    console.log({ url1: url })
+    console.log({ nodeENV: process.env.NODE_ENV })
     if (process.env.NODE_ENV !== 'production') {
         url = clusterApiUrl('devnet')
     }
+    console.log({ url })
     return url
 }
 

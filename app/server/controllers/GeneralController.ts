@@ -16,7 +16,8 @@ export const GC = {
         }
     },
     searchForNftCollection: async (tokenMint: string): Promise<{ status: number, response: string | false }> => {
-        try {  // Get a list of all the hashlist files
+        try {
+            // Get a list of all the hashlist files
             const hashlistFiles = await readdirSync(path.join(__dirname, `../collections`))
             let file: string | boolean = false;
             // Combine the contents of all the hashlist files into a single array
@@ -32,6 +33,7 @@ export const GC = {
                 const hashListObj = { [currentFile]: [...hashlist] }
                 // Add the hashlist from this file to the combined hashlist
                 combinedHashlist = [...combinedHashlist, hashListObj]
+                console.log(hashListObj)
                 // Search for the string in the combined hashlist
                 combinedHashlist.map((collection, i) => {
                     if (collection[currentFile]?.includes(tokenMint)) {

@@ -1,23 +1,32 @@
 <script setup lang="ts">
-import { watchEffect } from 'vue';
-import CollectionCarousel from 'src/components/CollectionsCarousel.vue';
+import { watchEffect, computed } from 'vue';
+import CollectionCarousel from "src/components/CollectionsCarousel.vue";
 import { WalletMultiButton } from 'solana-wallets-vue';
 import { useRouter } from "vue-router";
 import { useWallet } from "solana-wallets-vue"
 import { WalletStore } from "src/types";
 import { useUserStore } from 'src/stores/userStore';
+import { LocalStorage } from 'quasar';
+import { useServerAPI } from 'src/api/server-api';
+
+async function getTest() {
+  const res: any = await server_api.test();
+  console.log(res.message);
+  return res.message;
+}
 
 const store = useUserStore();
 const wallet = <WalletStore>useWallet();
 const router = useRouter();
 const currentYear = new Date().getFullYear();
-
+const { server_api } = useServerAPI();
+const test = computed(() => getTest());
 watchEffect(() => {
   if (wallet.connected.value && wallet.publicKey.value) {
     store.setPk(wallet.publicKey.value.toBase58())
   }
   if (!wallet.connected.value) {
-    localStorage.clear();
+    LocalStorage.clear();
     store.setPk('')
     store.setType(null)
   }
@@ -43,6 +52,7 @@ watchEffect(() => {
       <q-toolbar dark inset>
         <CollectionCarousel />
       </q-toolbar>
+      <!-- TEST: {{ test }} -->
     </q-header>
     <q-page-container>
       <router-view />

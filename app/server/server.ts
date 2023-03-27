@@ -1,20 +1,21 @@
 import express from "express";
 import routes from './routes';
 // import * as db from "./config/connection";
+import * as path from "path";
+import * as bodyParser from 'body-parser';
+import cors from "cors";
+import history from 'connect-history-api-fallback';
+require('dotenv').config();
+
 const app: express.Application = express();
 
 app.use(express.json());
 
 
 
-import * as path from "path";
-import * as bodyParser from 'body-parser';
-import cors from "cors";
-import history from 'connect-history-api-fallback';
 
 const PORT = process.env.PORT || 3000;
 
-require('dotenv').config();
 
 
 const corsOptions = {
@@ -27,7 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // if (!process.env.IS_DEV) {
-app.use(express.static(path.join(__dirname, "../dist","spa")))
+app.use(express.static(path.join(__dirname, "../dist", "spa")))
 app.use(routes);
 app.get('/*', (req, res) => {
     res.sendFile(path.join(__dirname, '../dist', 'spa', 'index.html'))
@@ -37,7 +38,7 @@ app.get('/*', (req, res) => {
 app.use(history())
 // db.default.once('open', () => {
 app.listen(PORT, () => {
-    // console.log({ IS_DEV: process.env.IS_DEV })
+    // console.log({ IS_DEV: process.env.NODE_ENV })
     console.log(`🌍 Now listening on localhost:${PORT}`)
 
 })

@@ -20,6 +20,7 @@ const connected = computed(() => !!wallet.value?.publicKey);
 
 
 async function handleAdminClick(pk: PublicKey) {
+    console.log({ pk: pk.toBase58() });
     if (store.getType !== 'Admin') {
         const verified = await verifyWallet(pk);
         if (!verified) return

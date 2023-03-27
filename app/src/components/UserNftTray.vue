@@ -269,6 +269,7 @@ function handleGoBackClick() {
 watchEffect(async () => {
     if (!nfts.value.loaded) {
         const { ebNfts, other } = await getNftsInWallet(wallet.value!.publicKey);
+        console.log(ebNfts)
         if (props.colPda) {
             nfts.value.ebNfts = ebNfts.filter(nft => nft.ebCollection == props.colPda)
         } else {
@@ -288,6 +289,7 @@ watchEffect(async () => {
 </script>
 <template>
     <div class="flex justify-center" v-if="nfts.loading && stakingAction.percent == 0">
+        {{ nfts.loading ? 'Loading...' : 'Loaded' }}
         <q-spinner size="5rem" />
     </div>
     <q-card dark v-if="stakingAction.percent !== 0">

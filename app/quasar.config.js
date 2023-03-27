@@ -64,7 +64,7 @@ module.exports = configure(function (/* ctx */) {
         node: 'node16'
       },
       alias: {
-        "@": path.join(__dirname, './src/')
+        "@": path.join(__dirname, 'src')
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
@@ -77,6 +77,8 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
+        // NODE_ENV: process.env.NODE_ENV || 'development',
+        // QUICK_NODE_HTTP: process.env.QUICK_NODE_HTTP || null,
 
       },
       // rawDefine: {}
@@ -154,7 +156,7 @@ module.exports = configure(function (/* ctx */) {
       // manualStoreHydration: true,
       // manualPostHydrationTrigger: true,
 
-      prodPort: 3000, // The default port that the production server should use
+      prodPort: 9000, // The default port that the production server should use
       // (gets superseded if process.env.PORT is specified at runtime)
 
       middlewares: [

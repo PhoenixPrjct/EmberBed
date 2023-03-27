@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getAllEBCollections } from 'src/helpers';
+import { getAllEBCollections } from "src/helpers";
 import { ref, watchEffect, computed } from 'vue';
 const collections = ref<string[]>()
 

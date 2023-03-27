@@ -44,7 +44,7 @@ export async function getNftsInWallet(wallet: PublicKey) {
     const publicAddress = wallet.toBase58();
 
     let collections: any[] = await program.value.account.collectionRewardInfo.all();
-    console.log({ collections });
+    // console.log({ collections });
     collections = await Promise.all(collections.map(async (col) => {
         const c = await server_api.collection.get.one(col.publicKey.toBase58());
         return !c.hashlist ? undefined : { ebCollection: col.publicKey.toBase58(), verifiedCollectionAddress: c.collectionAddress };

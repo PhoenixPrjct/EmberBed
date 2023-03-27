@@ -5,10 +5,10 @@ import { CC } from '../../controllers';
 const router = express.Router();
 
 
-// router.get("/", async (req, res) => {
-//     const response = await Collection.find();
-//     res.status(200).send(response);
-// })
+router.get("/", async (req, res) => {
+    const { status, response } = await CC.getAll();
+    res.status(status).send(response);
+})
 
 // router.get("/owner/:wallet", async (req, res) => {
 //     const { wallet } = req.params;
@@ -64,7 +64,7 @@ router.get('/info/:pda', async (req, res) => {
     const { pda } = req.params;
     console.log(`Getting Info for ${pda}`)
     const { status, response } = await CC.getByPDA(pda)
-    console.log({ response })
+    // console.log({ response })
     res.status(status).json(response)
 })
 

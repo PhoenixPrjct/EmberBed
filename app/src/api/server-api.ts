@@ -2,10 +2,17 @@ import axios from 'axios';
 import { createGlobalState } from '@vueuse/core'
 import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types';
 export function _createServerAPI() {
-  const baseURL = 'http://localhost:3000/api';
+  let baseURL = 'http://localhost:3000/api';
+  if (process.env.NODE_ENV === 'production') {
+    baseURL = '/api';
+    console.log({ baseURL });
+  }
+
+  console.log({ CreateServerApi: baseURL })
 
   const server_api = {
     server_api: {
+      test: async () => await (await axios.get(`${baseURL}/`)).data,
       admin: {
         get: async (query: string) => await (await axios.get(`${baseURL}/admin`, { params: query })).data,
         getInfo: async (query: string) => await (await axios.get(`${baseURL}/admin/info/${query}`)).data,
