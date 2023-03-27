@@ -31,3 +31,6 @@ _backup.ts
 not_anything.ts
 app/src/solana/wallets/**.ts
 app/server/simpl3r_hashlist.json
+phoenixdev.json
+.env
+Zero_Evo_Hashlist.json
