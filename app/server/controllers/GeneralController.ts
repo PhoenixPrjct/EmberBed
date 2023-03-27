@@ -25,7 +25,7 @@ export const GC = {
             for (const hashListfile of hashlistFiles) {
                 // Store the current file name
                 const currentFile = hashListfile.split('.')[0]
-                // console.log(currentFile)
+             // console.log(currentFile)
                 // Read the contents of the file
                 const fileContents = await readFileSync(path.join(__dirname, `../collections/${hashListfile}`), 'utf-8')
                 // Parse the file contents into a JavaScript object
