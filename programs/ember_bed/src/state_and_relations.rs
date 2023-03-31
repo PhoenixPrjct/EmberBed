@@ -17,6 +17,7 @@ pub enum PhoenixRelation {
     Affiliate,
     Saved,
     Founder,
+    Evo,
     Member,
     EmberBed,
     None,
@@ -31,6 +32,7 @@ impl FromStr for PhoenixRelation {
     fn from_str(s: &str) -> std::result::Result<PhoenixRelation, String> {
         match s {
             "Founder" => Ok(PhoenixRelation::Founder),
+            "Evo" => Ok(PhoenixRelation::Evo),
             "Member" => Ok(PhoenixRelation::Member),
             "EmberBed" => Ok(PhoenixRelation::EmberBed),
             "Saved" => Ok(PhoenixRelation::Saved),

@@ -342,35 +342,35 @@ pub mod ember_bed {
         Ok(())
     }
 
-    pub fn deposit_to_fire_ata(ctx: Context<DepositToFirePda>, amount: u64) -> Result<()> {
-        let state = &mut ctx.accounts.fire_pda;
+    // pub fn deposit_to_fire_ata(ctx: Context<DepositToFirePda>, amount: u64) -> Result<()> {
+    //     let state = &mut ctx.accounts.fire_pda;
 
-        // let _collection_name = &state.collection_name;
-        // let _reward_mint = &ctx.accounts.mint.to_account_info();
-        let sender = &ctx.accounts.funder;
+    //     // let _collection_name = &state.collection_name;
+    //     // let _reward_mint = &ctx.accounts.mint.to_account_info();
+    //     let sender = &ctx.accounts.funder;
 
-        let transfer_instruction = Transfer {
-            from: ctx.accounts.funder_ata.to_account_info(),
-            to: ctx.accounts.token_poa.to_account_info(),
-            authority: sender.to_account_info(),
-        };
+    //     let transfer_instruction = Transfer {
+    //         from: ctx.accounts.funder_ata.to_account_info(),
+    //         to: ctx.accounts.token_poa.to_account_info(),
+    //         authority: sender.to_account_info(),
+    //     };
 
-        let cpi_ctx = CpiContext::new(
-            ctx.accounts.token_program.to_account_info(),
-            transfer_instruction
-        );
+    //     let cpi_ctx = CpiContext::new(
+    //         ctx.accounts.token_program.to_account_info(),
+    //         transfer_instruction
+    //     );
 
-        msg!("transfer call start");
+    //     msg!("transfer call start");
 
-        anchor_spl::token::transfer(cpi_ctx, amount)?;
-        ctx.accounts.token_poa.reload()?;
-        // msg!("Token pda key {}", ctx.accounts.token_poa.key());
-        // msg!("Token after transfer to receiver in PDA {}", ctx.accounts.token_poa.amount);
+    //     anchor_spl::token::transfer(cpi_ctx, amount)?;
+    //     ctx.accounts.token_poa.reload()?;
+    //     // msg!("Token pda key {}", ctx.accounts.token_poa.key());
+    //     // msg!("Token after transfer to receiver in PDA {}", ctx.accounts.token_poa.amount);
 
-        msg!("Successfully Transferred");
+    //     msg!("Successfully Transferred");
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     pub fn manager_withdrawal(
         ctx: Context<ManagerWithdrawal>,
