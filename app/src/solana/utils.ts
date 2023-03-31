@@ -1,6 +1,6 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
-import { EmberBed } from 'src/types';
+import { EmberBed, ManagerWithdrawalAccounts, ManagerWithdrawalArgs } from 'src/types';
 import { PublicKey, Keypair, SystemProgram /*,Transaction, BlockheightBasedTransactionConfirmationStrategy*/ } from '@solana/web3.js';
 import {
     getAssociatedTokenAddress,
@@ -383,9 +383,38 @@ export function getAPI(program: Program<EmberBed>) {
     async function depositToRewardAta() {
         console.log('Hey')
     };
-    async function managerWithdrawal() {
-        console.log('Hey')
-    };
+    async function managerWithdrawal(user: PublicKey, collectionName: string, rewardMint: PublicKey, rawAmount: number, closeAta = false) {
+        try {
+            console.log({
+                user: user.toBase58(),
+                collectionName: collectionName,
+                rewardMint: rewardMint.toBase58(),
+                rawAmount: rawAmount,
+                closeAta: closeAta,
+            })
+            const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58() });
+            const { statePDA, stateBump, rewardWallet, RewTok, funderTokenAta } = accounts;
+            const amount = new anchor.BN(rawAmount);
+            const bumpState = stateBump
+            const txPromise = await program.methods.managerWithdrawal(bumpState, closeAta, collectionName, amount).accounts({
+                manager: user,
+                statePda: statePDA,
+                tokenPoa: rewardWallet,
+                rewardMint: RewTok,
+                managerAta: funderTokenAta,
+                tokenProgram: TOKEN_PROGRAM_ID,
+                systemProgram: SystemProgram.programId,
+            })
+            const sig = await txPromise.rpc();
+            if (!sig) throw new Error('Promise Error')
+            console.log("Deposit tx:")
+            console.log(`https://explorer.solana.com/tx/${sig}?cluster=devnet`)
+            return { tx: sig };
+        } catch (err) {
+            console.log(err)
+            return { tx: 'ERROR' }
+        };
+    }
 
     return {
         updateCollectionRewardPDA,

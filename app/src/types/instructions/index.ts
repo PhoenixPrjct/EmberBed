@@ -19,11 +19,6 @@ export type {
   DepositToRewardAtaArgs,
   DepositToRewardAtaAccounts,
 } from "./depositToRewardAta"
-export { depositToFireAta } from "./depositToFireAta"
-export type {
-  DepositToFireAtaArgs,
-  DepositToFireAtaAccounts,
-} from "./depositToFireAta"
 export { managerWithdrawal } from "./managerWithdrawal"
 export type {
   ManagerWithdrawalArgs,

@@ -5,9 +5,9 @@ import * as GenErrors from "./GenErrors"
 import * as StakeState from "./StakeState"
 import * as PhoenixRelation from "./PhoenixRelation"
 import * as PhoenixUserRelation from "./PhoenixUserRelation"
-import * as CollectionId from "./CollectionId"
+
 export { StakeError }
-export { CollectionId }
+
 export type StakeErrorKind =
   | StakeError.AccountAlreadyInitialized
   | StakeError.UnintializedAccount
@@ -73,6 +73,7 @@ export type PhoenixRelationKind =
   | PhoenixRelation.Affiliate
   | PhoenixRelation.Saved
   | PhoenixRelation.Founder
+  | PhoenixRelation.Evo
   | PhoenixRelation.Member
   | PhoenixRelation.EmberBed
   | PhoenixRelation.None
@@ -80,6 +81,7 @@ export type PhoenixRelationJSON =
   | PhoenixRelation.AffiliateJSON
   | PhoenixRelation.SavedJSON
   | PhoenixRelation.FounderJSON
+  | PhoenixRelation.EvoJSON
   | PhoenixRelation.MemberJSON
   | PhoenixRelation.EmberBedJSON
   | PhoenixRelation.NoneJSON
