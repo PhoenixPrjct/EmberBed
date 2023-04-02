@@ -1,4 +1,4 @@
-import SplashPage from './SplashPage.vue';
+import SplashPage from "./SplashPage.vue";
 import CollectionCard from './CollectionCard.vue';
 import CollectionContainer from './CollectionContainer.vue';
 import AddHashList from './AddHashListCard.vue';
