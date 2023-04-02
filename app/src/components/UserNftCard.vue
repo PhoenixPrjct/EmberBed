@@ -119,25 +119,26 @@ async function getStakeState(nft: EBNft) {
     try {
 
         const s = await api.value?.getStakeStatusPda(wallet.value!.publicKey, nft.mint)
-        // console.log(s?.pda);
+        console.log(s?.pda);
         if (!s?.pda) throw new Error('Failed to get stake status PDA')
         const { pda } = s
         const status = await UserStakeInfo.fetch(connection, pda)
         console.log({ status })
-        if (!status) throw new Error('Failed to fetch Stake State from PDA')
+        if (!status) throw new Error(`Failed to fetch Stake State for ${nft.name}`)
         statusRef.value = status.toJSON()
         console.log(`Stake status:\n ${nft.name} - ${status.toJSON().stakeState.kind} \n`)
+        stakeStateRef.value = stakeStatus.value.info ? stakeStatus.value.info.stakeState.kind : null;
         stakeStatus.value.loaded = true;
         return
     } catch (err: any) {
         notify({
             type: 'error',
-            message: 'Error',
+            message: 'Uninitialized NFTs',
             caption: err.message,
             icon: 'alert',
             position: 'top',
         })
-        // stakeStateRef.value = "Unstaked"
+        stakeStateRef.value = "Unstaked"
         return
     }
 

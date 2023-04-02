@@ -41,18 +41,19 @@ async function checkNftCollectionAddress(pda: string, nftMint: string, collectio
 
 
 export async function getNftsInWallet(wallet: PublicKey) {
+    console.log("getNftsInWallet", wallet.toBase58())
     const publicAddress = wallet.toBase58();
 
     let collections: any[] = await program.value.account.collectionRewardInfo.all();
-    // console.log({ collections });
+    console.log({ collections });
     collections = await Promise.all(collections.map(async (col) => {
         const c = await server_api.collection.get.one(col.publicKey.toBase58());
-        return !c.hashlist ? undefined : { ebCollection: col.publicKey.toBase58(), verifiedCollectionAddress: c.collectionAddress };
+        return !c.hashlist ? undefined : { ebCollection: col.publicKey.toBase58(), verifiedCollectionAddress: c.vca };
     }));
 
     // Remove undefined values from the collections array
     collections = collections.filter(col => col !== undefined);
-    console.log({ collections });
+    // console.log({ collections });
     const _nfts = await getParsedNftAccountsByOwner({ publicAddress, connection })
     const nftsPromises = _nfts.map(async (nft) => {
         let ebCollection

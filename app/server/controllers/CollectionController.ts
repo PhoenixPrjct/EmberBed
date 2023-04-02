@@ -61,15 +61,21 @@ class CollectionFile {
 
 
 export const CC = {
-    create: async (pda: string, manager: string, collection: string, rewardWallet: string) => {
+    create: async (info: {
+        pda: string;
+        manager: string;
+        collection: string;
+        rewardWallet: string;
+        vca?: string;
+    }) => {
         try {
 
             const collections = readdirSync(join(__dirname, '../collections'));
-            if (collections?.includes(collection)) {
+            if (collections?.includes(info.collection)) {
                 throw new Error('Collection already exists');
             }
-            const data = { manager: `${manager}`, name: `${collection}`, rewardWallet: `${rewardWallet}`, hashlist: [] };
-            const newFile = await writeFileSync(join(__dirname, `../collections/${pda}.json`), JSON.stringify(data), 'utf-8');
+            const data = { manager: `${info.manager}`, name: `${info.collection}`, rewardWallet: `${info.rewardWallet}`, vca: `${info.vca}`, hashlist: [] };
+            const newFile = await writeFileSync(join(__dirname, `../collections/${info.pda}.json`), JSON.stringify(data), 'utf-8');
             return { status: 200, response: newFile };
         } catch (err: any) {
             console.log(err);

@@ -1,8 +1,14 @@
 <script setup lang="ts">
 import { WalletMultiButton } from "solana-wallets-vue";
-// import { useUserStore } from "../stores/userStore";
+import { watchEffect } from "vue";
+import { useRouter } from "vue-router";
+import { useChainAPI } from "src/api/chain-api";
+const router = useRouter();
+const { wallet } = useChainAPI();
+watchEffect(() => {
+    if (!wallet.value?.publicKey) router.push('/');
 
-// const store = useUserStore();
+})
 </script>
 <template>
     <q-layout view="lHh Lpr lFf">

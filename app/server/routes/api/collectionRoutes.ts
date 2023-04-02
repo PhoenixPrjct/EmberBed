@@ -17,9 +17,9 @@ router.get("/", async (req, res) => {
 // })
 router.post("/new", async (req, res) => {
     try {
-        const { collection, manager, pda, reward_wallet } = req.body;
+        const { collection, manager, pda, reward_wallet, vca } = req.body;
         console.log(reward_wallet)
-        const { status, response } = await CC.create(pda, manager, collection, reward_wallet)
+        const { status, response } = await CC.create({...req.body})
         res.status(status).send(response);
     } catch (err) {
         console.log(err);
