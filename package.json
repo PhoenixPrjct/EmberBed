@@ -5,6 +5,7 @@
         "test": "ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
     },
     "dependencies": {
+        "@metaplex-foundation/beet": "^0.7.1",
         "@metaplex-foundation/js": "^0.17.0",
         "@metaplex-foundation/mpl-token-metadata": "^2.3.3",
         "@project-serum/anchor": "^0.25.0",

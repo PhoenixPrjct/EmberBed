@@ -25,7 +25,8 @@ export type CollectionInfo = {
     fireEligible: boolean,
     phoenixRelation?: { kind: string },
     rewardSymbol: string,
-    rewardMint: string
+    rewardMint: string,
+    uuid?: string,
 }
 
 export interface AnchorWallet {
@@ -216,7 +217,7 @@ export type Accounts = {
     userAccountPDA: PublicKey,
     nftCollectionAddress: PublicKey,
     funderTokenAta: PublicKey
-    rewardWallet: PublicKey
+    rewardWallet: PublicKey,
     firePoa?: PublicKey,
     fireInfo?: PublicKey,
     fireMint?: PublicKey,

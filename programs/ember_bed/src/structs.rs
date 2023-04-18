@@ -143,6 +143,7 @@ pub struct ManagerWithdrawal<'info> {
 #[derive(Default)]
 pub struct CollectionRewardInfo {
     pub bump: u8,
+    pub uuid: String,
     pub rate_per_day: u32,
     pub reward_wallet: Pubkey,
     pub reward_symbol: String,
@@ -173,13 +174,14 @@ pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
         payer = funder,
-        seeds = [reward_mint.key().as_ref(), _collection_name.as_ref(), b"state".as_ref()],
+        seeds = [reward_mint.as_ref(), b"state".as_ref()],
         bump,
         space = std::mem::size_of::<CollectionRewardInfo>() + 8
     )]
     pub state_pda: Account<'info, CollectionRewardInfo>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub reward_mint: AccountInfo<'info>,
+    #[account(mut)]
     pub token_poa: Box<Account<'info, TokenAccount>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub nft_collection_address: AccountInfo<'info>,
@@ -231,11 +233,8 @@ pub struct InitializeFirePDA<'info> {
 #[derive(Accounts)]
 #[instruction(amount:u64)]
 pub struct DepositToFirePda<'info> {
-    #[account(
-        mut
-    )]
+    #[account(mut)]
     pub token_poa: Account<'info, TokenAccount>,
-
     #[account(mut)]
     pub fire_pda: Account<'info, FireRewardInfo>,
     pub mint: Account<'info, Mint>,

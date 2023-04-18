@@ -48,42 +48,43 @@ const submissionStatus = ref({
 const collectionInfo = ref<CollectionInfo>({
     // rewardWallet: '',
     manager: '',
-    rewardMint: "",
-    collectionName: "",
-    collectionAddress: "",
+    rewardMint: "REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko",
+    collectionName: "TESTING",
+    collectionAddress: "CG4KDtfDDvYWP4ChqxKVLXjxjrg8VT28RoMpJgjYosFs",
     ratePerDay: 1,
     fireEligible: false,
     phoenixRelation: null as unknown as PhoenixRelationKind,
-    rewardSymbol: "",
+    rewardSymbol: "REW",
+    uuid: ""
 }) as Ref<CollectionRewardInfoJSON>
 
 async function getRewardWallet() {
     const rw = new PublicKey(collectionInfo.value.rewardMint);
-    const colInfo = await api.value?.getStatePda(rw, collectionInfo.value.collectionName);
-    if (!colInfo) return null;
-    console.log({ getRewardWallet_infoPDA: colInfo.pda.toBase58() });
-    const rewardWallet = await api.value?.getRewardWallet(rw, colInfo.pda);
+    const rewardWallet = await (await api.value?.getStatePda(rw))!.rewardWallet
     if (rewardWallet) {
         console.log(rewardWallet.address.toBase58())
         return rewardWallet
     }
     return null
 }
-
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
     try {
+        // const collectionID = rawInfo.uuid
+        // console.log({ collectionID })
         submissionStatus.value = {
             loading: true,
             message: 'Validating Info. . .',
             percent: 5
         }
         // Find or Create the PDAs
-        const accounts = await (await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
-
+        const accounts = await (await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
+        console.log({ accounts })
         if (!accounts) throw new Error('Generating PDAS Failed')
-        const { stateBump, statePDA, rewardWallet } = accounts
-        rawInfo.bump = stateBump
-        rawInfo.rewardWallet = rewardWallet.toBase58();
+        const { statePDA, stateBump } = accounts
+        const rewardWallet = await getRewardWallet();
+        rawInfo.uuid = statePDA.toBase58()
+        rawInfo.bump = stateBump;
+        rawInfo.rewardWallet = rewardWallet!.address.toBase58();
         const collections = await (await program.value.account.collectionRewardInfo.all()).map(collection => collection.publicKey.toBase58())
         if (!collections.includes(statePDA.toBase58())) {
             console.log(rawInfo)
@@ -101,12 +102,12 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
             const amount = getInitCost(kind)
             submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
-            const paidTx = await chargeFeeTx(wallet.value.publicKey, amount);
+            const paidTx = await chargeFeeTx(wallet.value!.publicKey, amount);
 
             if (!paidTx.success) throw new Error(paidTx.error)
             const paymentSig = await paidTx.sig
             submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
-            const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
+            const initState = await api.value?.initStatePda(wallet.value!.publicKey, info)
             if (!initState || initState.error) throw new Error(`${initState?.error.message}`)
             const { account, tx } = await initState
             console.log({ tx, account })
@@ -114,7 +115,8 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         }
         const data = {
             pda: statePDA,
-            manager: wallet.value.publicKey.toBase58(),
+            vca: rawInfo.collectionAddress,
+            manager: wallet.value!.publicKey.toBase58(),
             collection: rawInfo.collectionName,
             /*{ ...account, name: account?.collectionName, */
             reward_wallet: rewardWallet
@@ -251,6 +253,7 @@ async function handleSplTokenClick(tokenInfo?: TokenInfo) {
 
 
 watchEffect(async () => {
+    console.log({ info: collectionInfo.value })
     showSubmit.value = Object.values(collectionInfo.value).every(val => val !== null && val !== undefined && val !== 0);
     if (!relations.value) {
         const relationsResult = await server_api.general.getRelations()
@@ -273,13 +276,6 @@ watchEffect(async () => {
     if (wallet.value) {
         collectionInfo.value.manager = wallet.value.publicKey.toBase58()
     }
-    if (!collectionInfo.value.rewardWallet && collectionInfo.value.rewardMint && collectionInfo.value.collectionName) {
-        const rw = await getRewardWallet()
-        if (!rw) return
-        console.log(rw.address.toBase58())
-        collectionInfo.value.rewardWallet = rw.address.toBase58();
-    }
-    console.log($wallet.value)
 
     if (!$wallet.value) {
         router.push({ path: '/admin' })
@@ -302,7 +298,7 @@ watchEffect(async () => {
         <div v-else class="q-pa-sm form--container" style="width: 90%">
             <q-form @submit="onSubmit(collectionInfo)" @reset="onReset" class="q-gutter-md">
                 <section class="general-info">
-                    <h6>EmberBed Info</h6>
+                    <h6>EmberBed Info <sub>{{ collectionInfo.uuid }}</sub></h6>
                     <small>This is how we categorize your NFT collection on the platform.</small>
                     <q-separator dark spaced />
                     <q-input dense dark filled v-model="collectionInfo.collectionName" placeholder="Name of Nft Collection"
@@ -438,7 +434,7 @@ watchEffect(async () => {
                         </q-item-section>
                     </q-item>
                     <!-- </q-card-section>
-                                            <q-card-section> -->
+                                                                                                                                                                    <q-card-section> -->
                     <q-item class="fire-item">
                         <q-item-section class="fire-title text-subtitle1">
                             Why Might This Be a Good Idea?

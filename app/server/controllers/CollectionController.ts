@@ -31,21 +31,21 @@ interface CollectionFile {
 class CollectionFile {
     pda: string;
     manager: string;
-    collectionAddress?: string;
+    vca?: string;
     name: string;
     hashlist: string[];
     style?: CollectionStyle;
 
-    constructor(pda: string, manager: string, name: string, hashlist: string[], collectionAddress?: string, style?: CollectionStyle) {
+    constructor(pda: string, manager: string, name: string, hashlist: string[], vca?: string, style?: CollectionStyle) {
         this.pda = pda;
         this.manager = manager;
-        this.collectionAddress = collectionAddress;
+        this.vca = vca;
         this.name = name;
         this.hashlist = hashlist;
         this.style = style;
     }
 
-    static toDB(colFile: { pda: string, manager: string, name: string, hashlist?: string[], collectionAddress?: string, style?: CollectionStyle }) {
+    static toDB(colFile: { pda: string, manager: string, name: string, hashlist?: string[], vca?: string, style?: CollectionStyle }) {
         let data: CollectionFile = { ...colFile, hashlist: [] }
         if (colFile.hashlist) {
             const cleanedHashlist = colFile.hashlist.map(hash => hash.trim())
@@ -184,9 +184,9 @@ export const CC = {
 
                 collectionFile.style = inStyle
                 console.dir(collectionFile)
-                const { manager, name, hashlist, collectionAddress, style } = collectionFile;
+                const { manager, name, hashlist, vca, style } = collectionFile;
                 CollectionFile.toDB({
-                    pda, manager, name, hashlist, collectionAddress, style
+                    pda, manager, name, hashlist, vca, style
                 });
             }
             return { status: 200, response: 'Style added' };
@@ -211,8 +211,8 @@ export const CC = {
                 if (collectionFile.manager !== wallet && wallet !== 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') throw new Error('Not Your Collection to Be Styling Dog.')
                 collectionFile = { ...collectionFile, manager: data.manager, name: data.collectionName }
 
-                const { manager, name, hashlist, collectionAddress, style } = collectionFile;
-                CollectionFile.toDB({ pda, manager, name, hashlist, collectionAddress, style })
+                const { manager, name, hashlist, vca, style } = collectionFile;
+                CollectionFile.toDB({ pda, manager, name, hashlist, vca, style })
                 console.dir(collectionFile)
                 return { status: 200, response: collectionFile };
             }

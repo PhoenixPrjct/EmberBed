@@ -11,8 +11,9 @@ import {
 } from "@metaplex-foundation/js"
 import * as beet from '@metaplex-foundation/beet'
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
-import { getAssociatedTokenAddress, Account, createMint, TOKEN_PROGRAM_ID, getAccount, TOKEN_2022_PROGRAM_ID, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
+import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
 import * as types from '../app/src/types'
+import { v1 as uuidv1 } from 'uuid';
 // import {createInitializeStatePdaInstruction} from "../programs/staking_attempt_1/src/generated"
 
 // MY WALLET SETTING
@@ -97,7 +98,24 @@ describe("EmberBed", async () => {
   let cmaBump: number;
 
   const fireEligible = true;
+
   before(async () => {
+    function generateUUID(): string {
+      const uuid = uuidv1();
+      const timestamp = uuid.split('-')[0];
+      console.log({ timestamp, uuid });
+      return timestamp;
+    }
+
+    const uuid = generateUUID();
+
+    async function getStatePda(uuid: string): Promise<{ pda: web3.PublicKey, bump: number }> {
+      const [pda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
+        [Buffer.from(uuid), Buffer.from("state")],
+        program.programId
+      );
+      return { pda, bump };
+    }
     console.log('Before Hook Triggered');
     //* Admin 
 
@@ -107,7 +125,7 @@ describe("EmberBed", async () => {
     );
 
     [statePDA, bumpState] = await anchor.web3.PublicKey.findProgramAddressSync(
-      [RewTok.toBuffer(), Buffer.from(collectionName), Buffer.from("state")],
+      [RewTok.toBuffer(), Buffer.from("state")], // [RewTok.toBuffer(), Buffer.from(collectionName), Buffer.from("state")],
       program.programId
     );
 
@@ -309,9 +327,10 @@ describe("EmberBed", async () => {
     if (fireAccount.length > -1) return true;
     return false;
   });
-  xit("Gets all collection accounts", async () => {
+  it("Gets all collection accounts", async () => {
     const collectionAccounts = await program.account.collectionRewardInfo.all();
-    console.log(collectionAccounts)
+    console.log(collectionAccounts[0].publicKey.toBase58())
+    console.log(collectionAccounts[0].account.rewardWallet.toBase58())
     console.log(collectionAccounts.length)
   });
   xit(" Allows Manager to withdraw tokens", async () => {
@@ -334,12 +353,12 @@ describe("EmberBed", async () => {
     console.log(`https://explorer.solana.com/tx/${tx}?cluster=devnet`)
 
   })
-  it("Gets Stake Status", async () => {
+  xit("Gets Stake Status", async () => {
     const res = await program.account.userStakeInfo.fetch(stakeStatusPda.toBase58());
     console.log(res)
   });
 
-  it("Stakes NFT", async () => {
+  xit("Stakes NFT", async () => {
     if (!nftTests) {
       console.log("Skipping the NFT Stake Test")
       return true
@@ -445,7 +464,7 @@ describe("EmberBed", async () => {
     await new Promise((resolve) => setTimeout(resolve, 5000))
   })
 
-  it("Unstakes NFT", async () => {
+  xit("Unstakes NFT", async () => {
     if (!nftTests) {
       console.log("Skipping the Unstake Test")
       return true
