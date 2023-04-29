@@ -11,7 +11,6 @@ export interface InitializeStatePdaArgs {
   collectionName: string
   fireEligible: boolean
   phoenixCollectionRelation: string
-  uuid: string
 }
 
 export interface InitializeStatePdaAccounts {
@@ -31,7 +30,6 @@ export const layout = borsh.struct([
   borsh.str("collectionName"),
   borsh.bool("fireEligible"),
   borsh.str("phoenixCollectionRelation"),
-  borsh.str("uuid"),
 ])
 
 export function initializeStatePda(
@@ -41,7 +39,7 @@ export function initializeStatePda(
   const keys: Array<AccountMeta> = [
     { pubkey: accounts.statePda, isSigner: false, isWritable: true },
     { pubkey: accounts.rewardMint, isSigner: false, isWritable: false },
-    { pubkey: accounts.tokenPoa, isSigner: false, isWritable: false },
+    { pubkey: accounts.tokenPoa, isSigner: false, isWritable: true },
     {
       pubkey: accounts.nftCollectionAddress,
       isSigner: false,
@@ -61,7 +59,6 @@ export function initializeStatePda(
       collectionName: args.collectionName,
       fireEligible: args.fireEligible,
       phoenixCollectionRelation: args.phoenixCollectionRelation,
-      uuid: args.uuid,
     },
     buffer
   )

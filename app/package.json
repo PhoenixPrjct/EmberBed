@@ -38,7 +38,7 @@
     "file-saver": "^2.0.5",
     "mongoose": "^6.8.0",
     "nodemon": "^2.0.20",
-    "pinia": "^2.0.11",
+    "pinia": "^2.0.35",
     "quasar": "^2.6.0",
     "solana-wallets-vue": "^0.6.0",
     "tweetnacl": "^1.0.3",

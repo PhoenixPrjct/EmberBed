@@ -101,16 +101,16 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
         if (!ebCollection.info) throw new Error('Colletion not loaded')
         stakingAction.value = { message: 'Unstaking NFT', percent: .1 }
         const feeAmount = await getStakingFee(ebCollection.info.phoenixRelation.kind)
-        const paidTx = await chargeFeeTx(wallet.value.publicKey, feeAmount);
+        const paidTx = await chargeFeeTx(wallet.value!.publicKey, feeAmount);
         if (!paidTx.success) throw new Error('Unstaking Fee TX Failed')
         console.log(paidTx)
         console.log(`Unstaking ${nft.name}`)
-        const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint })
+        const accounts = await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint })
         if (!accounts) throw new Error('Accounts Not Validated')
         stakingAction.value.percent = 2.5;
         // userStakeInfoRef.value.loaded = false;
         const unstakeAccts: UnstakeAccounts = {
-            user: wallet.value.publicKey,
+            user: wallet.value!.publicKey,
             nftAta: accounts.nftTokenAddress,
             nftMintAddress: accounts.nft.mint.address,
             // userAccountPda: null,
@@ -121,6 +121,7 @@ async function unstakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Col
             metadataProgram: METADATA_PROGRAM_ID,
             systemProgram: SystemProgram.programId,
         }
+        Object.entries(unstakeAccts).forEach(([key, value]) => { console.log(key, value.toBase58()) })
         stakingAction.value = { message: 'Accounts All Good', percent: .5 }
         const unstakeTx = await (await api.value?.unstake(unstakeAccts))
         if (!unstakeTx?.tx) throw new Error('Transaction Failed')

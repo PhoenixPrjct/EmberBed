@@ -1,7 +1,8 @@
-import { getConnection } from "src/api/chain-api";
+import { getConnection, useChainAPI } from "src/api/chain-api";
 import { CollectionRewardInfoJSON, CollectionRewardInfo } from "src/types";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useWallet } from "solana-wallets-vue";
+import { program } from "@project-serum/anchor/dist/cjs/native/system";
 
 const connection = new Connection(getConnection());;
 const wallet = useWallet();
@@ -9,15 +10,15 @@ const wallet = useWallet();
 export async function validateCollectionInfo(
     collectionInfo: CollectionRewardInfoJSON
 ) {
-    // try {
-    Object.entries(collectionInfo).map((val, key) => { console.log(val[0], typeof val[1]) });
-    const info: CollectionRewardInfo = CollectionRewardInfo.fromJSON(collectionInfo);
-    console.log('INFO:', info.toJSON())
-    await info.toJSON()
-    return { success: true, info: info }
-    // } catch (err: any) {
-    // return { success: false, err: err.message };
-    // }
+    try {
+        Object.entries(collectionInfo).map((val, key) => { console.log(val[0], typeof val[1]) });
+        const info: CollectionRewardInfo = CollectionRewardInfo.fromJSON(collectionInfo);
+        console.log('INFO:', info.toJSON())
+        await info.toJSON()
+        return { success: true, info: info }
+    } catch (err: any) {
+        return { success: false, err: err.message };
+    }
 }
 
 
@@ -133,3 +134,37 @@ export async function chargeFeeTx(user: PublicKey, amount: number) {
 //         return { Error: err.message }
 //     }
 // }
+
+export async function refundTxFee(user: PublicKey, amount: number) {
+    const PhoenixWallet = useChainAPI().programWallet
+    try {
+        const latestBlockHash = await connection.getLatestBlockhash();
+        const { blockhash, lastValidBlockHeight } = latestBlockHash
+
+        const transaction = new Transaction().add(
+            SystemProgram.transfer({
+                fromPubkey: PhoenixWallet.publicKey,
+                toPubkey: user,
+                lamports: amount * LAMPORTS_PER_SOL,
+
+            }))
+        transaction.recentBlockhash = blockhash
+        transaction.sign(PhoenixWallet);
+        const sig = await connection.sendRawTransaction(transaction.serialize());
+        if (!sig) throw new Error('Transaction failed: ' + JSON.stringify(sig))
+        console.log({ sig })
+
+        const confirmation = await connection.confirmTransaction({ signature: JSON.stringify(sig), blockhash, lastValidBlockHeight }, 'confirmed');
+        console.dir(confirmation)
+        if (!confirmation.value.err) {
+            console.log(`Successfully refunded tx \n \n ${sig}`)
+            return { success: true, sig: sig }
+        }
+        console.log(confirmation.value.err)
+        return { success: false, error: confirmation.value.err };
+    } catch (err: any) {
+        console.dir(err)
+        return { success: false, error: err.message };
+
+    }
+}

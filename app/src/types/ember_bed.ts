@@ -913,7 +913,10 @@ export type EmberBed = {
       "name": "NotFireEligible",
       "msg": "Not Eligible for FIRE Token"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
+  }
 };
 
 export const IDL: EmberBed = {
@@ -1831,5 +1834,8 @@ export const IDL: EmberBed = {
       "name": "NotFireEligible",
       "msg": "Not Eligible for FIRE Token"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
+  }
 };

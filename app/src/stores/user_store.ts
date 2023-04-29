@@ -1,6 +1,3 @@
-import { base64 } from '@project-serum/anchor/dist/cjs/utils/bytes';
-import { hash } from '@project-serum/anchor/dist/cjs/utils/sha256';
-import { format } from 'path';
 import { defineStore } from 'pinia';
 
 // import { LocalStorage } from 'quasar';
@@ -8,11 +5,6 @@ type State = {
   wallet: string;
   type: 'User' | 'Admin' | null;
 }
-
-
-
-
-
 export const useUserStore = defineStore('user', {
   state: () => <State>({
     wallet: '' as State['wallet'],

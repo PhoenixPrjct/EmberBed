@@ -7,12 +7,12 @@ import { verifyWallet } from 'src/helpers';
 import { WalletStore } from 'src/types';
 import { useRouter } from 'vue-router';
 import { PublicKey } from '@solana/web3.js';
-import { useUserStore } from 'src/stores/userStore'
+import { useUserStore } from 'src/stores/user_store'
 
 const { wallet } = useChainAPI();
 const { server_api } = useServerAPI()
 const router = useRouter();
-const store = useUserStore();
+const userStore = useUserStore();
 // const wallet = useWallet();
 const connected = computed(() => !!wallet.value?.publicKey);
 // const msg = ref('');
@@ -21,7 +21,7 @@ const connected = computed(() => !!wallet.value?.publicKey);
 
 async function handleAdminClick(pk: PublicKey) {
     console.log({ pk: pk.toBase58() });
-    if (store.getType !== 'Admin') {
+    if (userStore.getType !== 'Admin') {
         const verified = await verifyWallet(pk);
         if (!verified) return
         router.push(`/${verified.toString().toLowerCase()}`);
@@ -32,8 +32,8 @@ async function handleAdminClick(pk: PublicKey) {
 
 }
 watchEffect(() => {
-    if (wallet.value?.publicKey && store.getType !== 'Admin') {
-        store.setUser(wallet.value.publicKey.toBase58(), 'User');
+    if (wallet.value?.publicKey && userStore.getType !== 'Admin') {
+        userStore.setUser(wallet.value.publicKey.toBase58(), 'User');
     }
 
 })

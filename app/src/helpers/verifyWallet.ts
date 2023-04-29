@@ -2,20 +2,21 @@ import { PublicKey } from "@solana/web3.js";
 import { useWallet, initWallet } from "solana-wallets-vue";
 import { walletOptions } from "src/boot/sw";
 import { AnchorWallet, WalletStore } from "src/types";
-import { useUserStore } from "src/stores/userStore";
+import { useUserStore } from "src/stores/user_store";
 import { ComputedRef } from "vue";
 import { sign } from 'tweetnacl'
 import { publicKey } from "@project-serum/anchor/dist/cjs/utils";
 initWallet(walletOptions);
-const store = useUserStore();
 
 const wallet = <WalletStore>useWallet();
 const { signMessage } = wallet
-export default async (pKey: PublicKey) => {
-    console.log(wallet.publicKey)
+export async function verifyWallet(pKey: PublicKey) {
+    const store = useUserStore();
     if (!pKey || typeof pKey === "string") return false;
     try {
-        if (wallet.publicKey.value !== pKey) throw new Error('Not the Same Wallet');
+        console.log({ wallet: wallet.publicKey.value?.toBase58(), pk: pKey.toBase58() });
+        console.log({ check: wallet.publicKey.value?.toBase58() === pKey.toBase58() });
+        if (wallet.publicKey.value?.toBase58() !== pKey.toBase58()) throw new Error('Not the Same Wallet... Maybe');
         // `publicKey` will be null if the wallet isn't connected
         if (!pKey) throw new Error('Wallet not connected!');
         // `signMessage` will be undefined if the wallet doesn't support it

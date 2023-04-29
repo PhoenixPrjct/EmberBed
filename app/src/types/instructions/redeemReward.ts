@@ -6,6 +6,7 @@ import { PROGRAM_ID } from "../programId"
 
 export interface RedeemRewardArgs {
   bumpState: number
+  collectionName: string
 }
 
 export interface RedeemRewardAccounts {
@@ -19,7 +20,10 @@ export interface RedeemRewardAccounts {
   systemProgram: PublicKey
 }
 
-export const layout = borsh.struct([borsh.u8("bumpState")])
+export const layout = borsh.struct([
+  borsh.u8("bumpState"),
+  borsh.str("collectionName"),
+])
 
 export function redeemReward(
   args: RedeemRewardArgs,
@@ -44,6 +48,7 @@ export function redeemReward(
   const len = layout.encode(
     {
       bumpState: args.bumpState,
+      collectionName: args.collectionName,
     },
     buffer
   )

@@ -23,6 +23,7 @@ interface CollectionFile {
     pda: string;
     manager: string;
     collectionAddress?: string;
+    reward_wallet: string;
     name: string;
     hashlist: string[];
     style?: CollectionStyle;
@@ -33,19 +34,21 @@ class CollectionFile {
     manager: string;
     vca?: string;
     name: string;
+    reward_wallet: string;
     hashlist: string[];
     style?: CollectionStyle;
 
-    constructor(pda: string, manager: string, name: string, hashlist: string[], vca?: string, style?: CollectionStyle) {
+    constructor(pda: string, manager: string, name: string, reward_wallet: string, hashlist: string[], vca?: string, style?: CollectionStyle) {
         this.pda = pda;
         this.manager = manager;
         this.vca = vca;
         this.name = name;
         this.hashlist = hashlist;
         this.style = style;
+        this.reward_wallet = reward_wallet;
     }
 
-    static toDB(colFile: { pda: string, manager: string, name: string, hashlist?: string[], vca?: string, style?: CollectionStyle }) {
+    static toDB(colFile: { pda: string, manager: string, name: string, reward_wallet: string, hashlist?: string[], vca?: string, style?: CollectionStyle }) {
         let data: CollectionFile = { ...colFile, hashlist: [] }
         if (colFile.hashlist) {
             const cleanedHashlist = colFile.hashlist.map(hash => hash.trim())
@@ -65,7 +68,7 @@ export const CC = {
         pda: string;
         manager: string;
         collection: string;
-        rewardWallet: string;
+        reward_wallet?: string;
         vca?: string;
     }) => {
         try {
@@ -74,7 +77,7 @@ export const CC = {
             if (collections?.includes(info.collection)) {
                 throw new Error('Collection already exists');
             }
-            const data = { manager: `${info.manager}`, name: `${info.collection}`, rewardWallet: `${info.rewardWallet}`, vca: `${info.vca}`, hashlist: [] };
+            const data = { manager: `${info.manager}`, name: `${info.collection}`, rewardWallet: `${info.reward_wallet}`, vca: `${info.vca}`, hashlist: [] };
             const newFile = await writeFileSync(join(__dirname, `../collections/${info.pda}.json`), JSON.stringify(data), 'utf-8');
             return { status: 200, response: newFile };
         } catch (err: any) {
@@ -105,6 +108,8 @@ export const CC = {
             const collections = readdirSync(join(__dirname, '../collections'));
             console.log("GetPDA Collections")
             console.log(collections)
+            console.log({ pda })
+
             if (!collections.includes(`${pda}.json`)) throw new Error('Collection Not Found')
             const data = readFileSync(join(__dirname, `../collections/${pda}.json`), 'utf-8');
 
@@ -141,7 +146,7 @@ export const CC = {
                 CollectionFile.toDB({ ...collectionFile });
                 return { status: 200, response: 'Hashlist updated' };
             } else {
-                const col = new CollectionFile(pda, wallet, name, hashlist);
+                const col = new CollectionFile(pda, wallet, name, 'undefined', hashlist);
                 CollectionFile.toDB({ ...col });
                 return { status: 200, response: 'Hashlist added' };
             }
@@ -184,9 +189,8 @@ export const CC = {
 
                 collectionFile.style = inStyle
                 console.dir(collectionFile)
-                const { manager, name, hashlist, vca, style } = collectionFile;
                 CollectionFile.toDB({
-                    pda, manager, name, hashlist, vca, style
+                    ...collectionFile
                 });
             }
             return { status: 200, response: 'Style added' };
@@ -211,8 +215,8 @@ export const CC = {
                 if (collectionFile.manager !== wallet && wallet !== 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') throw new Error('Not Your Collection to Be Styling Dog.')
                 collectionFile = { ...collectionFile, manager: data.manager, name: data.collectionName }
 
-                const { manager, name, hashlist, vca, style } = collectionFile;
-                CollectionFile.toDB({ pda, manager, name, hashlist, vca, style })
+                // const { manager, name, hashlist, vca, style } = collectionFile;
+                CollectionFile.toDB({ ...collectionFile })
                 console.dir(collectionFile)
                 return { status: 200, response: collectionFile };
             }

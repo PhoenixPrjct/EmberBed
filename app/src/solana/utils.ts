@@ -1,70 +1,48 @@
-import { v1 as uuidv1 } from 'uuid';
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
-import { EmberBed, ManagerWithdrawalAccounts, ManagerWithdrawalArgs } from 'src/types';
-import {
-    PublicKey, Keypair, SystemProgram, /*,Transaction, BlockheightBasedTransactionConfirmationStrategy*/
-    Connection,
-    Commitment,
-    ConfirmOptions,
-    Transaction,
-    Signer
-} from '@solana/web3.js';
+import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
 import {
     getAssociatedTokenAddress,
-    // Account,
     TOKEN_PROGRAM_ID,
-    // getAccount, 
     getOrCreateAssociatedTokenAccount,
     ASSOCIATED_TOKEN_PROGRAM_ID,
     Account,
-    getAccount,
-    TokenAccountNotFoundError,
-    TokenInvalidAccountOwnerError,
-    createAssociatedTokenAccountInstruction,
-    // getAssociatedTokenAddressSync, 
-    // createAssociatedTokenAccount 
 } from "@solana/spl-token"
 import web3 = anchor.web3;
-import { Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeStateJSON, UserStakeInfo, RedeemRewardAccounts, RedeemFireAccounts } from '../types'
-// import * as devSecret from './wallets/devWallet'
-// import * as fundSecret from './wallets/fundWallet';
+import { EmberBed, Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeStateJSON, UserStakeInfo, RedeemRewardAccounts, RedeemFireAccounts } from '../types'
+
 import {
     Metaplex,
     bundlrStorage,
     keypairIdentity,
     associatedTokenProgram,
-    // useNftOperationHandler,
-    // Nft,
-    // walletAdapterIdentity,
+
 } from "@metaplex-foundation/js"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { getExplorerURL } from 'src/helpers';
-import { useAnchorWallet, useWallet } from 'solana-wallets-vue';
+import { useAnchorWallet } from 'solana-wallets-vue';
 import { Ref } from 'vue';
-import { EBSecret } from './EBwallet';
-
-
+import { EBWallet } from 'src/dev/walletKPs';
 // import { useWallet } from 'solana-wallets-vue';
 // import { api } from 'src/boot/axios';
 // let devKP = process.env.DEV_KP
-
+// const prjctKP = JSON.parse(fs.readFileSync('./PrjctTokenAuthority.json', 'utf-8'));
 
 // This private key has already been compromised, so no one gives a fuck.
-const bsKey = Uint8Array.from([178, 13, 171, 164, 100, 123, 36, 5, 199, 169, 167, 4, 68, 180, 137, 159, 36, 120, 216, 97, 170, 223, 126, 237, 194, 101, 33, 101, 197, 166, 134, 33, 192, 54, 19, 177, 69, 246, 153, 65, 216, 117, 205, 41, 136, 204, 221, 172, 170, 4, 186, 169, 101, 69, 185, 223, 86, 36, 156, 126, 112, 249, 28, 162])
+// const bsKey = Uint8Array.from([178, 13, 171, 164, 100, 123, 36, 5, 199, 169, 167, 4, 68, 180, 137, 159, 36, 120, 216, 97, 170, 223, 126, 237, 194, 101, 33, 101, 197, 166, 134, 33, 192, 54, 19, 177, 69, 246, 153, 65, 216, 117, 205, 41, 136, 204, 221, 172, 170, 4, 186, 169, 101, 69, 185, 223, 86, 36, 156, 126, 112, 249, 28, 162])
 
-// let FundSecret = Uint8Array.from(EBSecret) || bsKey;
-// if (process.env.NODE_ENV !== 'production' && EBSecret) {    // DevSecret = Uint8Array.from(devSecret.devKP);
-//     FundSecret = Uint8Array.from(EBSecret);
+// const FundSecret = bsKey;
+// if (process.env.NODE_ENV !== 'production' && prjctKP) {    // DevSecret = Uint8Array.from(devSecret.devKP);
+//     FundSecret = Uint8Array.from(JSON.parse(prjctKP));
 // }
 // // const DevWallet = Keypair.fromSecretKey(DevSecret as Uint8Array, { skipValidation: true });
-const EBWallet = Keypair.fromSecretKey(bsKey as Uint8Array);
+// const EBWallet = Keypair.fromSecretKey(FundSecret as Uint8Array);
 console.log('EBWallet', EBWallet.publicKey.toBase58())
 const wallet: Ref<AnchorWallet | undefined> = useAnchorWallet();
 
 
-
 export function getAPI(program: Program<EmberBed>) {
+    console.log('getAPI', program.programId.toBase58())
     const connection = program.provider.connection
     const metaplex = Metaplex.make(connection)
         .use(keypairIdentity(EBWallet))
@@ -72,24 +50,14 @@ export function getAPI(program: Program<EmberBed>) {
     const FireTok = new PublicKey("F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8")
 
 
-    // function generateUUID(): string {
-    //     const uuid = uuidv1();
-    //     const timestamp = uuid.split('-')[0];
-    //     console.log({ timestamp, uuid });
-    //     return timestamp;
-    // }
 
-    async function getStatePda(rewardMint: PublicKey): Promise<{ statePDA: { pda: web3.PublicKey, bump: number }, rewardWallet: Account }> {
+
+    async function getStatePda(RewTok: PublicKey, collectionName: string): Promise<{ pda: web3.PublicKey, bump: number }> {
         const [pda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-            [rewardMint.toBuffer(), Buffer.from("state")],
+            [RewTok.toBuffer(), Buffer.from(collectionName), Buffer.from("state")],
             program.programId
         );
-        const rewardWallet = await getOrCreateAssociatedTokenAccount(connection, EBWallet, rewardMint, pda, true);
-
-        console.log(rewardWallet.address.toBase58())
-        return {
-            statePDA: { pda, bump }, rewardWallet: rewardWallet
-        };
+        return { pda, bump };
     }
     // async function getStatePda(RewTok: web3.PublicKey, collectionName: string): Promise<{ pda: web3.PublicKey, bump: number }> {
     //     const [pda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
@@ -119,6 +87,7 @@ export function getAPI(program: Program<EmberBed>) {
             [Buffer.from("authority")],
             program.programId
         );
+        console.log({ delegatedAuthPda: delegatedAuthPda.toBase58(), authBump: bump })
         return { pda: delegatedAuthPda, bump: bump };
     }
 
@@ -158,17 +127,17 @@ export function getAPI(program: Program<EmberBed>) {
 
     }
 
-    // async function getRewardWallet(RewTok: web3.PublicKey, statePDA: web3.PublicKey): Promise<Account> {
-    //     // statePDA = new PublicKey('Dbx4ZzUzXLKoPDTUTouiKGNkwN6wifJpbVqMivqs2wFu')
-    //     console.log("Getting Reward Wallet for:", statePDA.toBase58())
-    //     console.log({ RewTok: RewTok.toBase58() });
-    //     console.log({ EBWallet: EBWallet.publicKey.toBase58() })
+    async function getRewardWallet(RewTok: web3.PublicKey, statePDA: web3.PublicKey): Promise<Account> {
+        console.log("Getting Reward Wallet for:", statePDA.toBase58())
+        // statePDA = new PublicKey('H3d6LoF7ByDnQ8vGtWHzcRahnJvEm1XW6TDGDodbMjfg')
+        console.log({ RewTok: RewTok.toBase58() });
+        console.log({ EBWallet: EBWallet.publicKey.toBase58() })
 
-    //     const rewardWallet: Account = await getOrCreateAssociatedTokenAccount(connection, EBWallet, RewTok, statePDA, true)
-    //     console.log({ rewardWallet_address: rewardWallet.address.toBase58(), rewardWallet_owner: rewardWallet.owner.toBase58(), rewardWallet_mint: rewardWallet.mint.toBase58() })
-    //     return rewardWallet
+        const rewardWallet: Account = await getOrCreateAssociatedTokenAccount(connection, EBWallet, RewTok, statePDA, true)
+        console.log({ rewardWallet })
+        return rewardWallet
 
-    // }
+    }
     async function getUserRewardAta(user: web3.PublicKey, RewTok: web3.PublicKey) {
         const userRewardAta = await getAssociatedTokenAddress(RewTok, user);
         return userRewardAta;
@@ -193,16 +162,14 @@ export function getAPI(program: Program<EmberBed>) {
             nftTokenAddress,
             stakeStatusPDA
 
-
-
+        // const collectionID = data.uuid ? data.uuid : generateUUID();
+        // console.log({ uuid: data.uuid, collectionID })
         const userAccountPDA = await getUserAccountPda(data.user);
         console.log({ userAccountPDA: userAccountPDA.pda.toBase58() })
         const userRewardAta = await getUserRewardAta(data.user, RewTok);
         console.log({ userRewardAta: userRewardAta.toBase58() })
-        const { statePDA, rewardWallet } = await getStatePda(RewTok);
-        console.log({
-            statePDA: statePDA.pda.toBase58()
-        })
+        const statePDA = await getStatePda(RewTok, data.collectionName);
+        console.log({ statePDA: statePDA.pda.toBase58() });
         const funderTokenAta = await getAssociatedTokenAddress(RewTok, data.user);
         console.log({ funderTokenAta: funderTokenAta.toBase58() })
         const userAccounts = {
@@ -210,6 +177,7 @@ export function getAPI(program: Program<EmberBed>) {
             userAccountPDA: userAccountPDA.pda
         }
         console.log({ userAccounts: { pda: userAccounts.userAccountPDA.toBase58(), userRewardAta: userAccounts.userRewardAta.toBase58() } })
+        const rewardWallet = await getRewardWallet(RewTok, statePDA.pda);
 
         console.log({ rewardWallet: rewardWallet?.address.toBase58() })
         const collectionAccounts = {
@@ -220,7 +188,7 @@ export function getAPI(program: Program<EmberBed>) {
             statePDA: statePDA.pda
         }
         accounts = { ...accounts, ...collectionAccounts, ...userAccounts }
-
+        console.log({ "199": accounts })
         if (data.nftMint) {
             mintAddress = new PublicKey(data.nftMint);
             nft = await metaplex
@@ -248,7 +216,7 @@ export function getAPI(program: Program<EmberBed>) {
             accounts = { ...accounts, firePoa: firePoa, fireInfo: fireInfo.pda, fireBump: fireInfo.bump, fireMint: fireMint, userFireAta: userFireAta };
         }
         // console.log('REWTOK:', accounts.RewTok.toBase58())
-
+        console.log({ success: accounts })
         return accounts;
     }
 
@@ -314,17 +282,18 @@ export function getAPI(program: Program<EmberBed>) {
         try {
             const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint, manager } = collectionInfo;
             const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58() })
-            const { statePDA, RewTok, stateBump, rewardWallet } = accounts;
+            const { statePDA, RewTok, stateBump, } = accounts;
+            const rewardWallet = await getRewardWallet(RewTok, statePDA);
 
 
             const tx = await program.methods.updateStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind, manager.toBase58())
-                .accounts({ statePda: statePDA, rewardMint: RewTok, tokenPoa: rewardWallet.toBase58(), nftCollectionAddress: collectionAddress, funder: user, systemProgram: SystemProgram.programId })
+                .accounts({ statePda: statePDA, rewardMint: RewTok, tokenPoa: rewardWallet.address, nftCollectionAddress: collectionAddress, funder: user, systemProgram: SystemProgram.programId })
                 .signers([])
                 .rpc();
             const account = await CollectionRewardInfo.fetch(connection, statePDA);//await program.account.collectionRewardInfo.getAccountInfo(statePDA)
 
             console.dir({ tx })
-            return { tx: tx, pdas: { collectionInfoPDA: statePDA.toBase58(), rewardWallet: rewardWallet.toBase58() }, account: account }
+            return { tx: tx, pdas: { collectionInfoPDA: statePDA.toBase58(), rewardWallet: rewardWallet.address.toBase58() }, account: account }
         } catch (e: any) {
             console.log(e)
             return { error: e?.message }
@@ -338,7 +307,7 @@ export function getAPI(program: Program<EmberBed>) {
             const { uuid, collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint } = collectionInfo;
             const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58(), uuid: uuid ?? null });
             const { statePDA, RewTok, stateBump, funderTokenAta } = accounts;
-            const rewardWallet = await getRewardWallet(RewTok, statePDA, wallet);
+            const rewardWallet = await getRewardWallet(RewTok, statePDA);
             const nftCollectionAddress = new PublicKey(collectionAddress);
 
             const stateExists = await program.account.collectionRewardInfo.getAccountInfo(statePDA.toBase58())
@@ -372,6 +341,7 @@ export function getAPI(program: Program<EmberBed>) {
     async function stake(data: StakeAccounts): Promise<{ tx: string, stakeStatus: StakeStateJSON | null }> {
         // const accounts = await getAccounts({ user, collectionName, rewardMint: nftMint })
         const { collectionRewardInfo } = data
+        console.dir({ collectionRewardInfo })
         const tx = await program.methods.stake(collectionRewardInfo)
             .accounts({ ...data })
             .signers([])
@@ -384,7 +354,7 @@ export function getAPI(program: Program<EmberBed>) {
         const stakeState = stakeStatusInfo?.toJSON().stakeState
         return { tx: tx, stakeStatus: stakeState }
     }
-    async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, _nftsHeld?: number, _collectionName?: string) {
+    async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, nftsHeld?: number, collectionName?: string) {
         const fireTxPromise = program.methods.redeemFire(bumpFire, 0).accounts({ ...accounts })
         const fireTx = fireTxPromise;
         const sig = await fireTx.rpc();
@@ -408,13 +378,24 @@ export function getAPI(program: Program<EmberBed>) {
     async function unstake(accounts: UnstakeAccounts): Promise<{ tx: string, stakeState: StakeStateJSON | null }> {
         try {
 
-            const unstakeTxPromise = program.methods.unstake().accounts({
-                ...accounts,
-                // *SYSTEM Variables
-                tokenProgram: TOKEN_PROGRAM_ID,
-                metadataProgram: METADATA_PROGRAM_ID,
-                systemProgram: SystemProgram.programId,
-            });
+            console.log({
+                program_authority: accounts.programAuthority.toBase58(),
+                nft_mint_address: accounts.nftMintAddress.toBase58(),
+                metadata_program: accounts.metadataProgram.toBase58(),
+                stake_status: accounts.stakeStatus.toBase58(),
+                SystemProgram: SystemProgram.programId.toBase58(),
+
+            })
+
+            const unstakeTxPromise = program.methods.unstake().accounts({ ...accounts })
+
+            // const unstakeTxPromise = program.methods.unstake().accounts({
+            //     ...accounts,
+            //     // *SYSTEM Variables
+            //     tokenProgram: TOKEN_PROGRAM_ID,
+            //     metadataProgram: METADATA_PROGRAM_ID,
+            //     systemProgram: SystemProgram.programId,
+            // });
             const unstakeTx = unstakeTxPromise;
             if (!unstakeTx) throw new Error('Promise Error')
             const sig = await unstakeTx.rpc();
@@ -482,7 +463,7 @@ export function getAPI(program: Program<EmberBed>) {
         redeemReward,
         unstake,
         getAccounts,
-        // getRewardWallet,
+        getRewardWallet,
         chargeInitFee,
         getStakeStatusPda,
         getStatePda

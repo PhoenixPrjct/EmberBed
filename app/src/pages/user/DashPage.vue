@@ -43,9 +43,11 @@ watchEffect(async () => {
             return;
         })
         const pdas: Promise<{ name: string, account: string }>[] = collectionPDAs.value.map(async (acct) => {
+            console.log({ pda: acct.publicKey.toBase58() })
             const { name } = await server_api.collection.get.one(acct.publicKey.toBase58())
             const account = acct.publicKey.toBase58()
             const res = { name: name, account: account }
+            console.log({ res })
             return res
         })
         userCollections.value = await Promise.all(pdas);

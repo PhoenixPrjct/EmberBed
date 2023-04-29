@@ -14,6 +14,7 @@ import {
 } from 'src/types';
 import { useRouter } from 'vue-router';
 import { useWallet } from 'solana-wallets-vue';
+import { refundTxFee } from 'src/helpers/collectionSubmission';
 
 const router = useRouter();
 const { wallet, api, connection, program } = useChainAPI();
@@ -57,20 +58,18 @@ const collectionInfo = ref<CollectionInfo>({
     rewardSymbol: "REW",
     uuid: ""
 }) as Ref<CollectionRewardInfoJSON>
-
-async function getRewardWallet() {
-    const rw = new PublicKey(collectionInfo.value.rewardMint);
-    const rewardWallet = await (await api.value?.getStatePda(rw))!.rewardWallet
-    if (rewardWallet) {
-        console.log(rewardWallet.address.toBase58())
-        return rewardWallet
-    }
-    return null
-}
+const refundInfo = ref<{ pk: PublicKey | null, amount: number, eligible: boolean }>({ pk: null, amount: 0, eligible: false })
+// async function getRewardWallet() {
+//     const rw = new PublicKey(collectionInfo.value.rewardMint);
+//     const rewardWallet = await api.value?.getRewardWallet(rw,))
+//     if (rewardWallet) {
+//         console.log(rewardWallet.address.toBase58())
+//         return rewardWallet
+//     }
+//     return null
+// }
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
     try {
-        // const collectionID = rawInfo.uuid
-        // console.log({ collectionID })
         submissionStatus.value = {
             loading: true,
             message: 'Validating Info. . .',
@@ -80,11 +79,11 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
         const accounts = await (await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
         console.log({ accounts })
         if (!accounts) throw new Error('Generating PDAS Failed')
-        const { statePDA, stateBump } = accounts
-        const rewardWallet = await getRewardWallet();
-        rawInfo.uuid = statePDA.toBase58()
+        const { statePDA, stateBump, rewardWallet } = accounts
+        // const rewardWallet = await api.value?.getRewardWallet(rw, statePDA)
+        rawInfo.uuid = statePDA.toBase58();
         rawInfo.bump = stateBump;
-        rawInfo.rewardWallet = rewardWallet!.address.toBase58();
+        rawInfo.rewardWallet = rewardWallet.toBase58();
         const collections = await (await program.value.account.collectionRewardInfo.all()).map(collection => collection.publicKey.toBase58())
         if (!collections.includes(statePDA.toBase58())) {
             console.log(rawInfo)
@@ -105,6 +104,9 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
             const paidTx = await chargeFeeTx(wallet.value!.publicKey, amount);
 
             if (!paidTx.success) throw new Error(paidTx.error)
+            refundInfo.value.pk = wallet.value!.publicKey
+            refundInfo.value.amount = amount
+            refundInfo.value.eligible = true
             const paymentSig = await paidTx.sig
             submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
             const initState = await api.value?.initStatePda(wallet.value!.publicKey, info)
@@ -113,16 +115,17 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
             console.log({ tx, account })
             submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
         }
-        const data = {
+
+        const info = {
             pda: statePDA,
             vca: rawInfo.collectionAddress,
             manager: wallet.value!.publicKey.toBase58(),
             collection: rawInfo.collectionName,
             /*{ ...account, name: account?.collectionName, */
-            reward_wallet: rewardWallet
+            reward_wallet: rewardWallet.toBase58()
         }
         submissionStatus.value = { ...submissionStatus.value, percent: 80, message: 'Indexing Collection on DB. . .' }
-        const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(data)
+        const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(info)
         if (res.Error) throw new Error(`Collection Not Written to The Server`);
         submissionStatus.value = { ...submissionStatus.value, percent: 100, message: 'Welcome Aboard!' }
 
@@ -144,6 +147,18 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
     } catch (err: any) {
         console.error(err);
+        if (refundInfo.value.eligible === true && refundInfo.value.pk) {
+            const refund = await refundTxFee(refundInfo.value.pk, refundInfo.value.amount)
+            if (!refund.success) throw new Error(refund.error)
+            $q.notify({
+                type: 'success',
+                message: 'Init Fee Refunded Successfully',
+                caption: JSON.stringify(refund.sig),
+                position: 'top',
+                timeout: 3000
+            })
+
+        }
         submissionStatus.value = { ...submissionStatus.value, percent: 0, message: err.message ? err.message : 'Something went wrong, please try again' }
         $q.notify({
             type: 'negative',
@@ -257,6 +272,7 @@ watchEffect(async () => {
     showSubmit.value = Object.values(collectionInfo.value).every(val => val !== null && val !== undefined && val !== 0);
     if (!relations.value) {
         const relationsResult = await server_api.general.getRelations()
+        console.log({ relationsResult })
         if (!relationsResult) return
         relations.value = relationsResult
         console.log(relations.value)
@@ -266,7 +282,7 @@ watchEffect(async () => {
         if (!collectionInfo.value.phoenixRelation) {
             const relationRes = findPhoenixRelation(collectionInfo.value.collectionAddress)
             collectionInfo.value.phoenixRelation = relationRes ? relationRes : null as unknown as PhoenixRelationKind
-            // console.log('pr:', collectionInfo.value?.phoenixRelation, `\n`, 'ca:', collectionInfo.value?.collectionAddress)
+            console.log('pr:', collectionInfo.value?.phoenixRelation, `\n`, 'ca:', collectionInfo.value?.collectionAddress)
         }
         if (collectionInfo.value.phoenixRelation.kind == 'None' && collectionInfo.value.fireEligible) {
             collectionInfo.value.phoenixRelation = { kind: 'EmberBed' }
@@ -286,11 +302,12 @@ watchEffect(async () => {
 </script>
 <template>
     <q-page class="flex justify-center">
+        <h6>{{ program.programId.toBase58() }}</h6>
         <div class="submission-loading" v-if="submissionStatus.loading">
             <div class="text-h6">
                 <pre class="text-center">
-                {{ submissionStatus.message }}
-                </pre>
+            {{ submissionStatus.message }}
+            </pre>
             </div>
             <q-linear-progress size="25px" :value="submissionStatus.percent" color="accent" class="q-mt-sm" />
             <q-linear-progress size="25px" :value="100 - submissionStatus.percent" color="secondary" class="q-mt-sm" />
@@ -301,8 +318,8 @@ watchEffect(async () => {
                     <h6>EmberBed Info <sub>{{ collectionInfo.uuid }}</sub></h6>
                     <small>This is how we categorize your NFT collection on the platform.</small>
                     <q-separator dark spaced />
-                    <q-input dense dark filled v-model="collectionInfo.collectionName" placeholder="Name of Nft Collection"
-                        hide-hint hint="Collection Name: Bored Ape Yacht Club, DeGods, etc. " lazy-rules
+                    <q-input dense dark filled v-model="collectionInfo.collectionName" hide-hint
+                        hint="Collection Name: Bored Ape Yacht Club, DeGods, etc. " lazy-rules
                         :rules="[val => val && val.length > 0 || 'This Must Have a Value']" />
                     <div class="verify-collection--div">
                         <q-input class="verify-collection--input" dense dark filled hide-hint
@@ -434,7 +451,7 @@ watchEffect(async () => {
                         </q-item-section>
                     </q-item>
                     <!-- </q-card-section>
-                                                                                                                                                                    <q-card-section> -->
+                                                                                                                                                                                            <q-card-section> -->
                     <q-item class="fire-item">
                         <q-item-section class="fire-title text-subtitle1">
                             Why Might This Be a Good Idea?

@@ -7,7 +7,7 @@ import { onBeforeMount, ref, watchEffect, ComputedRef } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useServerAPI } from "src/api/server-api";
 import { DBCollectionInfo } from 'src/types'
-import { useUserStore } from "src/stores/userStore";
+import { useUserStore } from "src/stores/user_store";
 import { useWallet } from "solana-wallets-vue";
 
 const wallet = <WalletStore>useWallet();
@@ -54,7 +54,7 @@ watchEffect(() => {
             </q-toolbar>
         </q-header>
         <q-page-container style="background-color:#1D1D1D">
-            <router-view :fire-eligible="pdaInfo?.fireEligible"/>
+            <router-view :fire-eligible="pdaInfo?.fireEligible" />
         </q-page-container>
 
     </q-layout>

@@ -4,11 +4,6 @@ export { redeemReward } from "./redeemReward"
 export type { RedeemRewardArgs, RedeemRewardAccounts } from "./redeemReward"
 export { unstake } from "./unstake"
 export type { UnstakeAccounts } from "./unstake"
-export { initializeFirePda } from "./initializeFirePda"
-export type {
-  InitializeFirePdaArgs,
-  InitializeFirePdaAccounts,
-} from "./initializeFirePda"
 export { initializeStatePda } from "./initializeStatePda"
 export type {
   InitializeStatePdaArgs,
@@ -24,6 +19,11 @@ export type {
   DepositToRewardAtaArgs,
   DepositToRewardAtaAccounts,
 } from "./depositToRewardAta"
+export { depositToFireAta } from "./depositToFireAta"
+export type {
+  DepositToFireAtaArgs,
+  DepositToFireAtaAccounts,
+} from "./depositToFireAta"
 export { managerWithdrawal } from "./managerWithdrawal"
 export type {
   ManagerWithdrawalArgs,

@@ -1,6 +1,4 @@
-import verifyWallet from './verifyWallet'
-
-export { verifyWallet }
+export { verifyWallet } from './verifyWallet'
 export { getAllEBCollections, getExplorerURL } from './platformUtils'
 export { CopyClick } from './copyToClip'
 export { camelCaseToTitleCase } from './formattingTools'

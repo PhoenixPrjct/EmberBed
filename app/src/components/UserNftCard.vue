@@ -123,7 +123,7 @@ async function getStakeState(nft: EBNft) {
         if (!s?.pda) throw new Error('Failed to get stake status PDA')
         const { pda } = s
         const status = await UserStakeInfo.fetch(connection, pda)
-        console.log({ status })
+        console.log({ status: status, stakeStart: status?.stakeStartTime.toJSON() })
         if (!status) throw new Error(`Failed to fetch Stake State for ${nft.name}`)
         statusRef.value = status.toJSON()
         console.log(`Stake status:\n ${nft.name} - ${status.toJSON().stakeState.kind} \n`)
@@ -175,6 +175,10 @@ async function getFireRate(pr: string) {
 
 
     }
+}
+function getTime(timestamp: number) {
+    console.log(timestamp)
+    return new Date(timestamp * 1000).toLocaleString()
 }
 
 function startTimer() {
@@ -250,6 +254,16 @@ watchEffect(async () => {
                         </q-tooltip>
                     </q-item>
                     <q-separator spaced dark />
+                </div>
+                <div>
+                    {{ (statusRef?.isInitialized) }}
+                </div>
+                <div>
+                    {{ statusRef?.stakeState.kind }}
+
+                </div>
+                <div v-if="statusRef?.stakeStartTime">
+                    {{ getTime(JSON.parse(statusRef.stakeStartTime)) }}
                 </div>
             </q-list>
         </q-card-section>

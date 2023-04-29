@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { WalletMultiButton } from "solana-wallets-vue";
-import { useUserStore } from "src/stores/userStore";
+import { useUserStore } from "src/stores/user_store";
 import { watchEffect, ComputedRef } from "vue";
 import { useRouter } from "vue-router";
 import { useWallet } from "solana-wallets-vue"

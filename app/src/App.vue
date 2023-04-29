@@ -1,5 +1,4 @@
 <template>
-
   <router-view />
 </template>
 
@@ -7,8 +6,6 @@
 // import { LocalStorage } from 'quasar';
 import { initWallet } from 'solana-wallets-vue';
 import { walletOptions } from 'src/boot/sw';
-
-
 initWallet(walletOptions)
 
 </script>

@@ -7,8 +7,8 @@ import { PROGRAM_ID } from "../programId"
 export interface ManagerWithdrawalArgs {
   bumpState: number
   closeAta: boolean
+  collectionName: string
   amount: BN
-  uuid: string
 }
 
 export interface ManagerWithdrawalAccounts {
@@ -24,8 +24,8 @@ export interface ManagerWithdrawalAccounts {
 export const layout = borsh.struct([
   borsh.u8("bumpState"),
   borsh.bool("closeAta"),
+  borsh.str("collectionName"),
   borsh.u64("amount"),
-  borsh.str("uuid"),
 ])
 
 export function managerWithdrawal(
@@ -47,8 +47,8 @@ export function managerWithdrawal(
     {
       bumpState: args.bumpState,
       closeAta: args.closeAta,
+      collectionName: args.collectionName,
       amount: args.amount,
-      uuid: args.uuid,
     },
     buffer
   )
