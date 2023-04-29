@@ -5,6 +5,7 @@ use anchor_spl::{
     // associated_token::{ AssociatedToken, create },
     token::{ Approve, Revoke, Transfer, CloseAccount, close_account },
 };
+
 use crate::constants::*; //{ LPS, FIRE_MINT, BASE_RATE, FIRE_COLLECTION_NAME, FIRE_SYMBOL };
 use crate::structs::*;
 use crate::errors::{ StakeError, AdminError, RedeemError, TokenStateError };
@@ -15,23 +16,20 @@ mod constants;
 mod structs;
 mod errors;
 mod state_and_relations;
-
-declare_id!("7qVqnQbVgsYVE8pysemgphSTNX7WmbBvk3CUf4PcA5qj");
+declare_id!("BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp");
 // const LPS: u64 = 1_000_000_000;
 
 #[program]
 pub mod ember_bed {
-    use solana_program::system_instruction::create_account_with_seed;
-
     use super::*;
 
     pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
         // msg!("Stake Status: {:?}", ctx.accounts.stake_status.stake_state);
         msg!("EmberBed Program Invoked");
-        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-        //     msg!("NFT is already staked");
-        //     return Ok(());
-        // }
+        if ctx.accounts.stake_status.stake_state == StakeState::Staked {
+            msg!("NFT is already staked");
+            // return Ok(());
+        }
 
         // Get Clock
         let timestamp = Clock::get().unwrap().unix_timestamp;
@@ -51,6 +49,7 @@ pub mod ember_bed {
 
         let auth_bump = *ctx.bumps.get("program_authority").unwrap();
         // msg!("Authority_bump: {}", auth_bump);
+        msg!("{:?}", ctx.accounts.program_authority.key());
         msg!("Cross Program Invocation to Invoke Freeze Instructions on Token Program");
         invoke_signed(
             &mpl_token_metadata::instruction::freeze_delegated_account(
@@ -95,20 +94,21 @@ pub mod ember_bed {
         //         msg!("{}", item);
         //     }
         // }
-        // Messages to confirm info passed to program
-        // msg!("NFT token account: {:?}", ctx.accounts.stake_status.user_nft_ata);
-        // msg!("User pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
-        // msg!("Stake state: {:?}", ctx.accounts.stake_status.stake_state);
-        // msg!("Stake start time: {:?}", ctx.accounts.stake_status.stake_start_time);
-        // msg!("Time since last redeem: {:?}", ctx.accounts.stake_status.last_stake_redeem);
-        // msg!("NFT Token Being Staked: {:?} ", ctx.accounts.nft_mint_address);
+        //   Messages to confirm info passed to program
+        msg!("NFT token account: {:?}", ctx.accounts.stake_status.user_nft_ata);
+        msg!("User pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
+        msg!("Stake state: {:?}", ctx.accounts.stake_status.stake_state);
+        msg!("Stake start time: {:?}", ctx.accounts.stake_status.stake_start_time);
+        msg!("Time since last redeem: {:?}", ctx.accounts.stake_status.last_stake_redeem);
+        msg!("NFT Token Being Staked: {:?} ", ctx.accounts.nft_mint_address);
+        msg!("Program Authority: {:?}", ctx.accounts.program_authority.key());
         Ok(())
     }
 
     pub fn redeem_reward(
         ctx: Context<RedeemReward>,
-        bump_state: u8
-        // collection_name: String
+        bump_state: u8,
+        collection_name: String
     ) -> Result<()> {
         // msg!("Fire Token Mint: {:?}", FIRE_MINT);
         // msg!("Collection Name: {:?}", ctx.accounts.collection_reward_info.collection_name);
@@ -128,10 +128,14 @@ pub mod ember_bed {
         let stake_status = &ctx.accounts.stake_status;
         let state = &ctx.accounts.collection_reward_info;
         let reward_wallet = &ctx.accounts.reward_wallet.to_account_info();
-        let id = &ctx.accounts.collection_reward_info.uuid;
 
-        let _reward_mint = &ctx.accounts.reward_mint.to_account_info();
-        let seeds = &[id.as_ref(), b"state".as_ref(), &[bump_state]];
+        let reward_mint = &ctx.accounts.reward_mint.to_account_info();
+        let seeds = &[
+            reward_mint.key.as_ref(),
+            collection_name.as_ref(),
+            b"state".as_ref(),
+            &[bump_state],
+        ];
         let signer = &[&seeds[..]];
         // msg!("Reward Wallet: {:?}", reward_wallet.key());
 
@@ -171,6 +175,10 @@ pub mod ember_bed {
 
     pub fn unstake(ctx: Context<Unstake>) -> Result<()> {
         msg!("Unstake Program Invoked");
+        msg!("Program Authority {:?}:", ctx.accounts.program_authority.key());
+        msg!("NFT MINT: {:?}", ctx.accounts.nft_mint_address.key());
+        msg!("Stake State: {:?}", ctx.accounts.stake_status.is_initialized);
+        msg!("Stake State: {:?}", ctx.accounts.stake_status.stake_state);
         // Get Clock
         // if !ctx.accounts.stake_status.is_initialized {
         //     msg!("Account is not initialized");
@@ -221,22 +229,22 @@ pub mod ember_bed {
         Ok(())
     }
 
-    pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
-        msg!("Initializing fire pda");
-        ctx.accounts.fire_pda.bump = _bump;
-        ctx.accounts.fire_pda.collection_name = FIRE_COLLECTION_NAME.to_string();
-        ctx.accounts.fire_pda.reward_symbol = FIRE_SYMBOL.to_string();
-        ctx.accounts.fire_pda.manager = ctx.accounts.funder.key();
-        ctx.accounts.fire_pda.reward_wallet = ctx.accounts.token_poa.key();
-        ctx.accounts.fire_pda.is_initialized = true;
+    // pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
+    //     msg!("Initializing fire pda");
+    //     ctx.accounts.fire_pda.bump = _bump;
+    //     ctx.accounts.fire_pda.collection_name = FIRE_COLLECTION_NAME.to_string();
+    //     ctx.accounts.fire_pda.reward_symbol = FIRE_SYMBOL.to_string();
+    //     ctx.accounts.fire_pda.manager = ctx.accounts.funder.key();
+    //     ctx.accounts.fire_pda.reward_wallet = ctx.accounts.token_poa.key();
+    //     ctx.accounts.fire_pda.is_initialized = true;
 
-        msg!(
-            "Successfully Initialized {} -- State: {}",
-            ctx.accounts.fire_pda.key(),
-            ctx.accounts.fire_pda.is_initialized
-        );
-        Ok(())
-    }
+    //     msg!(
+    //         "Successfully Initialized {} -- State: {}",
+    //         ctx.accounts.fire_pda.key(),
+    //         ctx.accounts.fire_pda.is_initialized
+    //     );
+    //     Ok(())
+    // }
 
     pub fn initialize_state_pda(
         _ctx: Context<InitializeStatePda>,
@@ -245,8 +253,7 @@ pub mod ember_bed {
         _reward_symbol: String,
         _collection_name: String,
         _fire_eligible: bool,
-        _phoenix_collection_relation: String,
-        uuid: String
+        _phoenix_collection_relation: String
     ) -> Result<()> {
         if _ctx.accounts.state_pda.is_initialized {
             msg!("Account is already initialized");
@@ -260,7 +267,6 @@ pub mod ember_bed {
         if _fire_eligible {
             _ctx.accounts.state_pda._phoenix_relation = pr;
         }
-        _ctx.accounts.state_pda.uuid = uuid;
         _ctx.accounts.state_pda.reward_mint = _ctx.accounts.reward_mint.key();
         _ctx.accounts.state_pda.bump = _bump;
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();
@@ -341,43 +347,42 @@ pub mod ember_bed {
         Ok(())
     }
 
-    // pub fn deposit_to_fire_ata(ctx: Context<DepositToFirePda>, amount: u64) -> Result<()> {
-    //     let state = &mut ctx.accounts.fire_pda;
+    pub fn deposit_to_fire_ata(ctx: Context<DepositToFirePda>, amount: u64) -> Result<()> {
+        let state = &mut ctx.accounts.fire_pda;
 
-    //     // let _collection_name = &state.collection_name;
-    //     // let _reward_mint = &ctx.accounts.mint.to_account_info();
-    //     let sender = &ctx.accounts.funder;
+        let collection_name = &state.collection_name;
+        let sender = &ctx.accounts.funder;
+        let reward_mint = &ctx.accounts.mint.to_account_info();
 
-    //     let transfer_instruction = Transfer {
-    //         from: ctx.accounts.funder_ata.to_account_info(),
-    //         to: ctx.accounts.token_poa.to_account_info(),
-    //         authority: sender.to_account_info(),
-    //     };
+        let transfer_instruction = Transfer {
+            from: ctx.accounts.funder_ata.to_account_info(),
+            to: ctx.accounts.token_poa.to_account_info(),
+            authority: sender.to_account_info(),
+        };
 
-    //     let cpi_ctx = CpiContext::new(
-    //         ctx.accounts.token_program.to_account_info(),
-    //         transfer_instruction
-    //     );
+        let cpi_ctx = CpiContext::new(
+            ctx.accounts.token_program.to_account_info(),
+            transfer_instruction
+        );
 
-    //     msg!("transfer call start");
+        msg!("transfer call start");
 
-    //     anchor_spl::token::transfer(cpi_ctx, amount)?;
-    //     ctx.accounts.token_poa.reload()?;
-    //     // msg!("Token pda key {}", ctx.accounts.token_poa.key());
-    //     // msg!("Token after transfer to receiver in PDA {}", ctx.accounts.token_poa.amount);
+        anchor_spl::token::transfer(cpi_ctx, amount)?;
+        ctx.accounts.token_poa.reload()?;
+        // msg!("Token pda key {}", ctx.accounts.token_poa.key());
+        // msg!("Token after transfer to receiver in PDA {}", ctx.accounts.token_poa.amount);
 
-    //     msg!("Successfully Transferred");
+        msg!("Successfully Transferred");
 
-    //     Ok(())
-    // }
+        Ok(())
+    }
 
     pub fn manager_withdrawal(
         ctx: Context<ManagerWithdrawal>,
         bump_state: u8,
         close_ata: bool,
-        // collection_name: String,
-        amount: u64,
-        uuid: String
+        collection_name: String,
+        amount: u64
     ) -> Result<()> {
         if ctx.accounts.manager.key() != ctx.accounts.state_pda.manager {
             return Err(AdminError::IncorrectManagingAccount.into());
@@ -392,7 +397,12 @@ pub mod ember_bed {
         }
 
         let reward_mint = &ctx.accounts.reward_mint.to_account_info();
-        let seeds = &[uuid.as_ref(), b"state".as_ref(), &[bump_state]];
+        let seeds = &[
+            reward_mint.key.as_ref(),
+            collection_name.as_ref(),
+            b"state".as_ref(),
+            &[bump_state],
+        ];
         let signer = &[&seeds[..]];
         let transfer_instruction = Transfer {
             from: ctx.accounts.token_poa.to_account_info().clone(),
@@ -405,7 +415,7 @@ pub mod ember_bed {
             transfer_instruction
         ).with_signer(signer);
 
-        msg!("Start transfer - {:?}", reward_mint);
+        msg!("Start transfer");
         anchor_spl::token::transfer(cpi_ctx, amount)?;
         ctx.accounts.token_poa.reload()?;
         if ctx.accounts.token_poa.amount == 0 {
@@ -431,7 +441,12 @@ pub mod ember_bed {
         Ok(())
     }
 
-    pub fn redeem_fire(ctx: Context<RedeemFire>, _bump_fire: u8, nfts_held: u8) -> Result<()> {
+    pub fn redeem_fire(
+        ctx: Context<RedeemFire>,
+
+        _bump_fire: u8,
+        nfts_held: u8
+    ) -> Result<()> {
         let _collection_info_pda = &ctx.accounts.collection_info;
         let fire_info = &ctx.accounts.fire_info;
         let stake_status = &ctx.accounts.stake_status;
@@ -447,7 +462,7 @@ pub mod ember_bed {
             msg!("Stake account is not staking anything");
             return err!(StakeError::InvalidStakeState);
         }
-        // Check if Collection is $Fire Eligible and return value
+        // Check if Collection is $Fire Eligble and return value
         let stored_relation = &ctx.accounts.collection_info._phoenix_relation;
         let mut relation_value = phoenix_relation_value(stored_relation);
         if relation_value == 0 {

@@ -5,9 +5,9 @@
 .DS_Store
 .crates
 
+_target
+_target_BAK
 target
-target_BAK
-
 .coderrect
 
 **/*.rs.bk

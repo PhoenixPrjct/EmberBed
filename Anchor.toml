@@ -2,7 +2,7 @@
 seeds = true
 
 [programs.devnet]
-ember_bed = "7qVqnQbVgsYVE8pysemgphSTNX7WmbBvk3CUf4PcA5qj"
+ember_bed = "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
 
 [registry]
 url = "https://api.apr.dev"

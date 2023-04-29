@@ -174,7 +174,7 @@ pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
         payer = funder,
-        seeds = [reward_mint.as_ref(), b"state".as_ref()],
+        seeds = [reward_mint.key().as_ref(), _collection_name.as_ref(), b"state".as_ref()],
         bump,
         space = std::mem::size_of::<CollectionRewardInfo>() + 8
     )]
