@@ -12,6 +12,7 @@ export interface UpdateStatePdaArgs {
   fireEligible: boolean
   phoenixCollectionRelation: string
   newManager: string
+  uuid: string
 }
 
 export interface UpdateStatePdaAccounts {
@@ -31,6 +32,7 @@ export const layout = borsh.struct([
   borsh.bool("fireEligible"),
   borsh.str("phoenixCollectionRelation"),
   borsh.str("newManager"),
+  borsh.str("uuid"),
 ])
 
 export function updateStatePda(
@@ -60,6 +62,7 @@ export function updateStatePda(
       fireEligible: args.fireEligible,
       phoenixCollectionRelation: args.phoenixCollectionRelation,
       newManager: args.newManager,
+      uuid: args.uuid,
     },
     buffer
   )

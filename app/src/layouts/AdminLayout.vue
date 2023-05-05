@@ -20,10 +20,12 @@ watchEffect(() => {
         <q-header elevated>
             <q-toolbar>
                 <q-toolbar-title style="font-variant: small-caps;">
-                    <q-avatar square>
-                        <img src="@/assets/logo_only.png" alt="Logo">
-                    </q-avatar>
-                    <q-btn type="a" dark flat to="/">
+                    <q-btn dark to="/" flat>
+                        <q-avatar square>
+                            <img src="@/assets/logo_only.png" alt="Logo">
+                        </q-avatar>
+                    </q-btn>
+                    <q-btn type="a" dark flat to="/admin">
                         EmberBed: &nbsp;
                         <span class="admin">
                             Admin

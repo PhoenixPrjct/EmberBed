@@ -280,13 +280,12 @@ export function getAPI(program: Program<EmberBed>) {
 
     async function updateCollectionRewardPDA(user: PublicKey, collectionInfo: CollectionRewardInfo) {
         try {
-            const { collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint, manager } = collectionInfo;
+            const { uuid, collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint, manager } = collectionInfo;
             const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58() })
             const { statePDA, RewTok, stateBump, } = accounts;
             const rewardWallet = await getRewardWallet(RewTok, statePDA);
 
-
-            const tx = await program.methods.updateStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind, manager.toBase58())
+            const tx = await program.methods.updateStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind, manager.toBase58(), uuid)
                 .accounts({ statePda: statePDA, rewardMint: RewTok, tokenPoa: rewardWallet.address, nftCollectionAddress: collectionAddress, funder: user, systemProgram: SystemProgram.programId })
                 .signers([])
                 .rpc();

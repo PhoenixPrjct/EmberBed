@@ -68,7 +68,10 @@ const refundInfo = ref<{ pk: PublicKey | null, amount: number, eligible: boolean
 //     }
 //     return null
 // }
+
+
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
+  
     try {
         submissionStatus.value = {
             loading: true,
@@ -302,7 +305,6 @@ watchEffect(async () => {
 </script>
 <template>
     <q-page class="flex justify-center">
-        <h6>{{ program.programId.toBase58() }}</h6>
         <div class="submission-loading" v-if="submissionStatus.loading">
             <div class="text-h6">
                 <pre class="text-center">
@@ -356,16 +358,16 @@ watchEffect(async () => {
                         <q-toggle dark v-model="manualSplEntryToggle" class="special"
                             onchange="()=> findSplToken.key = '' && findSplToken.val = ''" label="Manual Token Entry?" />
                     </div>
-                    <div class="flex justify-around" v-if="!manualSplEntryToggle">
+                    <div class="flex justify-around spl-search" v-if="!manualSplEntryToggle">
                         <span class="splToken-query" v-if="!findSplToken.info?.length">
                             <q-select dense dark v-model="findSplToken.key" :options="findSplToken.options" />
                             <q-input dense dark v-model="findSplToken.val" />
                             <q-btn :disable="!findSplToken.key || !findSplToken.val || findSplToken.loading" dark dense
                                 icon="search" @click="handleFindSplTokenInfo()" />
-                            <q-icon name="info" color="accent">
-                                <q-tooltip>Search Metaplex Registry For Your Token</q-tooltip>
-                            </q-icon>
                         </span>
+                        <q-tooltip>Search Metaplex Registry For Your Token</q-tooltip>
+
+
                     </div>
 
                     <div class="token--container" :class="$q.screen.lt.md ? 'flex justify-around' : void 0"
@@ -407,19 +409,13 @@ watchEffect(async () => {
                                 label="Reset Token Info" @click="handleSplTokenClick()" />
                         </q-item-section>
                     </div>
-                    <q-item>
-                        <q-btn flat icon-color="accent" icon="info" @click="fireDialogShow = true">
-                            <q-tooltip>
-                                Allow your community to stake for $FIRE tokens.
-                            </q-tooltip>
-                        </q-btn>
-                    </q-item>
-                    <q-toggle dark v-if="findSplToken.info?.length == 1 || manualSplEntryToggle"
-                        v-model="collectionInfo.fireEligible" class="special" color="accent" label="$FIRE Redemption?" />
+
+                    <q-toggle dark v-model="collectionInfo.fireEligible" class="special" color="accent"
+                        label="$FIRE Redemption?" />
                     <q-input v-if="collectionInfo.rewardSymbol && collectionInfo.rewardMint" class="rate" type="number"
                         v-model="collectionInfo.ratePerDay" dark label="Rate Per day" />
                     <div>
-                        <q-btn v-if="showSubmit" dark label="Submit" type="submit" color="primary" />
+                        <q-btn :disable="!showSubmit" dark label="Submit" type="submit" color="primary" />
                         <q-btn dark label="Reset" type="reset" color="secondary" flat class="q-ml-sm" />
                     </div>
                 </section>
@@ -580,6 +576,10 @@ watchEffect(async () => {
     & .select-btn {
         flex: 0 0 90%;
     }
+}
+
+.spl-search {
+    width: 100%;
 }
 
 .dialog {
