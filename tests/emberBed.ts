@@ -330,8 +330,10 @@ describe("EmberBed", async () => {
   });
   it("Gets all collection accounts", async () => {
     const collectionAccounts = await program.account.collectionRewardInfo.all();
-    console.log(collectionAccounts[0])
-    console.log(collectionAccounts[0]?.account.rewardWallet.toBase58())
+    console.log({ StatePDA: collectionAccounts[0]?.publicKey.toBase58() })
+    console.log({ UUID: collectionAccounts[0]?.account.uuid })
+    console.log({ reward_symbol: collectionAccounts[0]?.account.rewardSymbol })
+    console.log({ Reward_Wallet: collectionAccounts[0]?.account.rewardWallet.toBase58() })
     console.log(collectionAccounts?.length)
     return collectionAccounts
   });

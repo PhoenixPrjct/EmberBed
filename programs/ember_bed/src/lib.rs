@@ -267,6 +267,8 @@ pub mod ember_bed {
         if _fire_eligible {
             _ctx.accounts.state_pda._phoenix_relation = pr;
         }
+        let uuid_string = _ctx.accounts.state_pda.key().to_string();
+        _ctx.accounts.state_pda.uuid = uuid_string;
         _ctx.accounts.state_pda.reward_mint = _ctx.accounts.reward_mint.key();
         _ctx.accounts.state_pda.bump = _bump;
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();
@@ -286,7 +288,8 @@ pub mod ember_bed {
         _collection_name: String,
         _fire_eligible: bool,
         _phoenix_collection_relation: String,
-        _new_manager: String
+        _new_manager: String,
+        _uuid: String
     ) -> Result<()> {
         if
             _ctx.accounts.funder.key() != _ctx.accounts.state_pda.manager.key() &&

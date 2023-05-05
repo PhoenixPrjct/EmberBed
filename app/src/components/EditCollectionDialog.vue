@@ -28,10 +28,10 @@ async function handleEditPda() {
         const update: CollectionRewardInfoJSON = { ...props.collection, ...collectionInfoProxy.value }
         const updatedCollection = CollectionRewardInfo.fromJSON(update)
         if (collectionInfoProxy.value?.manager !== initValues.value.manager || collectionInfoProxy.value?.collectionName !== initValues.value.collectionName) {
-            const result = await server_api.collection.update({ wallet: wallet.value.publicKey.toBase58(), pda: props.pda.toBase58(), data: update })
+            const result = await server_api.collection.update({ wallet: wallet.value!.publicKey.toBase58(), pda: props.pda.toBase58(), data: update })
             console.log('DB Result:', result);
         }
-        const result = await api.value?.updateCollectionRewardPDA(wallet.value.publicKey, updatedCollection)
+        const result = await api.value?.updateCollectionRewardPDA(wallet.value!.publicKey, updatedCollection)
         if (result?.error) throw new Error(result.error);
         notify({ type: 'success', message: 'Collection Updated', caption: result?.tx, position: 'top' })
     } catch (err: any) {
@@ -66,7 +66,11 @@ watchEffect(() => {
 
     if (!collectionInfoProxy.value) {
         collectionInfoProxy.value = { ...props.collection }
+        if (!collectionInfoProxy.value.uuid) {
+            collectionInfoProxy.value.uuid = props.pda.toBase58()
+        }
         initValues.value = { ...props.collection }
+        initValues.value.uuid = props.pda.toBase58()
     }
 
     // console.log(collectionInfoProxy.value);
@@ -97,6 +101,4 @@ watchEffect(() => {
         </q-card-actions>
     </q-card>
 </template>
-<style lang="scss" scoped>
-
-</style>
+<style lang="scss" scoped></style>

@@ -378,6 +378,10 @@ export type EmberBed = {
         {
           "name": "newManager",
           "type": "string"
+        },
+        {
+          "name": "uuid",
+          "type": "string"
         }
       ]
     },
@@ -1305,6 +1309,10 @@ export const IDL: EmberBed = {
         },
         {
           "name": "newManager",
+          "type": "string"
+        },
+        {
+          "name": "uuid",
           "type": "string"
         }
       ]
