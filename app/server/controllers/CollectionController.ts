@@ -31,6 +31,7 @@ interface CollectionFile {
 
 class CollectionFile {
     pda: string;
+    collection_size?: number;
     manager: string;
     vca?: string;
     name: string;
@@ -38,7 +39,7 @@ class CollectionFile {
     hashlist: string[];
     style?: CollectionStyle;
 
-    constructor(pda: string, manager: string, name: string, reward_wallet: string, hashlist: string[], vca?: string, style?: CollectionStyle) {
+    constructor(pda: string, manager: string, name: string, reward_wallet: string, hashlist: string[], vca?: string, collection_size?: number, style?: CollectionStyle) {
         this.pda = pda;
         this.manager = manager;
         this.vca = vca;
@@ -46,9 +47,11 @@ class CollectionFile {
         this.hashlist = hashlist;
         this.style = style;
         this.reward_wallet = reward_wallet;
+        this.collection_size = collection_size;
     }
 
     static toDB(colFile: { pda: string, manager: string, name: string, reward_wallet: string, hashlist?: string[], vca?: string, style?: CollectionStyle }) {
+        console.log({ ColFile: colFile.pda })
         let data: CollectionFile = { ...colFile, hashlist: [] }
         if (colFile.hashlist) {
             const cleanedHashlist = colFile.hashlist.map(hash => hash.trim())
@@ -176,7 +179,7 @@ export const CC = {
     },
     addStyle: async (pda: string, wallet: string, inStyle: CollectionStyle) => {
         try {
-
+            console.log({ pda })
             const files = await readdirSync(join(__dirname, `../collections`));
             if (files.includes(pda + '.json')) {
                 const fileContents = await readFileSync(
@@ -190,7 +193,7 @@ export const CC = {
                 collectionFile.style = inStyle
                 console.dir(collectionFile)
                 CollectionFile.toDB({
-                    ...collectionFile
+                    ...collectionFile, pda: pda
                 });
             }
             return { status: 200, response: 'Style added' };
@@ -200,7 +203,7 @@ export const CC = {
             return { status: 500, response: err.message };
         }
     },
-    updateCollection: async (pda: string, wallet: string, data: CollectionRewardInfoJSON) => {
+    updateCollection: async (pda: string, wallet: string, data: CollectionRewardInfoJSON, collection_size?: number) => {
         try {
 
             const files = await readdirSync(join(__dirname, `../collections`));
@@ -214,7 +217,7 @@ export const CC = {
                 console.log({ wallet, manager: collectionFile.manager })
                 if (collectionFile.manager !== wallet && wallet !== 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') throw new Error('Not Your Collection to Be Styling Dog.')
                 collectionFile = { ...collectionFile, manager: data.manager, name: data.collectionName }
-
+                if (!collectionFile.collection_size && collection_size) collectionFile.collection_size = collection_size;
                 // const { manager, name, hashlist, vca, style } = collectionFile;
                 CollectionFile.toDB({ ...collectionFile })
                 console.dir(collectionFile)

@@ -11,8 +11,8 @@ export async function getAllEBCollections() {
 
 export function getExplorerURL(sig: string) {
     if (process.env.NODE_ENV !== "production") {
-        return `https://explorer.solana.com/tx/${sig}?cluster=devnet`
+        return `<a href='https://explorer.solana.com/tx/${sig}?cluster=devnet' target='_blank'> See transaction </a>`
     }
-    return `https://explorer.solana.com/tx/${sig}`
+    return `<a href='https://explorer.solana.com/tx/${sig}' target='_blank'> See transaction </a>`
 
 }

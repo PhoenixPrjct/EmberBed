@@ -24,9 +24,12 @@ function handleResetPda() {
 
 async function handleEditPda() {
     try {
+        console.clear();
         console.log('Edit pda')
         const update: CollectionRewardInfoJSON = { ...props.collection, ...collectionInfoProxy.value }
+        console.log({ update })
         const updatedCollection = CollectionRewardInfo.fromJSON(update)
+        console.log({ updatedCollection })
         if (collectionInfoProxy.value?.manager !== initValues.value.manager || collectionInfoProxy.value?.collectionName !== initValues.value.collectionName) {
             const result = await server_api.collection.update({ wallet: wallet.value!.publicKey.toBase58(), pda: props.pda.toBase58(), data: update })
             console.log('DB Result:', result);
@@ -55,6 +58,11 @@ function isRelevant(key: string) {
             return false;
         case 'isInitialized':
             return false;
+        case 'rewardMint':
+            return false;
+        case 'collectionName':
+            return false;
+
         default:
             return true;
     }
@@ -84,7 +92,7 @@ watchEffect(() => {
                 <q-item v-if="isRelevant(key) && key !== 'fireEligible'">
                     <q-item-section>
                         {{ camelCaseToTitleCase(key) }}
-                        <q-input dark v-model="collectionInfoProxy[key]" />
+                        <q-input dark :readonly="key == 'uuid'" v-model="collectionInfoProxy[key]" />
                     </q-item-section>
                 </q-item>
                 <q-item v-if="isRelevant(key) && key == 'fireEligible'">
@@ -95,6 +103,12 @@ watchEffect(() => {
                 </q-item>
             </div>
         </q-card-section>
+        <q-item>
+            <!-- <q-item-section>
+                Collection Size
+                <q-input dark v-model="collectionInfoProxy?.collectionSize" />
+            </q-item-section> -->
+        </q-item>
         <q-card-actions>
             <q-btn dense icon="send" label="Send It" @click="handleEditPda" />
             <q-btn dense icon="refresh" label="Reset" @click="handleResetPda" />
