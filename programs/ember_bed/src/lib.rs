@@ -302,6 +302,7 @@ pub mod ember_bed {
             msg!("Account is not yet initialized");
             return err!(TokenStateError::UnintializedAccount);
         }
+        msg!("Updating State PDA for {}", _ctx.accounts.state_pda.key());
         _ctx.accounts.state_pda.rate_per_day = _rate;
         // msg!("Rate per day: {}", _ctx.accounts.state_pda.rate_per_day);
         _ctx.accounts.state_pda.fire_eligible = _fire_eligible;
@@ -315,12 +316,15 @@ pub mod ember_bed {
             let _manager = str_to_pubkey(&_new_manager);
             _ctx.accounts.state_pda.manager = _manager;
         }
+
+        msg!("UUID: {}", _uuid);
+        msg!("Account UUID: {}", _ctx.accounts.state_pda.uuid);
+        _ctx.accounts.state_pda.uuid = _uuid;
         _ctx.accounts.state_pda.bump = _bump;
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();
         _ctx.accounts.state_pda.reward_symbol = _reward_symbol;
         _ctx.accounts.state_pda.collection_address = _ctx.accounts.nft_collection_address.key();
         _ctx.accounts.state_pda.reward_wallet = _ctx.accounts.token_poa.key();
-
         Ok(())
     }
 
