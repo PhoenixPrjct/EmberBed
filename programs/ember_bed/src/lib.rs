@@ -246,6 +246,24 @@ pub mod ember_bed {
     //     Ok(())
     // }
 
+    pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
+        msg!("Initializing fire pda");
+        // spl_token::instruction::initialize_account(&spl_token::ID , solana_program::pubkey::Pubkey::create_with_seed(str_to_pubkey(PHOENIX_ADMIN_WALLET), b"treasury", str_to_pubkey(PHOENIX_ADMIN_WALLET)), mint_pubkey, owner_pubkey);
+        ctx.accounts.fire_pda.bump = _bump;
+        ctx.accounts.fire_pda.collection_name = FIRE_COLLECTION_NAME.to_string();
+        ctx.accounts.fire_pda.reward_symbol = FIRE_SYMBOL.to_string();
+        ctx.accounts.fire_pda.manager = str_to_pubkey(PHOENIX_ADMIN_WALLET);
+        ctx.accounts.fire_pda.reward_wallet = ctx.accounts.token_poa.key();
+        ctx.accounts.fire_pda.is_initialized = true;
+
+        msg!(
+            "Successfully Initialized {} -- State: {}",
+            ctx.accounts.fire_pda.key(),
+            ctx.accounts.fire_pda.is_initialized
+        );
+        Ok(())
+    }
+
     pub fn initialize_state_pda(
         _ctx: Context<InitializeStatePda>,
         _bump: u8,
@@ -394,7 +412,7 @@ pub mod ember_bed {
         if ctx.accounts.manager.key() != ctx.accounts.state_pda.manager {
             return Err(AdminError::IncorrectManagingAccount.into());
         }
-        if ctx.accounts.token_poa.amount < amount {
+        if ctx.accounts.token_poa.amount < amount * LPS {
             return Err(AdminError::NotEnoughFunds.into());
         }
         // let mut withdrawal_amount = amount;
@@ -402,7 +420,7 @@ pub mod ember_bed {
             msg!("Close Ata: {}", close_ata);
             // withdrawal_amount = ctx.accounts.token_poa.amount;
         }
-
+        let lps_amount = amount * LPS;
         let reward_mint = &ctx.accounts.reward_mint.to_account_info();
         let seeds = &[
             reward_mint.key.as_ref(),
@@ -423,7 +441,7 @@ pub mod ember_bed {
         ).with_signer(signer);
 
         msg!("Start transfer");
-        anchor_spl::token::transfer(cpi_ctx, amount)?;
+        anchor_spl::token::transfer(cpi_ctx, lps_amount)?;
         ctx.accounts.token_poa.reload()?;
         if ctx.accounts.token_poa.amount == 0 {
             msg!("Token Account Balance is Zero, Closing the Account");
