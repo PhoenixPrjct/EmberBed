@@ -238,7 +238,6 @@ export interface MutableTokenInfo {
 
 export interface EditCollectionInfo {
     uuid: string;
-    collectionSize: number;
     ratePerDay: number
     rewardWallet: string
     rewardSymbol: string
@@ -247,6 +246,7 @@ export interface EditCollectionInfo {
     fireEligible: boolean
     rewardMint: string
     manager: string
+    collectionSize?: number;
 
 }
 export class EditCollectionInfo {
@@ -259,9 +259,9 @@ export class EditCollectionInfo {
     rewardMint: string;
     manager: string;
     uuid: string;
-    collectionSize: number;
+    collectionSize?: number;
 
-    constructor(ratePerDay: number, rewardWallet: string, rewardSymbol: string, collectionName: string, collectionAddress: string, fireEligible: boolean, rewardMint: string, manager: string, uuid: string, collectionSize: number) {
+    constructor(ratePerDay: number, rewardWallet: string, rewardSymbol: string, collectionName: string, collectionAddress: string, fireEligible: boolean, rewardMint: string, manager: string, uuid: string, collectionSize?: number) {
         this.ratePerDay = ratePerDay;
         this.rewardWallet = rewardWallet;
         this.rewardSymbol = rewardSymbol;

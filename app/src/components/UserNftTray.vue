@@ -72,7 +72,7 @@ async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: Colle
             type: 'success',
             icon: 'grade',
             color: 'accent',
-            message: `Successfully unstaked ${nft.name}`,
+            message: `Successfully Staked ${nft.name}`,
             caption: getExplorerURL(stakeTx.tx),
             position: 'top',
             timeout: 5000,
@@ -189,6 +189,7 @@ async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: Collect
         notify({
             message: `Redeemed ${ebCollection.info.rewardSymbol}`,
             caption: getExplorerURL(redeemTx),
+            color: 'accent',
             type: 'success',
             position: 'top',
             timeout: 10000,
