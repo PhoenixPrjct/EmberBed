@@ -215,7 +215,7 @@ pub struct InitializeFirePDA<'info> {
     #[account(
         init_if_needed,
         payer = funder,
-        seeds = [reward_mint.key().as_ref(), FIRE_COLLECTION_NAME.as_ref(), b"fstate".as_ref()],
+        seeds = [b"ebtreasury".as_ref(), b"fstate".as_ref()],
         bump,
         space = std::mem::size_of::<FireRewardInfo>() + 8
     )]

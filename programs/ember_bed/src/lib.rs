@@ -298,6 +298,7 @@ pub mod ember_bed {
 
         Ok(())
     }
+    
     pub fn update_state_pda(
         _ctx: Context<UpdateStatePda>,
         _bump: u8,
@@ -518,8 +519,7 @@ pub mod ember_bed {
         }
 
         let seeds = &[
-            fire_mint.as_ref(),
-            FIRE_COLLECTION_NAME.as_ref(),
+            b"ebtreasury".as_ref(),
             b"fstate".as_ref(),
             &[_bump_fire],
         ];
