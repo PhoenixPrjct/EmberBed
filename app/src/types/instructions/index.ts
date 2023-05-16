@@ -4,6 +4,11 @@ export { redeemReward } from "./redeemReward"
 export type { RedeemRewardArgs, RedeemRewardAccounts } from "./redeemReward"
 export { unstake } from "./unstake"
 export type { UnstakeAccounts } from "./unstake"
+export { initializeFirePda } from "./initializeFirePda"
+export type {
+  InitializeFirePdaArgs,
+  InitializeFirePdaAccounts,
+} from "./initializeFirePda"
 export { initializeStatePda } from "./initializeStatePda"
 export type {
   InitializeStatePdaArgs,

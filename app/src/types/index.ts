@@ -219,7 +219,7 @@ export type Accounts = {
     funderTokenAta: PublicKey
     rewardWallet: PublicKey,
     firePoa?: PublicKey,
-    fireInfo?: PublicKey,
+    firePda?: PublicKey,
     fireMint?: PublicKey,
     fireBump?: number,
     userFireAta?: PublicKey,

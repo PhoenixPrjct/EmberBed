@@ -232,6 +232,61 @@ export type EmberBed = {
       "args": []
     },
     {
+      "name": "initializeFirePda",
+      "accounts": [
+        {
+          "name": "firePda",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "ebtreasury"
+              },
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "fstate"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenPoa",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "funderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        }
+      ]
+    },
+    {
       "name": "initializeStatePda",
       "accounts": [
         {
@@ -1162,6 +1217,61 @@ export const IDL: EmberBed = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "initializeFirePda",
+      "accounts": [
+        {
+          "name": "firePda",
+          "isMut": true,
+          "isSigner": false,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "ebtreasury"
+              },
+              {
+                "kind": "const",
+                "type": "string",
+                "value": "fstate"
+              }
+            ]
+          }
+        },
+        {
+          "name": "rewardMint",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "tokenPoa",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "funder",
+          "isMut": true,
+          "isSigner": true
+        },
+        {
+          "name": "funderAta",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "systemProgram",
+          "isMut": false,
+          "isSigner": false
+        }
+      ],
+      "args": [
+        {
+          "name": "bump",
+          "type": "u8"
+        }
+      ]
     },
     {
       "name": "initializeStatePda",
