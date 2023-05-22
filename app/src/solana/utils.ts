@@ -242,12 +242,9 @@ export function getAPI(program: Program<EmberBed>) {
     // }
     async function initializeFirePda(args: InitializeFirePdaArgs, accounts: InitializeFirePdaAccounts) {
         try {
-            // const firePDA = fire.pda
-            // const bumpFire = fire.bump
-            // const fireTokenAta = await getAssociatedTokenAddress(FireTok, EBWallet.publicKey);
-            // const fireRewardWallet = await getOrCreateAssociatedTokenAccount(
-            //     connection, EBWallet, FireTok, firePDA, true);
-            console.log("Initializing Fire PDA")
+            console.log("Initializing Fire Account with Token:", accounts.rewardMint.toBase58());
+            console.log("Initializing Fire PDA:");
+            Object.entries(accounts).map(([key, value]) => { console.log(`${key}: ${value.toBase58()}`); });
             const txPromise = await program.methods.initializeFirePda(args.bump).accounts(accounts).signers([EBWallet])
             const tx = await txPromise.rpc()
             console.log("Initialize Fire PDA tx:")
@@ -264,10 +261,11 @@ export function getAPI(program: Program<EmberBed>) {
         const stateExists = await program.account.collectionRewardInfo.getAccountInfo(pda)
         if (stateExists) {
             console.log({ stateExists: stateExists.data.toJSON() })
-            const stateStatus: FireRewardInfoFields = await program.account.collectionRewardInfo.fetch(pda);
+            const stateStatus: FireRewardInfoFields = await program.account.fireRewardInfo.fetch(pda);
             Object.entries(stateStatus).forEach(([key, value]) => {
                 if (typeof (value) !== "string" || typeof (value) !== "number") {
-                    console.log(`${key}: ${value.toBase58()}`)
+                    console.log(`${key}: ${JSON.stringify(value)}`)
+                    // console.log(`${key}: ${value.toBase58()}`)
                 } else {
                     console.log(`${key}: ${value}`)
                 }

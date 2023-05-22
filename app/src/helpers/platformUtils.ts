@@ -1,4 +1,5 @@
 import { useChainAPI } from "src/api/chain-api";
+// import { InitializeFirePdaAccounts } from "src/types/instructions/initializeFirePda";
 
 export async function getAllEBCollections() {
     const { program } = useChainAPI();
@@ -16,3 +17,8 @@ export function getExplorerURL(sig: string) {
     return `<a href='https://explorer.solana.com/tx/${sig}' target='_blank'> See transaction </a>`
 
 }
+
+// export async function initializeFirePda() {
+//     const { program,api } = useChainAPI();
+//     const accounts:InitializeFirePdaAccounts = await api.value?.getAccounts()
+// }

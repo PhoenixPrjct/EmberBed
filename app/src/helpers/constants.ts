@@ -38,7 +38,7 @@ async function initializeFirePdaAccounts() {
     const FIRE_FUNDER = EBWallet.publicKey;
     const FIRE_PDA = firePdaInfo.pda;
     const FIRE_BUMP = firePdaInfo.bump;
-    const FIRE_MINT = getFireMintPub();
+    const FIRE_MINT = await getFireMintPub();
     const FIRE_ATA = await getFireTokenAta();
     const FIRE_POA = (await getFireRewardWallet(FIRE_MINT, FIRE_PDA)).address;
     const FIRE_ACCTS: InitializeFirePdaAccounts = {
