@@ -248,10 +248,12 @@ pub mod ember_bed {
 
     pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
         msg!("Initializing fire pda");
+        msg!("reward_mint: {:?}", ctx.accounts.reward_mint.key());
         // spl_token::instruction::initialize_account(&spl_token::ID , solana_program::pubkey::Pubkey::create_with_seed(str_to_pubkey(PHOENIX_ADMIN_WALLET), b"treasury", str_to_pubkey(PHOENIX_ADMIN_WALLET)), mint_pubkey, owner_pubkey);
         ctx.accounts.fire_pda.bump = _bump;
         ctx.accounts.fire_pda.collection_name = FIRE_COLLECTION_NAME.to_string();
         ctx.accounts.fire_pda.reward_symbol = FIRE_SYMBOL.to_string();
+        ctx.accounts.fire_pda.reward_mint = ctx.accounts.reward_mint.key();
         ctx.accounts.fire_pda.manager = str_to_pubkey(PHOENIX_ADMIN_WALLET);
         ctx.accounts.fire_pda.reward_wallet = ctx.accounts.token_poa.key();
         ctx.accounts.fire_pda.is_initialized = true;
@@ -298,7 +300,7 @@ pub mod ember_bed {
 
         Ok(())
     }
-    
+
     pub fn update_state_pda(
         _ctx: Context<UpdateStatePda>,
         _bump: u8,
@@ -518,11 +520,7 @@ pub mod ember_bed {
             return Ok(());
         }
 
-        let seeds = &[
-            b"ebtreasury".as_ref(),
-            b"fstate".as_ref(),
-            &[_bump_fire],
-        ];
+        let seeds = &[b"ebtreasury".as_ref(), b"fstate".as_ref(), &[_bump_fire]];
         let signer = &[&seeds[..]];
 
         let rewards_earned: u64 = rate_per_second * staked_duration;
