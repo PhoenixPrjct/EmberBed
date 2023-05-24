@@ -57,3 +57,4 @@ async function initializeFirePdaAccounts() {
 
 
 export const FIRE_INFO = initializeFirePdaAccounts().then(res => res);
+export const FIRE_MINT_PUB = getFireMintPub().toBase58(); 

@@ -6,6 +6,7 @@ import { AccountInfo, PublicKey, SystemProgram } from '@solana/web3.js';
 import { Accounts, FireRewardInfo, FireRewardInfoJSON } from 'src/types';
 import { InitializeFirePdaAccounts, InitializeFirePdaArgs, initializeFirePda } from 'src/types/instructions/initializeFirePda';
 import { EBWallet } from 'src/dev/walletKPs';
+import FireAcctInfoDialogue from './FireAcctInfoDialogue.vue';
 const { api, wallet, program } = useChainAPI();
 
 const result = ref();
@@ -28,18 +29,18 @@ async function testFireAccounts() {
 }
 
 watchEffect(async () => {
-    if (!fireAcct.value) {
+    if (!fireAcct.value && program.value) {
         fireAcct.value = await (await program.value.account.fireRewardInfo.all())[0];
     }
 })
 </script>
 <template>
     <section>
-        <h1>TEST</h1>
+        <FireAcctInfoDialogue /> <!-- <h1>TEST</h1>
         <q-btn dark @click="testFireAccounts">Run Function</q-btn>
         <div v-if="result">
             <pre>{{ result }}</pre>
-        </div>
+        </div>-->
         <div>
             <pre>{{ fireAcct }}</pre>
         </div>

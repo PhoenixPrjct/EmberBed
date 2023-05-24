@@ -6,7 +6,7 @@ import { useServerAPI } from 'src/api/server-api';
 import * as types from 'src/types';
 import { PhoenixRelationKind } from 'src/types';
 import { ref, watchEffect } from 'vue'
-import { CopyClick, camelCaseToTitleCase } from 'src/helpers';
+import { CopyClick, camelCaseToTitleCase, isRelevant } from 'src/helpers';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { AddHashList, AddStyleDialog } from 'src/components'
 import { useRouter } from 'vue-router';
@@ -103,23 +103,23 @@ function handleDialogShow() {
     dialogShow.value = true;
 }
 
-function isRelevant(k: string): boolean {
-    // console.log(k)
-    let result
-    switch (k) {
-        case 'bump':
-            result = false;
-            console.log('bump', result)
-            break;
-        case 'isInitialized':
-            result = false;
-            break;
-        default:
-            result = true;
-            break;
-    }
-    return result;
-}
+// function isRelevant(k: string): boolean {
+//     // console.log(k)
+//     let result
+//     switch (k) {
+//         case 'bump':
+//             result = false;
+//             console.log('bump', result)
+//             break;
+//         case 'isInitialized':
+//             result = false;
+//             break;
+//         default:
+//             result = true;
+//             break;
+//     }
+//     return result;
+// }
 
 
 function handleCollectionRouteClick(pda: string) {
