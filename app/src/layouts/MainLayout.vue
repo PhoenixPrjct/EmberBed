@@ -48,13 +48,14 @@ watchEffect(() => {
           </q-avatar>
           EmberBed
         </q-toolbar-title>
+        <span v-if="wallet.connected.value">
+
+          <q-btn dark flat @click="showFireAcctDialogue = true">&#x1F525;</q-btn>
+        </span>
         <WalletMultiButton dark />
       </q-toolbar>
       <q-toolbar dark inset>
         <CollectionCarousel />
-      </q-toolbar>
-      <q-toolbar dark inset>
-        <q-btn dark icon="fire" @click="showFireAcctDialogue = true" />
       </q-toolbar>
       <!-- TEST: {{ test }} -->
     </q-header>

@@ -15,14 +15,33 @@ watchEffect(async () => {
 </script>
 <template>
     <q-card dark class="flex justify-around dialogue">
-        <q-card-title center>Fire Reward Info</q-card-title>
+        <q-card-title class="title text-bold" center>Fire Reward Info</q-card-title>
         <section v-if="fireAcct">
             <div v-for="entry in fireAcct" :key="entry">
-                <q-item-section v-if="isRelevant(entry[0])">
-                    {{ camelCaseToTitleCase(entry[0]) }}: {{ entry[1] }}
-                </q-item-section>
+                <q-item v-if="isRelevant(entry[0])">
+                    <q-item-section>
+                        <div class="text-bold">
+                            {{ camelCaseToTitleCase(entry[0]) }}:
+                        </div>
+                        <!-- </q-item-section>
+                    <q-item-section> -->
+                        {{ entry[1] }}
+                    </q-item-section>
+                </q-item>
             </div>
         </section>
     </q-card>
 </template>
-<stlye lang="scss"></stlye>
+<style lang="scss">
+.dialogue {
+    padding: 1rem;
+    width: 90%;
+    margin: auto auto;
+}
+
+.title {
+    width: 100%;
+    text-align: center;
+    font-size: 1.25rem;
+}
+</style>

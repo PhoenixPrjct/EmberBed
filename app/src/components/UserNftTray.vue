@@ -169,7 +169,7 @@ async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: Collect
         if (!ebCollection.info) throw new Error('Collection Data is Incorrect, Please Refresh and try again')
         const amount = (timeStaked / 86400) * ebCollection.info.ratePerDay
         stakingAction.value = { message: 'Accounts Checkout', percent: 0.25 }
-        const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint });
+        const accounts = await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint });
         if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
         const redeemAccts: RedeemRewardAccounts = {
             ...accounts,
@@ -224,10 +224,10 @@ async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: Col
         const redeemAccts: RedeemFireAccounts = {
             user: wallet.value!.publicKey,
             collectionInfo: accounts.statePDA,
-            fireInfo: accounts.fireInfo!,
+            fireInfo: accounts.firePda!,
             firePoa: accounts.firePoa!,
             stakeStatus: accounts.stakeStatusPda,
-            fireMint: FIRE_MINT_PUB,
+            fireMint: FIRE_MINT_PUB.pub,
             tokenProgram: TOKEN_PROGRAM_ID,
             userRewardAta: accounts.userFireAta!,
             systemProgram: SystemProgram.programId

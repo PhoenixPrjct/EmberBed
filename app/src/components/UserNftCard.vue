@@ -111,7 +111,7 @@ async function handleUnstakeNft(nft: EBNft, eb: { loaded: boolean, info: Collect
 function delayedRefresh(nft: EBNft) {
     console.log("delayedRefresh");
     stakeStateRef.value = null;
-    setTimeout(() => getStakeState(nft), 15000);
+    setTimeout(() => getStakeState(nft), 10000);
     return
 }
 async function getStakeState(nft: EBNft) {
@@ -127,7 +127,7 @@ async function getStakeState(nft: EBNft) {
         if (!status) throw new Error(`Failed to fetch Stake State for ${nft.name}`)
         statusRef.value = status.toJSON()
         console.log(`Stake status:\n ${nft.name} - ${status.toJSON().stakeState.kind} \n`)
-        stakeStateRef.value = stakeStatus.value.info ? stakeStatus.value.info.stakeState.kind : null;
+        stakeStateRef.value = stakeStatus.value.info ? stakeStatus.value.info.stakeState.kind : "Unstaked";
         stakeStatus.value.loaded = true;
         return
     } catch (err: any) {
