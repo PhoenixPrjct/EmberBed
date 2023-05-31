@@ -60,6 +60,11 @@ export function getStakingFee(kind: string) {
         case 'Saved':
             amount = baseAmount / 10;
             break;
+        case 'Evo':
+        case 'Founder':
+        case 'Member':
+            amount = baseAmount / 100;
+            break;
         case 'None':
             amount = baseAmount;
             break;
@@ -69,7 +74,7 @@ export function getStakingFee(kind: string) {
     }
     return amount;
 }
-
+// * TODO: Implement once collections are added.
 // export function getUserRate(nftsHeld: number) {
 //     let amount
 //     const baseRPD = 1
@@ -98,7 +103,7 @@ export function getStakingFee(kind: string) {
 export async function chargeFeeTx(user: PublicKey, amount: number) {
     if (!user) throw new Error('No public key provided, did you connect your wallet?')
     console.log(`Initialization Fee = ${amount} SOL`);
-    const PhoenixWallet = new PublicKey('E9NxULjZAxU4j1NYkDRN2YVpmixoyLX3fd1SsWRooPLB')
+    const PhoenixWallet = useChainAPI().programWallet.publicKey
     try {
         const latestBlockHash = await connection.getLatestBlockhash();
         const { blockhash, lastValidBlockHeight } = latestBlockHash

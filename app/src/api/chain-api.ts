@@ -8,9 +8,9 @@ import web3 = anchor.web3;
 import { IDL } from '../solana/types/ember_bed'
 import { getAPI } from '../solana/utils'
 import { AnchorWallet, EmberBed } from 'src/types'
-import { devKeyPair } from 'src/dev/walletKPs'
+import { ProgramWallet } from 'src/dev/walletKPs'
 // import { AnchorWallet } from 'solana-wallets-vue/src/useAnchorWallet'
-console.log(typeof devKeyPair)
+console.log(typeof ProgramWallet)
 // const devSecret = Uint8Array.from(devPk)
 const EmberBedAddress = "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
 const preflightCommitment = 'processed';
@@ -32,7 +32,7 @@ export function getConnection() {
 
 
 export function _createChainAPI() {
-    const programWallet = devKeyPair
+    const programWallet = ProgramWallet;
     const wallet: Ref<AnchorWallet | undefined> = useAnchorWallet();
     // console.log(wallet.value)
     const connection = new Connection(getConnection());
