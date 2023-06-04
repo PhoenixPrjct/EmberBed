@@ -12,7 +12,7 @@ import { ProgramWallet } from 'src/dev/walletKPs'
 // import { AnchorWallet } from 'solana-wallets-vue/src/useAnchorWallet'
 console.log(typeof ProgramWallet)
 // const devSecret = Uint8Array.from(devPk)
-const EmberBedAddress = "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
+const EmberBedAddress = "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
 const preflightCommitment = 'processed';
 const commitment = 'processed';
 const programID = new PublicKey(EmberBedAddress);
