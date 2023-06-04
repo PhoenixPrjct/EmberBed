@@ -4,7 +4,7 @@ import { getConnection } from 'src/api/chain-api';
 import { useChainAPI } from 'src/api/chain-api';
 import { EBWallet } from 'src/dev/walletKPs';
 import { IDL, InitializeFirePdaAccounts, InitializeFirePdaArgs } from 'src/types';
-const EmberBedAddress = "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
+const EmberBedAddress = "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
 const programID = new PublicKey(EmberBedAddress);
 const connection = new Connection(getConnection());
 

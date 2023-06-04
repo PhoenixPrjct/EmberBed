@@ -981,7 +981,7 @@ export type EmberBed = {
     }
   ],
   "metadata": {
-    "address": "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
+    "address": "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
   }
 };
 
@@ -1968,6 +1968,6 @@ export const IDL: EmberBed = {
     }
   ],
   "metadata": {
-    "address": "BJgybhDGQD6YoAQWfmz6K8VCVbbK2vsw16hHF7nzmDmp"
+    "address": "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
   }
 };
