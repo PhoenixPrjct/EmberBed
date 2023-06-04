@@ -169,7 +169,7 @@ pub struct FireRewardInfo {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String )]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String, _nft_collection_pubkey: Pubkey, _nft_mint_pubkey: Pubkey)]
 pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,

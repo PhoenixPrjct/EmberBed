@@ -25,38 +25,13 @@ import { Ref } from 'vue';
 import { EBWallet } from 'src/dev/walletKPs';
 import { InitializeFirePdaAccounts, InitializeFirePdaArgs } from 'src/types/instructions/initializeFirePda';
 import { FIRE_INFO } from "src/helpers/constants"
-
-// import { useWallet } from 'solana-wallets-vue';
-// import { api } from 'src/boot/axios';
-// let devKP = process.env.DEV_KP
-// const prjctKP = JSON.parse(fs.readFileSync('./PrjctTokenAuthority.json', 'utf-8'));
-
-// This private key has already been compromised, so no one gives a fuck.
-// const bsKey = Uint8Array.from([178, 13, 171, 164, 100, 123, 36, 5, 199, 169, 167, 4, 68, 180, 137, 159, 36, 120, 216, 97, 170, 223, 126, 237, 194, 101, 33, 101, 197, 166, 134, 33, 192, 54, 19, 177, 69, 246, 153, 65, 216, 117, 205, 41, 136, 204, 221, 172, 170, 4, 186, 169, 101, 69, 185, 223, 86, 36, 156, 126, 112, 249, 28, 162])
-
-// const FundSecret = bsKey;
-// if (process.env.NODE_ENV !== 'production' && prjctKP) {    // DevSecret = Uint8Array.from(devSecret.devKP);
-//     FundSecret = Uint8Array.from(JSON.parse(prjctKP));
-// }
-// // const DevWallet = Keypair.fromSecretKey(DevSecret as Uint8Array, { skipValidation: true });
-// const EBWallet = Keypair.fromSecretKey(FundSecret as Uint8Array);
-console.log('EBWallet', EBWallet.publicKey.toBase58())
 const wallet: Ref<AnchorWallet | undefined> = useAnchorWallet();
 
-async function getFireTok() {
-    const info = await FIRE_INFO;
-    return info!.FIRE_MINT
-}
-
 export function getAPI(program: Program<EmberBed>) {
-    console.log('getAPI', program.programId.toBase58())
-    const connection = program.provider.connection
+    const connection = program.provider.connection;
     const metaplex = Metaplex.make(connection)
         .use(keypairIdentity(EBWallet))
-        .use(bundlrStorage())
-
-    const FireTok = getFireTok()
-
+        .use(bundlrStorage());
 
 
     async function getStatePda(RewTok: PublicKey, collectionName: string): Promise<{ pda: web3.PublicKey, bump: number }> {
@@ -66,37 +41,14 @@ export function getAPI(program: Program<EmberBed>) {
         );
         return { pda, bump };
     }
-    // async function getStatePda(RewTok: web3.PublicKey, collectionName: string): Promise<{ pda: web3.PublicKey, bump: number }> {
-    //     const [pda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
-    //         [RewTok.toBuffer(), Buffer.from(collectionName), Buffer.from("state")],
-    //         program.programId
-    //     );
-    //     // console.log({ PDA: pda.toBase58() })
-    //     return { pda, bump };
-    // }
-
-    // async function getFirePda(): Promise<{ pda: web3.PublicKey, bump: number }> {
-    //     const [pda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
-    //         [Buffer.from("ebtreasury"), Buffer.from("fstate")],
-    //         program.programId
-    //     );
-
-    //     return { pda, bump };
-    // }
-
-    // async function getFireMint(): Promise<PublicKey> {
-    //     return FireTok
-    // }
 
     async function getDelegatedAuthPda(): Promise<{ pda: web3.PublicKey, bump: number }> {
         const [delegatedAuthPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
             [Buffer.from("authority")],
             program.programId
         );
-        console.log({ delegatedAuthPda: delegatedAuthPda.toBase58(), authBump: bump })
         return { pda: delegatedAuthPda, bump: bump };
     }
-
 
     async function getUserAccountPda(user: web3.PublicKey): Promise<{ pda: web3.PublicKey, bump: number }> {
         const [userAccountPDA, bumpAccount] = anchor.web3.PublicKey.findProgramAddressSync(
@@ -106,49 +58,20 @@ export function getAPI(program: Program<EmberBed>) {
         return { pda: userAccountPDA, bump: bumpAccount }
     }
 
-    // async function getUserRewardInfoPda(user: web3.PublicKey, RewTok: web3.PublicKey): Promise<{ pda: web3.PublicKey, bump: number }> {
-    //     const [userRewardInfoPda, bump] = await anchor.web3.PublicKey.findProgramAddressSync(
-    //         [user.toBuffer(), RewTok.toBuffer()],
-    //         program.programId
-    //     );
-    //     return { pda: userRewardInfoPda, bump: bump };
-    // }
     async function getStakeStatusPda(user: web3.PublicKey, nftMint: string): Promise<{ pda: web3.PublicKey, bump: number }> {
-
         const mintAddress: PublicKey = new PublicKey(nftMint);
         const nftTokenAddress = await getAssociatedTokenAddress(mintAddress, user)
         const [stakeStatusPda, bump] = anchor.web3.PublicKey.findProgramAddressSync(
             [user.toBuffer(), nftTokenAddress.toBuffer()],
             program.programId
         );
-
-        console.log(stakeStatusPda.toBase58());
         return { pda: stakeStatusPda, bump: bump }
-
     }
 
-    async function getUserFireAta(user: web3.PublicKey) {
-        const userFireAta = await getAssociatedTokenAddress(await FireTok, user);
-        return userFireAta;
-
-    }
-
-    async function getRewardWallet(RewTok: web3.PublicKey, statePDA: web3.PublicKey): Promise<Account> {
-        console.log("Getting Reward Wallet for:", statePDA.toBase58())
-        // statePDA = new PublicKey('H3d6LoF7ByDnQ8vGtWHzcRahnJvEm1XW6TDGDodbMjfg')
-        console.log({ RewTok: RewTok.toBase58() });
-        console.log({ EBWallet: EBWallet.publicKey.toBase58() })
-
-        const rewardWallet: Account = await getOrCreateAssociatedTokenAccount(connection, EBWallet, RewTok, statePDA, true)
-        console.log({ rewardWallet })
-        return rewardWallet
-
-    }
     async function getUserRewardAta(user: web3.PublicKey, RewTok: web3.PublicKey) {
         const userRewardAta = await getAssociatedTokenAddress(RewTok, user);
         return userRewardAta;
     }
-
 
     async function getNftTokenAddress(user: web3.PublicKey, nftMint: string) {
         const mintAddress = new PublicKey(nftMint);
@@ -156,50 +79,60 @@ export function getAPI(program: Program<EmberBed>) {
         return nftTokenAddress;
     }
 
+    async function getRewardWallet(RewTok: web3.PublicKey, statePDA: web3.PublicKey): Promise<Account> {
+        console.log("Getting Reward Wallet for:", statePDA.toBase58());
+
+        const rewardWallet: Account = await getOrCreateAssociatedTokenAccount(connection, EBWallet, RewTok, statePDA, true);
+
+        return rewardWallet;
+    }
+
     async function getAccounts(data: { user: PublicKey, collectionName: string, rewardMint: string, nftMint?: string, uuid?: string, nftColAddress?: string }): Promise<Accounts> {
-        console.log("Getting Accounts")
         let accounts: Accounts = {} as Accounts;
-        // if (data.isFire) {
-        //     const fireAccounts = await getFireAccounts(data.user)
-        //     accounts = fireAccounts
-        // }
+
         const RewTok: PublicKey = new PublicKey(data.rewardMint);
         let nftAccounts = {};
         let mintAddress, nft, delegatedAuthPda,
             nftTokenAddress,
             stakeStatusPDA
 
-        // const collectionID = data.uuid ? data.uuid : generateUUID();
-        // console.log({ uuid: data.uuid, collectionID })
+        // Retrieve the user's account PDA and reward ATA
         const userAccountPDA = await getUserAccountPda(data.user);
-        console.log({ userAccountPDA: userAccountPDA.pda.toBase58() })
         const userRewardAta = await getUserRewardAta(data.user, RewTok);
-        console.log({ userRewardAta: userRewardAta.toBase58() })
+
+        // Retrieve the state PDA for the specified collection
         const statePDA = await getStatePda(RewTok, data.collectionName);
-        console.log({ statePDA: statePDA.pda.toBase58() });
+
+        // Retrieve the funder's token ATA
         const funderTokenAta = await getAssociatedTokenAddress(RewTok, data.user);
-        console.log({ funderTokenAta: funderTokenAta.toBase58() })
+
         const userAccounts = {
             userRewardAta: userRewardAta,
             userAccountPDA: userAccountPDA.pda
-        }
-        console.log({ userAccounts: { pda: userAccounts.userAccountPDA.toBase58(), userRewardAta: userAccounts.userRewardAta.toBase58() } })
+        };
+
+        // Retrieve the reward wallet associated with the state PDA
         const rewardWallet = await getRewardWallet(RewTok, statePDA.pda);
 
-        console.log({ rewardWallet: rewardWallet?.address.toBase58() })
         const collectionAccounts = {
             funderTokenAta: funderTokenAta,
             rewardWallet: rewardWallet.address,
             RewTok: RewTok,
             stateBump: statePDA.bump,
             statePDA: statePDA.pda
-        }
-        accounts = { ...accounts, ...collectionAccounts, ...userAccounts }
-        console.log({ "199": accounts })
+        };
+
+        // Merge user and collection accounts into the main accounts object
+        accounts = { ...accounts, ...collectionAccounts, ...userAccounts };
+
         if (data.nftMint) {
+            // If an NFT mint is provided, retrieve additional NFT-related accounts
             mintAddress = new PublicKey(data.nftMint);
-            nft = await metaplex
-                .nfts().findByMint({ mintAddress: mintAddress })
+
+            // Retrieve the NFT details by mint address
+            nft = await metaplex.nfts().findByMint({ mintAddress: mintAddress });
+
+            // Retrieve the delegated authorization PDA, NFT token address, and stake status PDA
             delegatedAuthPda = await getDelegatedAuthPda();
             nftTokenAddress = await getNftTokenAddress(data.user, data.nftMint);
             stakeStatusPDA = await getStakeStatusPda(data.user, data.nftMint);
@@ -209,37 +142,19 @@ export function getAPI(program: Program<EmberBed>) {
                 authBump: delegatedAuthPda.bump,
             };
 
-            accounts = { ...accounts, ...nftAccounts }
-        }
-        if (data.nftColAddress) {
-            const nftCollectionAddress = new PublicKey(data.nftColAddress);
-            accounts = { ...accounts, nftCollectionAddress: nftCollectionAddress }
+            // Merge NFT-related accounts into the main accounts object
+            accounts = { ...accounts, ...nftAccounts };
         }
 
-        // console.log('REWTOK:', accounts.RewTok.toBase58())
-        console.log({ success: accounts })
+        if (data.nftColAddress) {
+            // If an NFT collection address is provided, include it in the accounts object
+            const nftCollectionAddress = new PublicKey(data.nftColAddress);
+            accounts = { ...accounts, nftCollectionAddress: nftCollectionAddress };
+        }
+
         return accounts;
     }
 
-    // async function getFireAccounts(user?: PublicKey): Promise<Accounts> {
-    //     console.log("Getting Fire Accounts")
-    //     try {
-
-    //         let accounts: Accounts = {} as Accounts;
-    //         const fireInfo = await getFirePda();
-    //         const firePoa = await getFireTokenAta();
-    //         const fireMint = await getFireMint();
-    //         accounts = { ...accounts, firePoa: firePoa, firePda: fireInfo.pda, fireBump: fireInfo.bump, fireMint: fireMint }
-    //         if (user) {
-    //             const userFireAta = await getUserFireAta(user);
-    //             accounts = { ...accounts, userFireAta: userFireAta }
-    //         }
-    //         return accounts;
-    //     } catch (e) {
-    //         console.log(e)
-    //         return {} as Accounts
-    //     }
-    // }
     async function initializeFirePda(args: InitializeFirePdaArgs, accounts: InitializeFirePdaAccounts) {
         try {
             console.log("Initializing Fire Account with Token:", accounts.rewardMint.toBase58());
@@ -256,6 +171,7 @@ export function getAPI(program: Program<EmberBed>) {
             return "Nope"
         }
     }
+
     async function logFireAccountInfo(pda: PublicKey) {
         console.log("Logging Accounts")
         const stateExists = await program.account.collectionRewardInfo.getAccountInfo(pda)

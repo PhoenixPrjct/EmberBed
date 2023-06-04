@@ -310,6 +310,7 @@ pub mod ember_bed {
         _fire_eligible: bool,
         _phoenix_collection_relation: String,
         _new_manager: String,
+        _nft_collection_pubkey: Pubkey,
         _uuid: String
     ) -> Result<()> {
         if
@@ -344,7 +345,7 @@ pub mod ember_bed {
         _ctx.accounts.state_pda.bump = _bump;
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();
         _ctx.accounts.state_pda.reward_symbol = _reward_symbol;
-        _ctx.accounts.state_pda.collection_address = _ctx.accounts.nft_collection_address.key();
+        _ctx.accounts.state_pda.collection_address = _nft_collection_pubkey;
         _ctx.accounts.state_pda.reward_wallet = _ctx.accounts.token_poa.key();
         Ok(())
     }

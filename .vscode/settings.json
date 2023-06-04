@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
         "pdas"
-    ]
+    ],
+    "editor.guides.bracketPairs": true
 }

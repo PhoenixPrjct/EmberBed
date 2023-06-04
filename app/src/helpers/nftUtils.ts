@@ -13,12 +13,6 @@ const { server_api } = useServerAPI();
 
 
 
-async function getNftMeta(uri: string) {
-    const meta = await (await axios.get(uri)).data
-    await meta
-    return meta
-
-}
 
 async function checkNftCollectionAddress(pda: string, nftMint: string, collections: string[]): Promise<boolean | string> {
     const pdaPk = new PublicKey(pda);
@@ -40,6 +34,33 @@ async function checkNftCollectionAddress(pda: string, nftMint: string, collectio
 }
 
 
+// async function getNftMeta(uri: string) {
+//     try {
+//         const meta = await (await axios.get(uri)).data
+//         await meta
+//         console.log(meta)
+//         return meta
+//     } catch (e) {
+//         console.log(e)
+//         return null
+//     }
+
+// }
+
+async function getNftMeta(uri: string, mint: string) {
+    try {
+        const meta = await axios.get(uri);
+        console.log(mint, meta.data);
+        return meta.data;
+    } catch (e) {
+        if (e.response && e.response.status === 404) {
+            console.log('NFT metadata not found:', uri, `\n For Token ${mint}`);
+            return null;
+        }
+        console.log('Error fetching NFT metadata:', e, `\n For Token ${mint}`);
+        return null;
+    }
+}
 export async function getNftsInWallet(wallet: PublicKey) {
     console.log("getNftsInWallet", wallet.toBase58())
     const publicAddress = wallet.toBase58();
@@ -56,8 +77,11 @@ export async function getNftsInWallet(wallet: PublicKey) {
     // console.log({ collections });
     const _nfts = await getParsedNftAccountsByOwner({ publicAddress, connection })
     const nftsPromises = _nfts.map(async (nft) => {
-        let ebCollection
-        const meta = await getNftMeta(nft.data.uri);
+        let ebCollection: string | undefined;
+        const meta = await getNftMeta(nft.data.uri, nft.mint);
+        if (!meta) {
+            return
+        }
         const fullNft = await metaplex.nfts().findByMint({ mintAddress: new PublicKey(nft.mint) });
         if (fullNft.collection?.address) {
             const result = collections.find((c) => c.verifiedCollectionAddress == fullNft.collection?.address.toBase58())
@@ -65,6 +89,8 @@ export async function getNftsInWallet(wallet: PublicKey) {
         }
         if (!ebCollection) {
             ebCollection = await server_api.nft.getCollectionFor(nft.mint);
+
+            console.log({ eb2nd: ebCollection })
         }
 
 
@@ -76,8 +102,8 @@ export async function getNftsInWallet(wallet: PublicKey) {
     });
 
     const nfts = await Promise.all(nftsPromises);
-    const ebnfts = nfts.filter((nft) => nft.ebCollection);
-    const otherNfts = nfts.filter((nft) => !nft.ebCollection);
+    const ebnfts = nfts.filter((nft) => nft?.ebCollection);
+    const otherNfts = nfts.filter((nft) => !nft?.ebCollection);
     return { ebNfts: ebnfts, other: otherNfts };
 
 }
