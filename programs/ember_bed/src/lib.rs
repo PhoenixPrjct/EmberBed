@@ -21,6 +21,8 @@ declare_id!("2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5");
 
 #[program]
 pub mod ember_bed {
+    use solana_program::native_token::LAMPORTS_PER_SOL;
+
     use super::*;
 
     pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
@@ -273,8 +275,11 @@ pub mod ember_bed {
         _reward_symbol: String,
         _collection_name: String,
         _fire_eligible: bool,
+        _nft_collection_pubkey: String,
         _phoenix_collection_relation: String
     ) -> Result<()> {
+        msg!("Reward Wallet: {:?}", _ctx.accounts.token_poa.key());
+        msg!("State PDA Initialized: {:?}", _ctx.accounts.state_pda.key());
         if _ctx.accounts.state_pda.is_initialized {
             msg!("Account is already initialized");
             return err!(TokenStateError::AccountAlreadyInitialized);
@@ -287,6 +292,10 @@ pub mod ember_bed {
         if _fire_eligible {
             _ctx.accounts.state_pda._phoenix_relation = pr;
         }
+        if _nft_collection_pubkey != "" {
+            let nft_col_pubkey = str_to_pubkey(_nft_collection_pubkey.as_str());
+            _ctx.accounts.state_pda.collection_address = nft_col_pubkey;
+        }
         let uuid_string = _ctx.accounts.state_pda.key().to_string();
         _ctx.accounts.state_pda.uuid = uuid_string;
         _ctx.accounts.state_pda.reward_mint = _ctx.accounts.reward_mint.key();
@@ -294,10 +303,10 @@ pub mod ember_bed {
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();
         _ctx.accounts.state_pda.reward_symbol = _reward_symbol;
         _ctx.accounts.state_pda.manager = _ctx.accounts.funder.key();
-        _ctx.accounts.state_pda.collection_address = _ctx.accounts.nft_collection_address.key();
+
         _ctx.accounts.state_pda.reward_wallet = _ctx.accounts.token_poa.key();
         _ctx.accounts.state_pda.is_initialized = true;
-
+        msg!("State PDA Initialized: {:?}", _ctx.accounts.state_pda.key());
         Ok(())
     }
 
@@ -310,7 +319,7 @@ pub mod ember_bed {
         _fire_eligible: bool,
         _phoenix_collection_relation: String,
         _new_manager: String,
-        _nft_collection_pubkey: Pubkey,
+        _nft_collection_pubkey: String,
         _uuid: String
     ) -> Result<()> {
         if
@@ -341,11 +350,13 @@ pub mod ember_bed {
 
         msg!("UUID: {}", _uuid);
         msg!("Account UUID: {}", _ctx.accounts.state_pda.uuid);
+        let nft_col_pubkey = str_to_pubkey(_nft_collection_pubkey.as_str());
+
         _ctx.accounts.state_pda.uuid = _uuid;
         _ctx.accounts.state_pda.bump = _bump;
         _ctx.accounts.state_pda.collection_name = _collection_name.clone();
         _ctx.accounts.state_pda.reward_symbol = _reward_symbol;
-        _ctx.accounts.state_pda.collection_address = _nft_collection_pubkey;
+        _ctx.accounts.state_pda.collection_address = nft_col_pubkey;
         _ctx.accounts.state_pda.reward_wallet = _ctx.accounts.token_poa.key();
         Ok(())
     }
@@ -379,9 +390,9 @@ pub mod ember_bed {
     pub fn deposit_to_fire_ata(ctx: Context<DepositToFirePda>, amount: u64) -> Result<()> {
         let state = &mut ctx.accounts.fire_pda;
 
-        let collection_name = &state.collection_name;
+        // let collection_name = &state.collection_name;
         let sender = &ctx.accounts.funder;
-        let reward_mint = &ctx.accounts.mint.to_account_info();
+        // let reward_mint = &ctx.accounts.mint.to_account_info();
 
         let transfer_instruction = Transfer {
             from: ctx.accounts.funder_ata.to_account_info(),
@@ -470,12 +481,7 @@ pub mod ember_bed {
         Ok(())
     }
 
-    pub fn redeem_fire(
-        ctx: Context<RedeemFire>,
-
-        _bump_fire: u8,
-        nfts_held: u8
-    ) -> Result<()> {
+    pub fn redeem_fire(ctx: Context<RedeemFire>, _bump_fire: u8, nfts_held: u8) -> Result<()> {
         let _collection_info_pda = &ctx.accounts.collection_info;
         let fire_info = &ctx.accounts.fire_info;
         let stake_status = &ctx.accounts.stake_status;
@@ -508,13 +514,18 @@ pub mod ember_bed {
             return Err(RedeemError::NotFireEligible.into());
         }
 
-        let fire_rate: u64 = relation * (BASE_RATE as u64) * LPS;
-        msg!("Rate Per Day x LAMPORTS_PER_SOL: {:?}", fire_rate);
+        let fire_rate: u64 = relation * (BASE_RATE as u64);
+        msg!("Fire Rate: {:?}", fire_rate);
 
-        let raw_rate_per_second = (fire_rate / 86400) as f32;
-        let rate_per_second: u64 = raw_rate_per_second.round() as u64;
+        let raw_rate_per_second = (fire_rate as f32) / (86400 as f32);
+        msg!("Raw Rate Per Second: {}", raw_rate_per_second);
+        let rate_per_second = (raw_rate_per_second * (LPS as f32)) as u64;
+        msg!("Rate per second: {}", rate_per_second);
 
         let staked_duration = (timestamp - stake_status.last_stake_redeem) as u64;
+        msg!("StakeDuration: {}", staked_duration);
+        let rewards_earned = rate_per_second * staked_duration;
+        msg!("Rewards Earned: {}", rewards_earned);
         if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
             ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
@@ -522,10 +533,10 @@ pub mod ember_bed {
         }
 
         let seeds = &[b"ebtreasury".as_ref(), b"fstate".as_ref(), &[_bump_fire]];
+
         let signer = &[&seeds[..]];
-
-        let rewards_earned: u64 = rate_per_second * staked_duration;
-
+        msg!("FIRE ACCOUNT: {}", ctx.accounts.fire_poa.key());
+        msg!("Fire account Balance: {}", fire_poa.amount.to_string());
         let transfer_instruction = Transfer {
             from: fire_poa.to_account_info(),
             to: user_reward_ata.to_account_info(),

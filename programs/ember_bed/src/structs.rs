@@ -169,22 +169,22 @@ pub struct FireRewardInfo {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String, _nft_collection_pubkey: Pubkey, _nft_mint_pubkey: Pubkey)]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String, _nft_collection_pubkey: String)]
 pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
         payer = funder,
         seeds = [reward_mint.key().as_ref(), _collection_name.as_ref(), b"state".as_ref()],
         bump,
-        space = std::mem::size_of::<CollectionRewardInfo>() + 8
+        space = std::mem::size_of::<CollectionRewardInfo>() + 64
     )]
     pub state_pda: Account<'info, CollectionRewardInfo>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub reward_mint: AccountInfo<'info>,
     #[account(mut)]
-    pub token_poa: Box<Account<'info, TokenAccount>>,
-    /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub nft_collection_address: AccountInfo<'info>,
+    pub token_poa: Account<'info, TokenAccount>,
+    // /// CHECK: This is not dangerous because we don't read or write to this account.
+    // pub nft_collection_address: AccountInfo<'info>,
     #[account(mut)]
     pub funder: Signer<'info>,
     #[account(mut)]
@@ -193,7 +193,7 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String , _new_manager:String)]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String , _new_manager:String , _collection_address: String)]
 pub struct UpdateStatePda<'info> {
     #[account(mut)]
     pub state_pda: Account<'info, CollectionRewardInfo>,
@@ -201,7 +201,7 @@ pub struct UpdateStatePda<'info> {
     pub reward_mint: AccountInfo<'info>,
     pub token_poa: Box<Account<'info, TokenAccount>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub nft_collection_address: AccountInfo<'info>,
+    // pub nft_collection_address: AccountInfo<'info>,
     #[account(mut)]
     pub funder: Signer<'info>,
     // #[account(mut)]
@@ -210,7 +210,7 @@ pub struct UpdateStatePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8)]
+#[instruction(_bump : u8, _nfts_held: u8)]
 pub struct InitializeFirePDA<'info> {
     #[account(
         init_if_needed,

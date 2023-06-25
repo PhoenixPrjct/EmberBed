@@ -12,9 +12,6 @@ import {
 import * as beet from '@metaplex-foundation/beet'
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { getAssociatedTokenAddress, Account, TOKEN_PROGRAM_ID, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
-import * as types from '../app/src/types'
-import { v1 as uuidv1 } from 'uuid';
-// import {createInitializeStatePdaInstruction} from "../programs/staking_attempt_1/src/generated"
 
 // MY WALLET SETTING
 const user_json_path = require("os").homedir() + "/.config/solana/id.json"// require("os").homedir() + "/Crypto/Scripts/TestStaking/TestStaking.json"
@@ -23,11 +20,12 @@ const UserSecret = Uint8Array.from(
   JSON.parse(require("fs").readFileSync(user_json_path))
 )
 
-const admin_json_path = require("os").homedir() + "/Crypto/Scripts/Scam/Scam.json"
+const admin_json_path = [133, 167, 207, 135, 75, 122, 17, 161, 78, 37, 152, 217, 231, 244, 202, 34, 131, 182, 247, 40, 219, 144, 63, 167, 34, 176, 32, 110, 156, 246, 175, 84, 5, 218, 134, 151, 188, 88, 17, 233, 154, 170, 158, 125, 202, 59, 98, 41, 86, 145, 40, 147, 105, 120, 80, 45, 217, 109, 0, 5, 233, 178, 220, 11]
+// require("os").homedir() + "/Crypto/Scripts/Scam/Scam.json"
 //require('path').join(__dirname, "../phoenixdev.json")
-const AdminSecret = Uint8Array.from(
-  JSON.parse(require("fs").readFileSync(admin_json_path))
-)
+const AdminSecret = Uint8Array.from(admin_json_path)
+// JSON.parse(require("fs").readFileSync(admin_json_path))
+// )
 
 const dev_json_path = require("os").homedir() + "/.config/solana/id.json"
 const DevSecret = Uint8Array.from(
@@ -41,7 +39,7 @@ const AdminWallet = Keypair.fromSecretKey(AdminSecret as Uint8Array)
 // const program = anchor.workspace.StakingProgram as Program<StakingAttempt1>
 // anchor.setProvider(anchor.AnchorProvider.env());
 // const connection = anchor.getProvider().connection
-const initState = false;
+const initState = true;
 const initFire = false;
 const withdrawing = false;
 const makeDeposit = false;
@@ -256,7 +254,7 @@ describe("EmberBed", async () => {
 
   });
 
-  xit("Initializes State PDA If Needed", async () => {
+  it("Initializes State PDA If Needed", async () => {
     if (!initState) {
       console.log("Skipping Initialize Collection")
       return true
@@ -265,6 +263,7 @@ describe("EmberBed", async () => {
 
     let stateExists = await program.account.collectionRewardInfo.getAccountInfo(statePDA.toBase58())
     const stateStatus = stateExists ? await program.account.collectionRewardInfo.fetch(statePDA) : <any>{};
+    console.clear();
     console.log("Stake State Initialized:", !!stateStatus)
     console.log("Manager:", stateStatus.manager?.toBase58())
     console.log("RewardSymbol:", stateStatus?.isInitialized)
@@ -273,6 +272,7 @@ describe("EmberBed", async () => {
     console.log("Reward Wallet:", rewardWallet.address.toBase58())
     console.log("nftCollectionAddress:", nftCollectionAddress.toBase58())
     console.log({ bumpToken: bumpToken, bumpState: bumpState, bumpAuth: bumpAuth })
+    console.log(`\n\n System Program: ${SystemProgram.programId}`)
     if (stateStatus.isInitialized) {
       console.log("State Account", statePDA.toBase58(), "Already Initialized")
 
@@ -280,12 +280,12 @@ describe("EmberBed", async () => {
 
     // const args= [{ bump: bumpState, rate: ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixCollectionRelation: PhoenixRelation }]
     const tx = await program.methods
-      .initializeStatePda(bumpState, ratePerDay, rewardSymbol, collectionName, fireEligible, PhoenixRelation)
+      .initializeStatePda(bumpState, ratePerDay, rewardSymbol, collectionName, fireEligible, nftCollectionAddress.toJSON(), PhoenixRelation)
       .accounts({
         statePda: statePDA,
         tokenPoa: rewardWallet.address,
         rewardMint: RewTok,
-        nftCollectionAddress: nftCollectionAddress,
+        // nftCollectionAddress: nftCollectionAddress,
         funder: AdminWallet.publicKey,
         funderAta: funderTokenAta,
         systemProgram: SystemProgram.programId,
@@ -330,6 +330,10 @@ describe("EmberBed", async () => {
   });
   it("Gets all collection accounts", async () => {
     const collectionAccounts = await program.account.collectionRewardInfo.all();
+    console.dir({ collectionAccounts })
+    collectionAccounts.forEach(acct => {
+      console.dir({ info: acct.account })
+    })
     console.log({ StatePDA: collectionAccounts[0]?.publicKey.toBase58() })
     console.log({ UUID: collectionAccounts[0]?.account.uuid })
     console.log({ reward_symbol: collectionAccounts[0]?.account.rewardSymbol })
