@@ -12,11 +12,11 @@ import {
     CollectionRewardInfoJSON, PhoenixRelation,
     PhoenixRelationKind, MutableTokenInfo, WalletStore
 } from 'src/types';
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router"
 import { useWallet } from 'solana-wallets-vue';
 import { refundTxFee } from 'src/helpers/collectionSubmission';
 
-const router = useRouter();
+const router = useRouter()
 const { wallet, api, connection, program } = useChainAPI();
 const $wallet = useWallet().wallet
 const { server_api } = useServerAPI();
@@ -49,13 +49,13 @@ const submissionStatus = ref({
 const collectionInfo = ref<CollectionInfo>({
     // rewardWallet: '',
     manager: '',
-    rewardMint: "REWTvQ7zqtfoedwsPGCX9TF59HvAoM76LobtzmPPpko",
-    collectionName: "TESTING",
-    collectionAddress: "CG4KDtfDDvYWP4ChqxKVLXjxjrg8VT28RoMpJgjYosFs",
-    ratePerDay: 1,
-    fireEligible: false,
+    rewardMint: "F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8",
+    collectionName: "TESTING_Founders",
+    collectionAddress: "4rbLs9EqZPNh2z2qkU5csWdGQALm24CEJft6tkEEd37R",
+    ratePerDay: 5,
+    fireEligible: true,
     phoenixRelation: null as unknown as PhoenixRelationKind,
-    rewardSymbol: "REW",
+    rewardSymbol: "TEST_FIRE",
     uuid: ""
 }) as Ref<CollectionRewardInfoJSON>
 const refundInfo = ref<{ pk: PublicKey | null, amount: number, eligible: boolean }>({ pk: null, amount: 0, eligible: false })
@@ -71,7 +71,7 @@ const refundInfo = ref<{ pk: PublicKey | null, amount: number, eligible: boolean
 
 
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
-  
+
     try {
         submissionStatus.value = {
             loading: true,
@@ -98,7 +98,8 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
 
             const { success, info } = valid
-            console.log(valid.success, info?.toJSON())
+            console.log(valid.success, info)
+            console.log(info)
             if (!success || !info) throw new Error(`Failed To Validate Collection Information`)
             const { kind } = info.phoenixRelation
 
@@ -112,10 +113,12 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
             refundInfo.value.eligible = true
             const paymentSig = await paidTx.sig
             submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
-            const initState = await api.value?.initStatePda(wallet.value!.publicKey, info)
+
+            const encoded_info = CollectionRewardInfo.fromJSON(info)
+            const initState = await api.value?.initStatePda(wallet.value!.publicKey, encoded_info)
             if (!initState || initState.error) throw new Error(`${initState?.error.message}`)
-            const { account, tx } = await initState
-            console.log({ tx, account })
+            const { pdas, tx } = await initState
+            console.log({ tx, collection: pdas?.collectionInfoPDA, rewardWallet: pdas?.rewardWallet })
             submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
         }
 

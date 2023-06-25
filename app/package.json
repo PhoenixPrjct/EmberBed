@@ -28,6 +28,8 @@
     "@solana/spl-token-registry": "^0.2.4574",
     "@solana/wallet-adapter-wallets": "^0.19.8",
     "@solana/web3.js": "^1.70.1",
+    "@types/vue": "^2.0.0",
+    "@types/vue-router": "^2.0.0",
     "axios": "^0.21.1",
     "body-parser": "^1.20.1",
     "concurrently": "^7.6.0",
@@ -44,7 +46,7 @@
     "solana-wallets-vue": "^0.6.0",
     "tweetnacl": "^1.0.3",
     "vue": "^3.0.0",
-    "vue-router": "^4.0.0"
+    "vue-router": "^4.2.2"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.2.1",

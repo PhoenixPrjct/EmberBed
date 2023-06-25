@@ -10,6 +10,7 @@ export interface InitializeStatePdaArgs {
   rewardSymbol: string
   collectionName: string
   fireEligible: boolean
+  nftCollectionPubkey: string
   phoenixCollectionRelation: string
 }
 
@@ -17,7 +18,6 @@ export interface InitializeStatePdaAccounts {
   statePda: PublicKey
   rewardMint: PublicKey
   tokenPoa: PublicKey
-  nftCollectionAddress: PublicKey
   funder: PublicKey
   funderAta: PublicKey
   systemProgram: PublicKey
@@ -29,6 +29,7 @@ export const layout = borsh.struct([
   borsh.str("rewardSymbol"),
   borsh.str("collectionName"),
   borsh.bool("fireEligible"),
+  borsh.str("nftCollectionPubkey"),
   borsh.str("phoenixCollectionRelation"),
 ])
 
@@ -40,11 +41,6 @@ export function initializeStatePda(
     { pubkey: accounts.statePda, isSigner: false, isWritable: true },
     { pubkey: accounts.rewardMint, isSigner: false, isWritable: false },
     { pubkey: accounts.tokenPoa, isSigner: false, isWritable: true },
-    {
-      pubkey: accounts.nftCollectionAddress,
-      isSigner: false,
-      isWritable: false,
-    },
     { pubkey: accounts.funder, isSigner: true, isWritable: true },
     { pubkey: accounts.funderAta, isSigner: false, isWritable: true },
     { pubkey: accounts.systemProgram, isSigner: false, isWritable: false },
@@ -58,6 +54,7 @@ export function initializeStatePda(
       rewardSymbol: args.rewardSymbol,
       collectionName: args.collectionName,
       fireEligible: args.fireEligible,
+      nftCollectionPubkey: args.nftCollectionPubkey,
       phoenixCollectionRelation: args.phoenixCollectionRelation,
     },
     buffer

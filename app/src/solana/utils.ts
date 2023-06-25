@@ -5,26 +5,23 @@ import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
     getOrCreateAssociatedTokenAccount,
-    ASSOCIATED_TOKEN_PROGRAM_ID,
     Account,
 } from "@solana/spl-token"
 import web3 = anchor.web3;
-import { EmberBed, Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeStateJSON, UserStakeInfo, RedeemRewardAccounts, RedeemFireAccounts, FireRewardInfo, FireRewardInfoFields } from '../types'
+import { EmberBed, Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeStateJSON, UserStakeInfo, RedeemRewardAccounts, RedeemFireAccounts, FireRewardInfo, FireRewardInfoFields, InitializeStatePdaArgs } from '../types'
 
 import {
     Metaplex,
     bundlrStorage,
     keypairIdentity,
-    associatedTokenProgram,
-
 } from "@metaplex-foundation/js"
-import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { getExplorerURL } from 'src/helpers';
 import { useAnchorWallet } from 'solana-wallets-vue';
 import { Ref } from 'vue';
 import { EBWallet } from 'src/dev/walletKPs';
 import { InitializeFirePdaAccounts, InitializeFirePdaArgs } from 'src/types/instructions/initializeFirePda';
-import { FIRE_INFO } from "src/helpers/constants"
+import { FIRE_INFO, FIRE_MINT_PUB } from 'src/helpers/constants';
+
 const wallet: Ref<AnchorWallet | undefined> = useAnchorWallet();
 
 export function getAPI(program: Program<EmberBed>) {
@@ -99,7 +96,7 @@ export function getAPI(program: Program<EmberBed>) {
         // Retrieve the user's account PDA and reward ATA
         const userAccountPDA = await getUserAccountPda(data.user);
         const userRewardAta = await getUserRewardAta(data.user, RewTok);
-
+        const userFireAta = await getUserRewardAta(data.user, FIRE_MINT_PUB.pub);
         // Retrieve the state PDA for the specified collection
         const statePDA = await getStatePda(RewTok, data.collectionName);
 
@@ -108,7 +105,8 @@ export function getAPI(program: Program<EmberBed>) {
 
         const userAccounts = {
             userRewardAta: userRewardAta,
-            userAccountPDA: userAccountPDA.pda
+            userAccountPDA: userAccountPDA.pda,
+            userFireAta: userFireAta
         };
 
         // Retrieve the reward wallet associated with the state PDA
@@ -151,14 +149,11 @@ export function getAPI(program: Program<EmberBed>) {
             const nftCollectionAddress = new PublicKey(data.nftColAddress);
             accounts = { ...accounts, nftCollectionAddress: nftCollectionAddress };
         }
-
         return accounts;
     }
 
     async function initializeFirePda(args: InitializeFirePdaArgs, accounts: InitializeFirePdaAccounts) {
         try {
-            console.log("Initializing Fire Account with Token:", accounts.rewardMint.toBase58());
-            console.log("Initializing Fire PDA:");
             Object.entries(accounts).map(([key, value]) => { console.log(`${key}: ${value.toBase58()}`); });
             const txPromise = await program.methods.initializeFirePda(args.bump).accounts(accounts).signers([EBWallet])
             const tx = await txPromise.rpc()
@@ -181,7 +176,6 @@ export function getAPI(program: Program<EmberBed>) {
             Object.entries(stateStatus).forEach(([key, value]) => {
                 if (typeof (value) !== "string" || typeof (value) !== "number") {
                     console.log(`${key}: ${JSON.stringify(value)}`)
-                    // console.log(`${key}: ${value.toBase58()}`)
                 } else {
                     console.log(`${key}: ${value}`)
                 }
@@ -228,8 +222,8 @@ export function getAPI(program: Program<EmberBed>) {
             const { statePDA, RewTok, stateBump, } = accounts;
             const rewardWallet = await getRewardWallet(RewTok, statePDA);
 
-            const tx = await program.methods.updateStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind, manager.toBase58(), uuid)
-                .accounts({ statePda: statePDA, rewardMint: RewTok, tokenPoa: rewardWallet.address, nftCollectionAddress: collectionAddress, funder: user, systemProgram: SystemProgram.programId })
+            const tx = await program.methods.updateStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind, manager.toBase58(), collectionAddress.toJSON(), uuid)
+                .accounts({ statePda: statePDA, rewardMint: RewTok, tokenPoa: rewardWallet.address, /*nftCollectionAddress: collectionAddress,*/ funder: user, systemProgram: SystemProgram.programId })
                 .signers([])
                 .rpc();
             const account = await CollectionRewardInfo.fetch(connection, statePDA);//await program.account.collectionRewardInfo.getAccountInfo(statePDA)
@@ -243,45 +237,56 @@ export function getAPI(program: Program<EmberBed>) {
 
     }
     async function initStatePda(user: web3.PublicKey, collectionInfo: CollectionRewardInfo) {
+
+        console.log(`\n\n*******************\n\n`)
+        console.dir(collectionInfo)
+
+
+        let rewMint = collectionInfo.rewardMint;
+        const { uuid, collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint } = collectionInfo;
+        if (typeof rewardMint === "string") {
+            rewMint = new PublicKey(collectionInfo.rewardMint)
+        }
+        const accounts = await getAccounts({ user, collectionName, rewardMint: rewMint.toBase58(), uuid: uuid ?? null });
+        const { statePDA, RewTok, stateBump, funderTokenAta } = accounts;
+        const rewardWallet = await getRewardWallet(RewTok, statePDA);
+        const nftCollectionAddress = new PublicKey(collectionAddress);
+
+        const stateExists = await program.account.collectionRewardInfo.getAccountInfo(statePDA.toBase58())
+        const stateStatus = stateExists ? await program.account.collectionRewardInfo.fetch(statePDA) : <any>{};
+        // if (stateStatus.isInitialized) {
+        //     console.log("State Account", statePDA.toBase58(), "Already Initialized")
+        //     return statePDA.toBase58();
+        // }
         try {
-
-            console.log(collectionInfo.collectionName)
-            const { uuid, collectionName, collectionAddress, ratePerDay, rewardSymbol, fireEligible, phoenixRelation, rewardMint } = collectionInfo;
-            const accounts = await getAccounts({ user, collectionName, rewardMint: rewardMint.toBase58(), uuid: uuid ?? null });
-            const { statePDA, RewTok, stateBump, funderTokenAta } = accounts;
-            const rewardWallet = await getRewardWallet(RewTok, statePDA);
-            const nftCollectionAddress = new PublicKey(collectionAddress);
-
-            const stateExists = await program.account.collectionRewardInfo.getAccountInfo(statePDA.toBase58())
-            const stateStatus = stateExists ? await program.account.collectionRewardInfo.fetch(statePDA) : <any>{};
-            // if (stateStatus.isInitialized) {
-            //     console.log("State Account", statePDA.toBase58(), "Already Initialized")
-            //     return statePDA.toBase58();
-            // }
             console.log({ statePDA: statePDA.toBase58(), stateBump, rewardWallet: rewardWallet.address.toBase58(), RewTok: RewTok.toBase58(), nftCollectionAddress: nftCollectionAddress.toBase58(), user: user.toBase58(), userATA: funderTokenAta.toBase58() })
-            const tx = await program.methods.initializeStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, phoenixRelation.kind).accounts({
-                statePda: statePDA,
-                tokenPoa: rewardWallet.address,
-                rewardMint: RewTok,
-                // authPda: authPDA,
-                nftCollectionAddress: nftCollectionAddress,
-                funder: user,
-                funderAta: funderTokenAta,
-                systemProgram: SystemProgram.programId,
-            }).signers([]).rpc();
 
-            const account = await CollectionRewardInfo.fetch(connection, statePDA);//await program.account.collectionRewardInfo.getAccountInfo(statePDA)
-
+            const tx = await program.methods
+                .initializeStatePda(stateBump, ratePerDay, rewardSymbol, collectionName, fireEligible, collectionAddress.toString(), phoenixRelation.kind)
+                .accounts({
+                    statePda: statePDA,
+                    tokenPoa: rewardWallet.address,
+                    rewardMint: RewTok,
+                    funder: user,
+                    funderAta: funderTokenAta,
+                    systemProgram: SystemProgram.programId,
+                }).signers([])
             console.dir({ tx })
+            await tx.rpc()
+            const account = await getCollectionInfo(statePDA)
+
             return { tx: tx, pdas: { collectionInfoPDA: statePDA.toBase58(), rewardWallet: rewardWallet.address.toBase58() }, account: account }
         } catch (e: any) {
+            console.log("Inside Try Block")
             console.log(e)
             return { error: e?.message }
         }
     };
-
+    async function getCollectionInfo(statePDA: PublicKey) {
+        const res = await CollectionRewardInfo.fetch(connection, statePDA)
+        return res
+    }
     async function stake(data: StakeAccounts): Promise<{ tx: string, stakeStatus: StakeStateJSON | null }> {
-        // const accounts = await getAccounts({ user, collectionName, rewardMint: nftMint })
         const { collectionRewardInfo } = data
         console.dir({ collectionRewardInfo })
         const tx = await program.methods.stake(collectionRewardInfo)
@@ -297,6 +302,8 @@ export function getAPI(program: Program<EmberBed>) {
         return { tx: tx, stakeStatus: stakeState }
     }
     async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, nftsHeld?: number, collectionName?: string) {
+        bumpFire = (await FIRE_INFO).FIRE_BUMP
+        console.log({ bumpFire, nftsHeld, collectionName })
         const fireTxPromise = program.methods.redeemFire(bumpFire, 0).accounts({ ...accounts })
         const fireTx = fireTxPromise;
         const sig = await fireTx.rpc();
@@ -331,13 +338,6 @@ export function getAPI(program: Program<EmberBed>) {
 
             const unstakeTxPromise = program.methods.unstake().accounts({ ...accounts })
 
-            // const unstakeTxPromise = program.methods.unstake().accounts({
-            //     ...accounts,
-            //     // *SYSTEM Variables
-            //     tokenProgram: TOKEN_PROGRAM_ID,
-            //     metadataProgram: METADATA_PROGRAM_ID,
-            //     systemProgram: SystemProgram.programId,
-            // });
             const unstakeTx = unstakeTxPromise;
             if (!unstakeTx) throw new Error('Promise Error')
             const sig = await unstakeTx.rpc();
@@ -354,12 +354,7 @@ export function getAPI(program: Program<EmberBed>) {
         }
 
     };
-    async function depositToFireAta() {
-        console.log('Hey')
-    };
-    async function depositToRewardAta() {
-        console.log('Hey')
-    };
+
     async function managerWithdrawal(user: PublicKey, collectionName: string, rewardMint: PublicKey, rawAmount: number, closeAta = false) {
         try {
             console.log({
@@ -397,8 +392,6 @@ export function getAPI(program: Program<EmberBed>) {
         updateCollectionRewardPDA,
         initializeFirePda,
         initStatePda,
-        depositToFireAta,
-        depositToRewardAta,
         managerWithdrawal,
         stake,
         redeemFire,

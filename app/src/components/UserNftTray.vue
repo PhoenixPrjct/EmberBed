@@ -14,9 +14,9 @@ import { useRoute, useRouter } from 'vue-router';
 import UserNftCard from "src/components/UserNftCard.vue"
 import { PROGRAM_ID as METADATA_PROGRAM_ID } from "@metaplex-foundation/mpl-token-metadata"
 import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
-import { SystemProgram } from '@solana/web3.js';
+import { SystemProgram, PublicKey } from '@solana/web3.js';
 import { chargeFeeTx, getStakingFee, getExplorerURL } from 'src/helpers';
-import { FIRE_MINT_PUB } from "src/helpers/constants";
+import { FIRE_INFO, FIRE_MINT_PUB } from "src/helpers/constants";
 
 const { notify } = useQuasar();
 const route = useRoute();
@@ -217,21 +217,22 @@ async function redeem(nft: EBNft, ebCollection: { loaded: boolean, info: Collect
 async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) {
     try {
         if (!ebCollection.info) throw new Error('Collection Data is Incorrect, Please Refresh and try again')
-        if (!ebCollection.info.fireEligible) throw new Error('This collection is not eligible for Fire Rewards, talk to your community leaders');
+        console.log({ redeemFire_Collection_Address: ebCollection.info.collectionAddress.toJSON() });
         stakingAction.value = { message: 'Accounts Checkout', percent: 0.25 }
-        const accounts = await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint, isFire: true });
+        const accounts = await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint });
         if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
         const redeemAccts: RedeemFireAccounts = {
+            firePoa: (await FIRE_INFO).FIRE_POA,
             user: wallet.value!.publicKey,
-            collectionInfo: accounts.statePDA,
-            fireInfo: accounts.firePda!,
-            firePoa: accounts.firePoa!,
+            collectionInfo: new PublicKey(ebCollection.info.uuid),
+            fireInfo: (await FIRE_INFO).FIRE_PDA,
             stakeStatus: accounts.stakeStatusPda,
             fireMint: FIRE_MINT_PUB.pub,
             tokenProgram: TOKEN_PROGRAM_ID,
             userRewardAta: accounts.userFireAta!,
             systemProgram: SystemProgram.programId
         }
+        console.dir({ collectionInfo: redeemAccts.collectionInfo.toJSON(), fireInfo: redeemAccts.fireInfo.toJSON(), firePOA: redeemAccts.firePoa.toJSON() })
         const bumpFire = accounts.fireBump!
         const collectionName = ebCollection.info.collectionName
         stakingAction.value = { message: `Redeeming for $FIRE`, percent: 0.75 }

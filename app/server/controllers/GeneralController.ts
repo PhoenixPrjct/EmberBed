@@ -33,7 +33,7 @@ export const GC = {
                 const hashListObj = { [currentFile]: [...hashlist] }
                 // Add the hashlist from this file to the combined hashlist
                 combinedHashlist = [...combinedHashlist, hashListObj]
-                console.log(hashListObj)
+                console.log({hashListObj})
                 // Search for the string in the combined hashlist
                 combinedHashlist.map((collection, i) => {
                     if (collection[currentFile]?.includes(tokenMint)) {
@@ -41,7 +41,7 @@ export const GC = {
                     }
                 })
             }
-            if (!file) return {status: 200, r}
+            if (!file) return { status: 204, response: 'No Token Address Found' }
             return { status: 200, response: file };
         } catch (err: any) {
             console.log(err)
@@ -50,9 +50,9 @@ export const GC = {
     },
     updateRelations: async (data: { auth: string, relationship: PhoenixRelationKind['kind'], address: string }) => {
         try {
-            // console.log(data.auth)
             const { relationship, auth, address } = data
-            if (data.auth !== process.env.SERVER_AUTH) throw new Error('Authentication Failed')
+            console.log(auth)
+            if (auth !== process.env.SERVER_AUTH) throw new Error('Authentication Failed')
             const relations = await readFileSync(path.join(__dirname, '../data/Relations.json'), 'utf-8');
             const relationObj = JSON.parse(relations)
 

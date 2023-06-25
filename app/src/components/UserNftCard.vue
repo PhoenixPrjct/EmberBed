@@ -281,12 +281,12 @@ watchEffect(async () => {
                 <q-card-actions class="flex justify-around">
                     <q-btn :style="/*theme?.colors.accent ? `background-color:${theme?.colors.accent}` : */void 0"
                         :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
-                        v-if="showUnstakeButton && ebCollection.info?.fireEligible" icon="&#x1F525;"
+                        v-if="showUnstakeButton && ebCollection.info?.fireEligible && !forceUnstake" icon="&#x1F525;"
                         :label="$q.screen.gt.md ? 'Redeem $FIRE' : void 0" @click="handleRedeemFire(nft, ebCollection)" />
                     <q-btn :style="/*theme ? `background-color:${theme?.colors.accent}` :*/ void 0"
                         :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark
-                        v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE'" icon="&#x1FA99;"
-                        :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : void 0"
+                        v-if="showUnstakeButton && ebCollection.info?.rewardSymbol !== '$FIRE' && !forceUnstake"
+                        icon="&#x1FA99;" :label="$q.screen.gt.md ? `Redeem ${ebCollection.info?.rewardSymbol}` : void 0"
                         @click="handleRedeemRewards(nft, ebCollection)" />
 
                     <q-btn :style="/*theme ? `background-color:${theme?.colors.accent}` : */void 0"
@@ -296,8 +296,9 @@ watchEffect(async () => {
                     <span class="action-span action-btn" v-if="showUnstakeButton">
                         <q-checkbox id="force" dark keep-color v-model="forceUnstake" />
                         <label for="force">Force Unstake</label>
-
                     </span>
+                    <div v-if="forceUnstake" class="text-center" style="color:red">THIS WILL FORFEIT ALL ACCRUED TOKENS
+                    </div>
                     <q-btn :style="theme ? `background-color:${theme?.colors.accent}` : void 0"
                         :class="$q.screen.gt.md ? 'action-btn' : 'mini-action-btn'" dense dark v-if="showStakeButton"
                         style="flex:0 0 90%" label="Stake" @click="handleStakeNft(nft, ebCollection)" />

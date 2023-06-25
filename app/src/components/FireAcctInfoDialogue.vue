@@ -9,7 +9,7 @@ const fireAcct = ref();
 watchEffect(async () => {
     if (!fireAcct.value && program.value) {
         const fireAcctRaw = await (await program.value.account.fireRewardInfo.all())[0];
-        fireAcct.value = Object.entries(fireAcctRaw.account);
+        fireAcct.value = Object.entries({ ...fireAcctRaw.account, pda: fireAcctRaw.publicKey.toJSON() });
     }
 })
 </script>
@@ -18,7 +18,8 @@ watchEffect(async () => {
         <q-card-title class="title text-bold" center>Fire Reward Info</q-card-title>
         <section v-if="fireAcct">
             <div v-for="entry in fireAcct" :key="entry">
-                <q-item v-if="isRelevant(entry[0])">
+                <!-- <q-item v-if="isRelevant(entry[0])"> -->
+                <q-item>
                     <q-item-section>
                         <div class="text-bold">
                             {{ camelCaseToTitleCase(entry[0]) }}:

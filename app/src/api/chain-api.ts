@@ -5,7 +5,7 @@ import { Provider, Program } from '@project-serum/anchor'
 import { createGlobalState } from '@vueuse/core'
 import * as anchor from '@project-serum/anchor';
 import web3 = anchor.web3;
-import { IDL } from '../solana/types/ember_bed'
+import { IDL } from '../types/ember_bed'
 import { getAPI } from '../solana/utils'
 import { AnchorWallet, EmberBed } from 'src/types'
 import { ProgramWallet } from 'src/dev/walletKPs'

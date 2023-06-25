@@ -301,11 +301,6 @@ export type EmberBed = {
                 "path": "reward_mint"
               },
               {
-                "kind": "arg",
-                "type": "string",
-                "path": "_collection_name"
-              },
-              {
                 "kind": "const",
                 "type": "string",
                 "value": "state"
@@ -321,11 +316,6 @@ export type EmberBed = {
         {
           "name": "tokenPoa",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -366,6 +356,10 @@ export type EmberBed = {
           "type": "bool"
         },
         {
+          "name": "nftCollectionPubkey",
+          "type": "string"
+        },
+        {
           "name": "phoenixCollectionRelation",
           "type": "string"
         }
@@ -386,11 +380,6 @@ export type EmberBed = {
         },
         {
           "name": "tokenPoa",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
           "isMut": false,
           "isSigner": false
         },
@@ -432,6 +421,10 @@ export type EmberBed = {
         },
         {
           "name": "newManager",
+          "type": "string"
+        },
+        {
+          "name": "nftCollectionPubkey",
           "type": "string"
         },
         {
@@ -1288,11 +1281,6 @@ export const IDL: EmberBed = {
                 "path": "reward_mint"
               },
               {
-                "kind": "arg",
-                "type": "string",
-                "path": "_collection_name"
-              },
-              {
                 "kind": "const",
                 "type": "string",
                 "value": "state"
@@ -1308,11 +1296,6 @@ export const IDL: EmberBed = {
         {
           "name": "tokenPoa",
           "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
-          "isMut": false,
           "isSigner": false
         },
         {
@@ -1353,6 +1336,10 @@ export const IDL: EmberBed = {
           "type": "bool"
         },
         {
+          "name": "nftCollectionPubkey",
+          "type": "string"
+        },
+        {
           "name": "phoenixCollectionRelation",
           "type": "string"
         }
@@ -1373,11 +1360,6 @@ export const IDL: EmberBed = {
         },
         {
           "name": "tokenPoa",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
           "isMut": false,
           "isSigner": false
         },
@@ -1419,6 +1401,10 @@ export const IDL: EmberBed = {
         },
         {
           "name": "newManager",
+          "type": "string"
+        },
+        {
+          "name": "nftCollectionPubkey",
           "type": "string"
         },
         {

@@ -11,13 +11,14 @@ export async function validateCollectionInfo(
     collectionInfo: CollectionRewardInfoJSON
 ) {
     try {
-        Object.entries(collectionInfo).map((val, key) => { console.log(val[0], typeof val[1]) });
+        Object.entries(collectionInfo).map((val) => { console.log(val[0], val[1], typeof val[1]) });
         const info: CollectionRewardInfo = CollectionRewardInfo.fromJSON(collectionInfo);
-        console.log('INFO:', info.toJSON())
-        await info.toJSON()
-        return { success: true, info: info }
+        console.log('INFO:', await info.toJSON())
+        const res = await info.toJSON()
+        console.log({ res })
+        return { success: true, info: res }
     } catch (err: any) {
-        return { success: false, err: err.message };
+        return { success: false, err: err };
     }
 }
 
@@ -119,7 +120,6 @@ export async function chargeFeeTx(user: PublicKey, amount: number) {
         console.log({ sig })
         console.log({ latestBlockHash })
         const confirmation = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed');
-        console.dir(confirmation)
         if (!confirmation.value.err) {
             console.log(`Successfully validated signature \n \n ${sig}`)
             return { success: true, sig: sig }
@@ -159,7 +159,7 @@ export async function refundTxFee(user: PublicKey, amount: number) {
         if (!sig) throw new Error('Transaction failed: ' + JSON.stringify(sig))
         console.log({ sig })
 
-        const confirmation = await connection.confirmTransaction({ signature: JSON.stringify(sig), blockhash, lastValidBlockHeight }, 'confirmed');
+        const confirmation = await connection.confirmTransaction({ signature: sig, blockhash, lastValidBlockHeight }, 'confirmed');
         console.dir(confirmation)
         if (!confirmation.value.err) {
             console.log(`Successfully refunded tx \n \n ${sig}`)

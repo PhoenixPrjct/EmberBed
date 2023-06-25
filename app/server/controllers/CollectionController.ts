@@ -109,9 +109,7 @@ export const CC = {
     getByPDA: async (pda: string) => {
         try {
             const collections = readdirSync(join(__dirname, '../collections'));
-            console.log("GetPDA Collections")
-            console.log(collections)
-            console.log({ pda })
+           console.log({ pda })
 
             if (!collections.includes(`${pda}.json`)) throw new Error('Collection Not Found')
             const data = readFileSync(join(__dirname, `../collections/${pda}.json`), 'utf-8');

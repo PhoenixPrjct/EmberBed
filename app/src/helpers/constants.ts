@@ -27,10 +27,10 @@ async function getFireRewardWallet(FIRE_MINT: PublicKey, FIRE_PDA: PublicKey) {
     console.log({ rewardWallet })
     return rewardWallet
 }
-async function getFireTokenAta(FireTok: PublicKey = getFireMintPub()) {
-    const fireTokenATA = await getAssociatedTokenAddress(FireTok, EBWallet.publicKey);
-    return fireTokenATA
-}
+// async function getFireTokenAta(FireTok: PublicKey = getFireMintPub()) {
+// const fireTokenATA = await getAssociatedTokenAddress(FireTok, EBWallet.publicKey);
+// return fireTokenATA
+// }
 
 
 async function initializeFirePdaAccounts() {
@@ -39,20 +39,20 @@ async function initializeFirePdaAccounts() {
     const FIRE_PDA = firePdaInfo.pda;
     const FIRE_BUMP = firePdaInfo.bump;
     const FIRE_MINT = await getFireMintPub();
-    const FIRE_ATA = await getFireTokenAta();
+    // const FIRE_ATA = await getFireTokenAta();
     const FIRE_POA = (await getFireRewardWallet(FIRE_MINT, FIRE_PDA)).address;
     const FIRE_ACCTS: InitializeFirePdaAccounts = {
         firePda: FIRE_PDA,
         rewardMint: FIRE_MINT,
         tokenPoa: FIRE_POA,
         funder: FIRE_FUNDER,
-        funderAta: FIRE_ATA,
+        // funderAta: FIRE_ATA,
         systemProgram: SystemProgram.programId,
-    };
+    } as InitializeFirePdaAccounts;
     const FIRE_ARGS: InitializeFirePdaArgs = { bump: FIRE_BUMP };
 
 
-    return { FIRE_ACCTS, FIRE_ARGS, FIRE_BUMP, FIRE_PDA, FIRE_MINT, FIRE_ATA, FIRE_POA, FIRE_FUNDER };
+    return { FIRE_ACCTS, FIRE_ARGS, FIRE_BUMP, FIRE_PDA, FIRE_MINT, FIRE_POA, FIRE_FUNDER };
 }
 
 
