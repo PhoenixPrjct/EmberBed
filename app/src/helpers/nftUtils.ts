@@ -61,7 +61,7 @@ async function getNftMeta(uri: string, mint: string) {
         return null;
     }
 }
-export async function getNftsInWallet(wallet: PublicKey) {
+export async function getNftsInWallet(wallet: PublicKey): Promise<{ ebNfts: EBNft[], other: any[] }> {
     console.log("getNftsInWallet", wallet.toBase58())
     const publicAddress = wallet.toBase58();
 
@@ -102,7 +102,7 @@ export async function getNftsInWallet(wallet: PublicKey) {
     });
 
     const nfts = await Promise.all(nftsPromises);
-    const ebnfts = nfts.filter((nft) => nft?.ebCollection);
+    const ebnfts = nfts.filter((nft) => nft?.ebCollection).map((obj) => { return { ...obj } });
     const otherNfts = nfts.filter((nft) => !nft?.ebCollection);
     return { ebNfts: ebnfts, other: otherNfts };
 

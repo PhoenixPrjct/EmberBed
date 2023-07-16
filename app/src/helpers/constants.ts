@@ -9,10 +9,10 @@ const programID = new PublicKey(EmberBedAddress);
 const connection = new Connection(getConnection());
 
 function getFireMintPub() {
-    if (process.env.NODE_ENV !== 'production') {
-        return new PublicKey('F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8');
-    }
-    return new PublicKey('F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw');
+    // if (process.env.NODE_ENV !== 'production') {
+    return new PublicKey('F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8');
+    // }
+    // return new PublicKey('F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw');
 }
 async function getFirePda(): Promise<{ pda: PublicKey, bump: number }> {
     const [pda, bump] = await PublicKey.findProgramAddressSync(
@@ -23,6 +23,7 @@ async function getFirePda(): Promise<{ pda: PublicKey, bump: number }> {
     return { pda, bump };
 }
 async function getFireRewardWallet(FIRE_MINT: PublicKey, FIRE_PDA: PublicKey) {
+    console.log({ FIRE_MINT, FIRE_PDA }, "getFireRewardWallet");
     const rewardWallet = await getOrCreateAssociatedTokenAccount(connection, EBWallet, FIRE_MINT, FIRE_PDA, true)
     console.log({ rewardWallet })
     return rewardWallet

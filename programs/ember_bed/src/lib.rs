@@ -139,24 +139,29 @@ pub mod ember_bed {
             &[bump_state],
         ];
         let signer = &[&seeds[..]];
-        // msg!("Reward Wallet: {:?}", reward_wallet.key());
-
-        let rate_per_day: u64 = (state.rate_per_day as u64) * LPS;
+        let day = 86400;
+        msg!("Reward Wallet: {:?}", reward_wallet.key());
+        msg!("Reward Mint: {:?}", reward_mint.key());
+        // let rate_per_day: u64 = (state.rate_per_day as u64) * LPS;
         // msg!("Rate per day: {:?}", state.rate_per_day);
         // msg!("Rate Per Day x LAMPORTS_PER_SOL: {:?}", rate_per_day);
 
-        let raw_rate_per_second = (rate_per_day / 86400) as f32;
-        let rate_per_second: u64 = raw_rate_per_second.round() as u64;
-
+        // let raw_rate_per_second = (state.rate_per_day / 86400) as f32;
+        // msg!("Raw Rate Per Second: {:?}", raw_rate_per_second);
+        let rate_per_second = (state.rate_per_day as f32) / (day as f32);
+        msg!("rate_per_second: {:?}", rate_per_second);
+        let staked_duration = 762866 as f32;
+        let reward_earned = (rate_per_second * staked_duration) as u64;
+        msg!("Rewards Earned: {:?}", reward_earned);
         let staked_duration = (timestamp - stake_status.last_stake_redeem) as u64;
         if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
             ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
             return Ok(());
         }
-        // msg!("Seconds since last redeem: {}", staked_duration);
-        let rewards_earned: u64 = rate_per_second * staked_duration;
-        msg!("Rewards earned: {:?}", rewards_earned);
+        msg!("Seconds since last redeem: {}", staked_duration);
+        // let rewards_earned: u64 = (raw_rate_per_second * (staked_duration as f32)) as u64;
+        // msg!("Rewards earned: {:?}", rewards_earned);
         let transfer_instruction = Transfer {
             from: reward_wallet.to_account_info(),
             to: ctx.accounts.user_reward_ata.to_account_info(),
@@ -168,7 +173,7 @@ pub mod ember_bed {
         ).with_signer(signer);
 
         msg!("Start transfer");
-        anchor_spl::token::transfer(cpi_ctx, rewards_earned)?;
+        anchor_spl::token::transfer(cpi_ctx, (reward_earned as u64) * LPS)?;
         msg!("Successfully Transferred");
         ctx.accounts.stake_status.last_stake_redeem = timestamp;
         msg!("Last Redeem Set to {}", timestamp);
@@ -519,12 +524,12 @@ pub mod ember_bed {
 
         let raw_rate_per_second = (fire_rate as f32) / (86400 as f32);
         msg!("Raw Rate Per Second: {}", raw_rate_per_second);
-        let rate_per_second = (raw_rate_per_second * (LPS as f32)) as u64;
-        msg!("Rate per second: {}", rate_per_second);
+        // let rate_per_second = (raw_rate_per_second * (LPS as f32)) as u64;
+        // msg!("Rate per second: {}", rate_per_second);
 
-        let staked_duration = (timestamp - stake_status.last_stake_redeem) as u64;
+        let staked_duration = (timestamp - stake_status.last_stake_redeem) as f32;
         msg!("StakeDuration: {}", staked_duration);
-        let rewards_earned = rate_per_second * staked_duration;
+        let rewards_earned = (raw_rate_per_second * staked_duration) as u64;
         msg!("Rewards Earned: {}", rewards_earned);
         if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
@@ -535,8 +540,9 @@ pub mod ember_bed {
         let seeds = &[b"ebtreasury".as_ref(), b"fstate".as_ref(), &[_bump_fire]];
 
         let signer = &[&seeds[..]];
-        msg!("FIRE ACCOUNT: {}", ctx.accounts.fire_poa.key());
-        msg!("Fire account Balance: {}", fire_poa.amount.to_string());
+        msg!("Fire POA: {}", fire_poa.key());
+        msg!("FIRE ACCOUNT Balance: {}", ctx.accounts.fire_poa.amount.to_string());
+        msg!("Fire Mint {}:", fire_info.reward_mint.key());
         let transfer_instruction = Transfer {
             from: fire_poa.to_account_info(),
             to: user_reward_ata.to_account_info(),

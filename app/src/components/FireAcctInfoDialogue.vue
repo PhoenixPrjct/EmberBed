@@ -8,6 +8,8 @@ const fireAcct = ref();
 
 watchEffect(async () => {
     if (!fireAcct.value && program.value) {
+        // const collections = await (await program.value.account.collectionRewardInfo.all());
+        // collections.forEach(collection => console.dir({ Name: collection.account.collectionName, Mint: collection.account.rewardMint, Reward_Wallet: collection.account.rewardWallet }));
         const fireAcctRaw = await (await program.value.account.fireRewardInfo.all())[0];
         fireAcct.value = Object.entries({ ...fireAcctRaw.account, pda: fireAcctRaw.publicKey.toJSON() });
     }

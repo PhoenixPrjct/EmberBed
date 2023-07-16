@@ -136,7 +136,7 @@ async function generateSeedInfo(name: "Evo" | "Founder" | "Member" | "Saved") {
     return { ...seed, statePda: pda }
 }
 async function getFireInfo() {
-    const rewardMint = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
+    const rewardMint = new PublicKey("F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8")
     const FireInfo = await PublicKey.findProgramAddressSync(
         [Buffer.from("ebtreasury"), Buffer.from("fstate")],
         types.PROGRAM_ID
@@ -151,6 +151,7 @@ async function getFireInfo() {
 
 async function generateFireAccount(name = "Fire") {
     const { tokenPoa, rewardMint, firePda, fireBump, funderAta } = await getFireInfo()
+    console.log({ tokenPoa, rewardMint, firePda, fireBump, funderAta })
     const accounts: types.InitializeFirePdaAccounts = {
         firePda,
         rewardMint,
@@ -164,11 +165,11 @@ async function generateFireAccount(name = "Fire") {
     }
     const exists = await connection.getAccountInfo(firePda)
     console.log({ exists: (exists) })
-    if (exists) {
-        console.log("PDA already exists")
-        console.log({ pda: firePda.toBase58(), manager: EBWallet.publicKey.toBase58(), collection: "EmberBed", reward_wallet: tokenPoa.address.toBase58(), vca: "" })
-        return { name: "fire", sig: firePda.toBase58() };
-    }
+    // if (exists) {
+    //     console.log("PDA already exists")
+    //     console.log({ pda: firePda.toBase58(), manager: EBWallet.publicKey.toBase58(), collection: "EmberBed", reward_wallet: tokenPoa.address.toBase58(), vca: "" })
+    //     return { name: "fire", sig: firePda.toBase58() };
+    // }
     const ix = types.initializeFirePda(args, accounts);
     let blockhash = await connection
         .getLatestBlockhash()
