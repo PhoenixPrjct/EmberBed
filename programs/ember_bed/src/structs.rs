@@ -68,11 +68,11 @@ pub struct RedeemReward<'info> {
     pub reward_wallet: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        seeds = [reward_mint.key.as_ref(), collection_name.as_ref(), b"state".as_ref()],
+        seeds = [reward_mint.to_account_info().key.as_ref(), collection_name.as_ref(), b"state".as_ref()],
         bump,)]
     pub collection_reward_info: Account<'info, CollectionRewardInfo>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub reward_mint: AccountInfo<'info>,
+    pub reward_mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
     // pub metadata_program: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,

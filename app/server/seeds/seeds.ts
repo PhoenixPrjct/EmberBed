@@ -151,7 +151,7 @@ async function getFireInfo() {
 
 async function generateFireAccount(name = "Fire") {
     const { tokenPoa, rewardMint, firePda, fireBump, funderAta } = await getFireInfo()
-    console.log({ tokenPoa, rewardMint, firePda, fireBump, funderAta })
+    console.log({ tokenPoa: tokenPoa.address.toBase58(), mint: rewardMint.toBase58(), firePda: firePda.toBase58(), bump: fireBump, funderAta: funderAta })
     const accounts: types.InitializeFirePdaAccounts = {
         firePda,
         rewardMint,

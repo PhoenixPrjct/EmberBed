@@ -48,13 +48,13 @@ watchEffect(async () => {
 
             <section class="section">
                 <div class="flex justify-around">
-                    <!-- <q-item> -->
-                    <!-- <q-item-section style="background-color:#1d1d1d50">
-                                        <h5 style="color:white">
-                                            {{ pdaInfo?.collectionName }}
-                                        </h5>
-                                    </q-item-section> -->
-                    <!-- </q-item> -->
+                    <q-item>
+                        <q-item-section style="background-color:#1d1d1d50">
+                            <h5 style="color:white">
+                                {{ pdaInfo }}
+                            </h5>
+                        </q-item-section>
+                    </q-item>
                     <span class="chips special">
                         <q-chip dark square :style="styles.chips" class="special"
                             :label="(dbInfo?.hashlist.length && dbInfo?.hashlist.length > 0) ? `Size: ${dbInfo?.hashlist.length}` : 'Size: Not Specified'" />

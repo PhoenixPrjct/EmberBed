@@ -5,7 +5,7 @@ import { useChainAPI } from 'src/api/chain-api';
 import CollectionCard from './CollectionCard.vue';
 
 import { ProgramAccount } from '@project-serum/anchor';
-import { EmberBed } from 'src/solana/types/ember_bed';
+import { EmberBed } from 'src/types/ember_bed'
 import { CollectionRewardInfoJSON } from 'src/types';
 
 type OnChainInfo = CollectionRewardInfoJSON & { statePDA: PublicKey }

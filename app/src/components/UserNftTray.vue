@@ -41,7 +41,9 @@ const stakingAction = ref<{ message: string, percent: number }>({ message: 'No M
 async function stakeNft(nft: EBNft, ebCollection: { loaded: boolean, info: CollectionRewardInfo | null }) {
     try {
         stakingAction.value = { message: 'Getting Accounts', percent: .1 }
-        const accounts = await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint });
+        console.clear()
+        console.log({ rewardMint: ebCollection.info?.rewardMint.toBase58(), colectionName: ebCollection.info?.collectionName })
+        const accounts = await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: ebCollection.info!.collectionName, rewardMint: ebCollection.info!.rewardMint.toBase58(), nftMint: nft.mint });
         console.log(`StatePDA ${accounts?.statePDA} | ebCollection ${nft.ebCollection}`)
         if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
         stakingAction.value = { message: 'Accounts All Good, calling EmberBed Program', percent: .5 }
@@ -221,7 +223,7 @@ async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: Col
         stakingAction.value = { message: 'Accounts Checkout', percent: 0.25 }
         const accounts = await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: ebCollection.info.collectionName, rewardMint: ebCollection.info.rewardMint.toBase58(), nftMint: nft.mint });
         if (!accounts) throw new Error('Accounts Validation Failed, Please Refresh The Page')
-        console.log({ POA: (await FIRE_INFO).FIRE_POA.toJSON(), REWARD_WALLET: (await FIRE_INFO).FIRE_MINT.toJSON() });
+        console.log({ POA: (await FIRE_INFO).FIRE_POA.toJSON(), REWARD_WALLET: (await FIRE_INFO).FIRE_PDA.toJSON() });
         const redeemAccts: RedeemFireAccounts = {
             firePoa: (await FIRE_INFO).FIRE_POA,
             user: wallet.value!.publicKey,
@@ -234,23 +236,23 @@ async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: Col
             systemProgram: SystemProgram.programId
         }
         console.dir({ collectionInfo: redeemAccts.collectionInfo.toJSON(), fireInfo: redeemAccts.fireInfo.toJSON(), firePOA: redeemAccts.firePoa.toJSON() })
-        // const bumpFire = accounts.fireBump!
-        // const collectionName = ebCollection.info.collectionName
-        // stakingAction.value = { message: `Redeeming for $FIRE`, percent: 0.75 }
-        // const redeemTx = await api.value?.redeemFire(redeemAccts, bumpFire, 0, collectionName);
-        // if (!redeemTx) throw new Error('TX Failed, Please Refresh The Page');
-        // stakingAction.value = { message: `Complete`, percent: 1 }
-        // notify({
-        //     group: 'staking',
-        //     type: 'success',
-        //     icon: 'grade',
-        //     color: 'accent',
-        //     message: `Redeemed ${ebCollection.info.rewardSymbol}`,
-        //     caption: getExplorerURL(redeemTx),
-        //     position: 'top',
-        //     timeout: 10000
-        // })
-        // stakingAction.value = { message: '', percent: 0 }
+        const bumpFire = accounts.fireBump!
+        const collectionName = ebCollection.info.collectionName
+        stakingAction.value = { message: `Redeeming for $FIRE`, percent: 0.75 }
+        const redeemTx = await api.value?.redeemFire(redeemAccts, bumpFire, 0, collectionName);
+        if (!redeemTx) throw new Error('TX Failed, Please Refresh The Page');
+        stakingAction.value = { message: `Complete`, percent: 1 }
+        notify({
+            group: 'staking',
+            type: 'success',
+            icon: 'grade',
+            color: 'accent',
+            message: `Redeemed ${ebCollection.info.rewardSymbol}`,
+            caption: getExplorerURL(redeemTx),
+            position: 'top',
+            timeout: 10000
+        })
+        stakingAction.value = { message: '', percent: 0 }
         return true
 
     } catch (err: any) {
@@ -290,11 +292,7 @@ watchEffect(async () => {
         }
         nfts.value.loaded = true;
     }
-
     nfts.value.loading = !nfts.value.loaded;
-
-
-
 })
 
 </script>

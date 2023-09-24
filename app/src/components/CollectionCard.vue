@@ -41,6 +41,7 @@ const collectionInfo = ref(_collectionInfo.value?.toJSON());
 
 
 watchEffect(async () => {
+    console.log({ collectionPDA: collectionRewardPDA.value.toBase58() })
     if (!collectionInfo.value && _collectionInfo.value) {
         console.log({ CollectionRewardInfo: _collectionInfo.value })
         collectionInfo.value = _collectionInfo.value.toJSON();

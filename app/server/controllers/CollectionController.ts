@@ -26,9 +26,30 @@ interface CollectionFile {
     reward_wallet: string;
     name: string;
     hashlist: string[];
+    rewardMint: string;
     style?: CollectionStyle;
 }
 
+// class CollectionFile {
+//     pda: string;
+//     collection_size?: number;
+//     manager: string;
+//     vca?: string;
+//     name: string;
+//     reward_wallet: string;
+//     hashlist: string[];
+//     style?: CollectionStyle;
+
+//     constructor(pda: string, manager: string, name: string, reward_wallet: string, hashlist: string[], vca?: string, collection_size?: number, style?: CollectionStyle) {
+//         this.pda = pda;
+//         this.manager = manager;
+//         this.vca = vca;
+//         this.name = name;
+//         this.hashlist = hashlist;
+//         this.style = style;
+//         this.reward_wallet = reward_wallet;
+//         this.collection_size = collection_size;
+//     }
 class CollectionFile {
     pda: string;
     collection_size?: number;
@@ -38,8 +59,9 @@ class CollectionFile {
     reward_wallet: string;
     hashlist: string[];
     style?: CollectionStyle;
+    rewardMint: string; // Added rewardMint as a string property
 
-    constructor(pda: string, manager: string, name: string, reward_wallet: string, hashlist: string[], vca?: string, collection_size?: number, style?: CollectionStyle) {
+    constructor(pda: string, manager: string, name: string, reward_wallet: string, hashlist: string[], vca?: string, collection_size?: number, style?: CollectionStyle, rewardMint?: string) {
         this.pda = pda;
         this.manager = manager;
         this.vca = vca;
@@ -48,9 +70,9 @@ class CollectionFile {
         this.style = style;
         this.reward_wallet = reward_wallet;
         this.collection_size = collection_size;
+        this.rewardMint = rewardMint || ""; // Initialize rewardMint to an empty string if not provided
     }
-
-    static toDB(colFile: { pda: string, manager: string, name: string, reward_wallet: string, hashlist?: string[], vca?: string, style?: CollectionStyle }) {
+    static toDB(colFile: { pda: string, manager: string, name: string, reward_wallet: string, rewardMint: string, hashlist?: string[], vca?: string, style?: CollectionStyle }) {
         console.log({ ColFile: colFile.pda })
         let data: CollectionFile = { ...colFile, hashlist: [] }
         if (colFile.hashlist) {
@@ -109,7 +131,7 @@ export const CC = {
     getByPDA: async (pda: string) => {
         try {
             const collections = readdirSync(join(__dirname, '../collections'));
-           console.log({ pda })
+            console.log({ pda })
 
             if (!collections.includes(`${pda}.json`)) throw new Error('Collection Not Found')
             const data = readFileSync(join(__dirname, `../collections/${pda}.json`), 'utf-8');

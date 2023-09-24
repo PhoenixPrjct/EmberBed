@@ -1,11 +1,12 @@
 import * as anchor from '@project-serum/anchor';
 import { Program } from '@project-serum/anchor';
-import { PublicKey, Keypair, SystemProgram } from '@solana/web3.js';
+import { PublicKey, Keypair, SystemProgram, Transaction, TransactionMessage, VersionedTransaction, TransactionInstruction } from '@solana/web3.js';
 import {
     getAssociatedTokenAddress,
     TOKEN_PROGRAM_ID,
     getOrCreateAssociatedTokenAccount,
     Account,
+    createAssociatedTokenAccountInstruction,
 } from "@solana/spl-token"
 import web3 = anchor.web3;
 import { EmberBed, Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts, StakeAccounts, StakeStateJSON, UserStakeInfo, RedeemRewardAccounts, RedeemFireAccounts, FireRewardInfo, FireRewardInfoFields, InitializeStatePdaArgs } from '../types'
@@ -64,10 +65,43 @@ export function getAPI(program: Program<EmberBed>) {
         );
         return { pda: stakeStatusPda, bump: bump }
     }
+    async function initializeUserTokenAcct(ix: TransactionInstruction) {
+        try {
+
+            const blockhash = await connection
+                .getLatestBlockhash()
+                .then((res) => res.blockhash);
+            const messageV0 = new TransactionMessage({
+                payerKey: wallet.value!.publicKey,
+                recentBlockhash: blockhash,
+                instructions: [ix],
+            }).compileToV0Message();
+            const tx = new VersionedTransaction(messageV0);
+            const signature = await wallet.value?.signTransaction(tx)
+            const hash = await connection.sendTransaction(signature!)
+            console.log({ initUserTokenAcct_hash: hash })
+            return signature
+        } catch (err) {
+            console.log({ initUserTokenAcct_ERR: err })
+            return err
+        }
+    }
 
     async function getUserRewardAta(user: web3.PublicKey, RewTok: web3.PublicKey) {
         const userRewardAta = await getAssociatedTokenAddress(RewTok, user);
-        return userRewardAta;
+        console.log({ userRewardAta })
+        const associatedAccountInfo = await connection.getAccountInfo(userRewardAta);
+        console.log({ associatedAccountInfo_1: associatedAccountInfo })
+        if (!!associatedAccountInfo) {
+            return userRewardAta;
+        } else {
+            const createAcctIx = createAssociatedTokenAccountInstruction(user, userRewardAta, user, RewTok, TOKEN_PROGRAM_ID);
+            await initializeUserTokenAcct(createAcctIx);
+            return userRewardAta;
+        }
+
+
+
     }
 
     async function getNftTokenAddress(user: web3.PublicKey, nftMint: string) {

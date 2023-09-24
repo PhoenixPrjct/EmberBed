@@ -1,9 +1,7 @@
 {
-    "manager": "PrJctdsdT314Ny5AH7aUB11pC9Gxidr12uNTAYr9GzN",
-    "name": "TestEyes",
-    "rewardWallet": "yMzG1FnMSEGHuCsiAzaWZNf4hJjnQLPYKG2EqNyzrn8",
-    "vca": "9xVireFnLBZ3ZCjLS29EzF632YbpSFwsKvwsqCLxefxr",
-    "hashlist": [
-        "EeRVFaFuu91ntQFwoDDTBEL4TU9ZHdzvjsAMGKhx6qK4"
-    ]
+    "manager": null,
+    "name": "TestEyes_FAIL",
+    "rewardWallet": null,
+    "vca": null,
+    "hashlist": []
 }

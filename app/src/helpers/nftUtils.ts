@@ -85,6 +85,7 @@ export async function getNftsInWallet(wallet: PublicKey): Promise<{ ebNfts: EBNf
         const fullNft = await metaplex.nfts().findByMint({ mintAddress: new PublicKey(nft.mint) });
         if (fullNft.collection?.address) {
             const result = collections.find((c) => c.verifiedCollectionAddress == fullNft.collection?.address.toBase58())
+            console.log({ nft: fullNft.collection.address, result: result })
             ebCollection = result?.ebCollection ? result.ebCollection : null;
         }
         if (!ebCollection) {
@@ -98,11 +99,14 @@ export async function getNftsInWallet(wallet: PublicKey): Promise<{ ebNfts: EBNf
             return new EBNft({ ...nft, updateAuthority: nft.updateAuthority, data: { ...meta } });
             // console.log({ nft, ebCollection })
         }
+        // console.clear()
+        // console.log({ ebCollection })
         return new EBNft({ ...nft, ebCollection: ebCollection, updateAuthority: nft.updateAuthority, data: { ...meta } });
     });
 
     const nfts = await Promise.all(nftsPromises);
-    const ebnfts = nfts.filter((nft) => nft?.ebCollection).map((obj) => { return { ...obj } });
+    const ebnfts = nfts.filter((nft) => nft?.ebCollection).map((obj) => { if (obj !== undefined) return { ...obj } });
+    console.log({ ebnfts })
     const otherNfts = nfts.filter((nft) => !nft?.ebCollection);
     return { ebNfts: ebnfts, other: otherNfts };
 

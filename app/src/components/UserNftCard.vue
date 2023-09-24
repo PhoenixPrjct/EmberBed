@@ -90,6 +90,9 @@ async function handleCopyClick(k: string, v: any) {
 
 async function handleStakeNft(nft: EBNft, eb: { loaded: boolean, info: CollectionRewardInfo | null }) {
     stakeStatus.value.loaded = false;
+    console.clear()
+    console.log({ nft })
+    console.log({ eb })
     await props.stakeNft(nft, eb)
     delayedRefresh(nft)
     return

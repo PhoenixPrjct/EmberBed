@@ -21,8 +21,6 @@ declare_id!("2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5");
 
 #[program]
 pub mod ember_bed {
-    use solana_program::native_token::LAMPORTS_PER_SOL;
-
     use super::*;
 
     pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
@@ -132,6 +130,8 @@ pub mod ember_bed {
         let reward_wallet = &ctx.accounts.reward_wallet.to_account_info();
 
         let reward_mint = &ctx.accounts.reward_mint.to_account_info();
+        let decimals = ctx.accounts.reward_mint.decimals;
+        msg!("Decimals: {:?}", decimals);
         let seeds = &[
             reward_mint.key.as_ref(),
             collection_name.as_ref(),
@@ -148,12 +148,16 @@ pub mod ember_bed {
 
         // let raw_rate_per_second = (state.rate_per_day / 86400) as f32;
         // msg!("Raw Rate Per Second: {:?}", raw_rate_per_second);
-        let rate_per_second = (state.rate_per_day as f32) / (day as f32);
+        let rate_per_second = ((state.rate_per_day as f32) / (day as f32)) * (LPS as f32);
         msg!("rate_per_second: {:?}", rate_per_second);
-        let staked_duration = 762866 as f32;
-        let reward_earned = (rate_per_second * staked_duration) as u64;
-        msg!("Rewards Earned: {:?}", reward_earned);
-        let staked_duration = (timestamp - stake_status.last_stake_redeem) as u64;
+        // let staked_duration = ctx.accounts.stake_status.stake_start_time as f32;
+        let staked_duration = (timestamp - stake_status.last_stake_redeem) as f32;
+        let raw_earned = ((rate_per_second * staked_duration) as f64) / (LPS as f64);
+        let transfer_amount = anchor_spl::token::spl_token::ui_amount_to_amount(
+            raw_earned,
+            decimals
+        );
+        msg!("Raw Earned: {:?}", raw_earned);
         if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
             ctx.accounts.stake_status.stake_state = StakeState::Unstaked;
@@ -173,7 +177,9 @@ pub mod ember_bed {
         ).with_signer(signer);
 
         msg!("Start transfer");
-        anchor_spl::token::transfer(cpi_ctx, (reward_earned as u64) * LPS)?;
+        msg!("transfer_amount final: {:?}", transfer_amount);
+
+        anchor_spl::token::transfer(cpi_ctx, transfer_amount)?;
         msg!("Successfully Transferred");
         ctx.accounts.stake_status.last_stake_redeem = timestamp;
         msg!("Last Redeem Set to {}", timestamp);
