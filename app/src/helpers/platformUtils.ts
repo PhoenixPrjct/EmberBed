@@ -1,9 +1,11 @@
 import { PublicKey } from "@solana/web3.js";
 import { TOKEN_PROGRAM_ID, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount } from "@solana/spl-token"
-import { useChainAPI } from "src/api/chain-api";
+import { useChainAPI, getConnection } from "src/api/chain-api";
+import { AnyARecord } from "dns";
 // import { InitializeFirePdaAccounts } from "src/types/instructions/initializeFirePda";
-const { connection } = useChainAPI();
+const connection = getConnection();
 export async function getAllEBCollections() {
+  if (!useChainAPI) return []
   const { program } = useChainAPI();
   if (!program.value) return
   const collections = await program.value.account.collectionRewardInfo.all()

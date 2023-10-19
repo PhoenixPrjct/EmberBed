@@ -8,14 +8,15 @@ import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
 import { WalletStoreProps } from 'solana-wallets-vue/dist/types';
 import {
   PhantomWalletAdapter,
-  SlopeWalletAdapter,
+  
+  // SlopeWalletAdapter,
   SolflareWalletAdapter,
 } from "@solana/wallet-adapter-wallets";
 
 export const walletOptions = {
   wallets: [
     new PhantomWalletAdapter(),
-    new SlopeWalletAdapter(),
+    // new SlopeWalletAdapter(),
     new SolflareWalletAdapter({ network: WalletAdapterNetwork.Devnet }),
   ],
   autoConnect: true,

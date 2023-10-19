@@ -10,9 +10,9 @@ const connection = new Connection(getConnection());
 
 function getFireMintPub() {
     // if (process.env.NODE_ENV !== 'production') {
-    return new PublicKey('F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8');
+    // return new PublicKey('F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8');
     // }
-    // return new PublicKey('F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw');
+    return new PublicKey('F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw');
 }
 async function getFirePda(): Promise<{ pda: PublicKey, bump: number }> {
     const [pda, bump] = await PublicKey.findProgramAddressSync(

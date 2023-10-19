@@ -337,7 +337,7 @@ export function getAPI(program: Program<EmberBed>) {
     }
     async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, nftsHeld?: number, collectionName?: string) {
         bumpFire = (await FIRE_INFO).FIRE_BUMP
-        console.log({ bumpFire, nftsHeld, collectionName })
+        console.log({ bumpFire, nftsHeld, collectionName, mint: accounts.fireMint.toBase58() })
         const fireTxPromise = program.methods.redeemFire(bumpFire, 0).accounts({ ...accounts })
         const fireTx = fireTxPromise;
         const sig = await fireTx.rpc();

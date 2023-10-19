@@ -42,7 +42,25 @@ module.exports = configure(function (/* ctx */) {
     css: [
       'app.sass'
     ],
+    // optimizeDeps: { // 👈 optimizedeps
+    //   esbuildOptions: {
+    //     target: "esnext", 
+    //     // Node.js global to browser globalThis
+    //     define: {
+    //       global: 'globalThis'
+    //     },
+    //     supported: { 
+    //       bigint: true 
+    //     },
+    //   }
+    // }, 
 
+    build: {
+      target: ["esnext"], // 👈 build.target
+      transpile: [
+        'big-integer-library', // Add any packages that use big integer literals
+      ],
+    },
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
@@ -60,7 +78,7 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
       target: {
-        browser: ['es2022', 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
+        browser: ['esnext'],
         node: 'node16'
       },
       alias: {
