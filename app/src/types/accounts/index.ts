@@ -7,5 +7,3 @@ export type {
 } from "./CollectionRewardInfo"
 export { FireRewardInfo } from "./FireRewardInfo"
 export type { FireRewardInfoFields, FireRewardInfoJSON } from "./FireRewardInfo"
-export { UserAccount } from "./UserAccount"
-export type { UserAccountFields, UserAccountJSON } from "./UserAccount"

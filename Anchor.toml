@@ -2,14 +2,14 @@
 seeds = true
 
 [programs.devnet]
-ember_bed = "BW2w1qyVvgZyv6iNuYycWDnmNCMHoY8iA49BkHPzPi7Z"
+ember_bed = "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
 cluster = "devnet"
-wallet = "/home/proto/.config/solana/id.json"
+wallet = "/home/proto/PhoenixProj/Wallets/PrjctTokenAuthority.json"
 
 [scripts]
 test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

@@ -73,6 +73,7 @@ export type PhoenixRelationKind =
   | PhoenixRelation.Affiliate
   | PhoenixRelation.Saved
   | PhoenixRelation.Founder
+  | PhoenixRelation.Evo
   | PhoenixRelation.Member
   | PhoenixRelation.EmberBed
   | PhoenixRelation.None
@@ -80,6 +81,7 @@ export type PhoenixRelationJSON =
   | PhoenixRelation.AffiliateJSON
   | PhoenixRelation.SavedJSON
   | PhoenixRelation.FounderJSON
+  | PhoenixRelation.EvoJSON
   | PhoenixRelation.MemberJSON
   | PhoenixRelation.EmberBedJSON
   | PhoenixRelation.NoneJSON

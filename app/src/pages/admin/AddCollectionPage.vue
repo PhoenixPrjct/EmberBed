@@ -12,10 +12,11 @@ import {
     CollectionRewardInfoJSON, PhoenixRelation,
     PhoenixRelationKind, MutableTokenInfo, WalletStore
 } from 'src/types';
-import { useRouter } from 'vue-router';
+import { useRouter } from "vue-router"
 import { useWallet } from 'solana-wallets-vue';
+import { refundTxFee } from 'src/helpers/collectionSubmission';
 
-const router = useRouter();
+const router = useRouter()
 const { wallet, api, connection, program } = useChainAPI();
 const $wallet = useWallet().wallet
 const { server_api } = useServerAPI();
@@ -48,29 +49,29 @@ const submissionStatus = ref({
 const collectionInfo = ref<CollectionInfo>({
     // rewardWallet: '',
     manager: '',
-    rewardMint: "F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw",
-    collectionName: "PrjctPhoenix: Member",
-    collectionAddress: "9xVireFnLBZ3ZCjLS29EzF632YbpSFwsKvwsqCLxefxr",
-    ratePerDay: 2,
+    rewardMint: "F1RELQfqm789aGdLsdXRusCnrVEhqWGg3rrRDQsFXvR8",
+    collectionName: "TESTING_Founders",
+    collectionAddress: "4rbLs9EqZPNh2z2qkU5csWdGQALm24CEJft6tkEEd37R",
+    ratePerDay: 5,
     fireEligible: true,
     phoenixRelation: null as unknown as PhoenixRelationKind,
-    rewardSymbol: "$FIRE",
+    rewardSymbol: "TEST_FIRE",
+    uuid: ""
 }) as Ref<CollectionRewardInfoJSON>
+const refundInfo = ref<{ pk: PublicKey | null, amount: number, eligible: boolean }>({ pk: null, amount: 0, eligible: false })
+// async function getRewardWallet() {
+//     const rw = new PublicKey(collectionInfo.value.rewardMint);
+//     const rewardWallet = await api.value?.getRewardWallet(rw,))
+//     if (rewardWallet) {
+//         console.log(rewardWallet.address.toBase58())
+//         return rewardWallet
+//     }
+//     return null
+// }
 
-async function getRewardWallet() {
-    const rw = new PublicKey(collectionInfo.value.rewardMint);
-    const colInfo = await api.value?.getStatePda(rw, collectionInfo.value.collectionName);
-    if (!colInfo) return null;
-    console.log(colInfo.pda.toBase58());
-    const rewardWallet = await api.value?.getRewardWallet(rw, colInfo.pda);
-    if (rewardWallet) {
-        console.log(rewardWallet.address.toBase58())
-        return rewardWallet
-    }
-    return null
-}
 
 async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
+
     try {
         submissionStatus.value = {
             loading: true,
@@ -78,11 +79,13 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
             percent: 5
         }
         // Find or Create the PDAs
-        const accounts = await (await api.value?.getAccounts({ user: wallet.value.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
-
+        const accounts = await (await api.value?.getAccounts({ user: wallet.value!.publicKey, collectionName: rawInfo.collectionName, rewardMint: rawInfo.rewardMint }))
+        console.log({ accounts })
         if (!accounts) throw new Error('Generating PDAS Failed')
-        const { stateBump, statePDA, rewardWallet } = accounts
-        rawInfo.bump = stateBump
+        const { statePDA, stateBump, rewardWallet } = accounts
+        // const rewardWallet = await api.value?.getRewardWallet(rw, statePDA)
+        rawInfo.uuid = statePDA.toBase58();
+        rawInfo.bump = stateBump;
         rawInfo.rewardWallet = rewardWallet.toBase58();
         const collections = await (await program.value.account.collectionRewardInfo.all()).map(collection => collection.publicKey.toBase58())
         if (!collections.includes(statePDA.toBase58())) {
@@ -95,31 +98,40 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
 
             const { success, info } = valid
-            console.log(valid.success, info?.toJSON())
+            console.log(valid.success, info)
+            console.log(info)
             if (!success || !info) throw new Error(`Failed To Validate Collection Information`)
             const { kind } = info.phoenixRelation
 
             const amount = getInitCost(kind)
             submissionStatus.value = { ...submissionStatus.value, percent: 20, message: `Sending Initialization Fee for Collection\n\n${amount} ☉\n\n ${kind} Price` }
-            const paidTx = await chargeFeeTx(wallet.value.publicKey, amount);
+            const paidTx = await chargeFeeTx(wallet.value!.publicKey, amount);
 
             if (!paidTx.success) throw new Error(paidTx.error)
+            refundInfo.value.pk = wallet.value!.publicKey
+            refundInfo.value.amount = amount
+            refundInfo.value.eligible = true
             const paymentSig = await paidTx.sig
             submissionStatus.value = { ...submissionStatus.value, percent: 50, message: `${paymentSig} \n\n Halfway there! Let's Go!!` }
-            const initState = await api.value?.initStatePda(wallet.value.publicKey, info)
+
+            const encoded_info = CollectionRewardInfo.fromJSON(info)
+            const initState = await api.value?.initStatePda(wallet.value!.publicKey, encoded_info)
             if (!initState || initState.error) throw new Error(`${initState?.error.message}`)
-            const { account, tx } = await initState
+            const { pdas, tx } = await initState
+            console.log({ tx, collection: pdas?.collectionInfoPDA, rewardWallet: pdas?.rewardWallet })
             submissionStatus.value = { ...submissionStatus.value, percent: 60, message: 'Sent Collection Info On Chain' }
         }
-        const data = {
+
+        const info = {
             pda: statePDA,
-            manager: wallet.value.publicKey.toBase58(),
+            vca: rawInfo.collectionAddress,
+            manager: wallet.value!.publicKey.toBase58(),
             collection: rawInfo.collectionName,
             /*{ ...account, name: account?.collectionName, */
-            reward_wallet: rewardWallet
+            reward_wallet: rewardWallet.toBase58()
         }
         submissionStatus.value = { ...submissionStatus.value, percent: 80, message: 'Indexing Collection on DB. . .' }
-        const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(data)
+        const res: { status: number, response?: NewCollectionResponse, Error?: any } = await server_api.collection.new(info)
         if (res.Error) throw new Error(`Collection Not Written to The Server`);
         submissionStatus.value = { ...submissionStatus.value, percent: 100, message: 'Welcome Aboard!' }
 
@@ -141,6 +153,18 @@ async function onSubmit(rawInfo: CollectionRewardInfoJSON) {
 
     } catch (err: any) {
         console.error(err);
+        if (refundInfo.value.eligible === true && refundInfo.value.pk) {
+            const refund = await refundTxFee(refundInfo.value.pk, refundInfo.value.amount)
+            if (!refund.success) throw new Error(refund.error)
+            $q.notify({
+                type: 'success',
+                message: 'Init Fee Refunded Successfully',
+                caption: JSON.stringify(refund.sig),
+                position: 'top',
+                timeout: 3000
+            })
+
+        }
         submissionStatus.value = { ...submissionStatus.value, percent: 0, message: err.message ? err.message : 'Something went wrong, please try again' }
         $q.notify({
             type: 'negative',
@@ -168,18 +192,6 @@ function onReset() {
     manualSplEntryToggle.value = false;
     collectionInfo.value = {} as CollectionRewardInfoJSON
 }
-
-function isPK(v: PublicKey | string): boolean {
-    try {
-        v = new PublicKey(v);
-    } catch (e) {
-        return false;
-    }
-    return true;
-}
-
-
-
 
 function findPhoenixRelation(collectionAddress: string) {
     if (!relations.value) {
@@ -262,9 +274,11 @@ async function handleSplTokenClick(tokenInfo?: TokenInfo) {
 
 
 watchEffect(async () => {
+    console.log({ info: collectionInfo.value })
     showSubmit.value = Object.values(collectionInfo.value).every(val => val !== null && val !== undefined && val !== 0);
     if (!relations.value) {
         const relationsResult = await server_api.general.getRelations()
+        console.log({ relationsResult })
         if (!relationsResult) return
         relations.value = relationsResult
         console.log(relations.value)
@@ -274,7 +288,7 @@ watchEffect(async () => {
         if (!collectionInfo.value.phoenixRelation) {
             const relationRes = findPhoenixRelation(collectionInfo.value.collectionAddress)
             collectionInfo.value.phoenixRelation = relationRes ? relationRes : null as unknown as PhoenixRelationKind
-            // console.log('pr:', collectionInfo.value?.phoenixRelation, `\n`, 'ca:', collectionInfo.value?.collectionAddress)
+            console.log('pr:', collectionInfo.value?.phoenixRelation, `\n`, 'ca:', collectionInfo.value?.collectionAddress)
         }
         if (collectionInfo.value.phoenixRelation.kind == 'None' && collectionInfo.value.fireEligible) {
             collectionInfo.value.phoenixRelation = { kind: 'EmberBed' }
@@ -284,13 +298,6 @@ watchEffect(async () => {
     if (wallet.value) {
         collectionInfo.value.manager = wallet.value.publicKey.toBase58()
     }
-    if (!collectionInfo.value.rewardWallet && collectionInfo.value.rewardMint && collectionInfo.value.collectionName) {
-        const rw = await getRewardWallet()
-        if (!rw) return
-        console.log(rw.address.toBase58())
-        collectionInfo.value.rewardWallet = rw.address.toBase58();
-    }
-    console.log($wallet.value)
 
     if (!$wallet.value) {
         router.push({ path: '/admin' })
@@ -304,8 +311,8 @@ watchEffect(async () => {
         <div class="submission-loading" v-if="submissionStatus.loading">
             <div class="text-h6">
                 <pre class="text-center">
-                {{ submissionStatus.message }}
-                </pre>
+            {{ submissionStatus.message }}
+            </pre>
             </div>
             <q-linear-progress size="25px" :value="submissionStatus.percent" color="accent" class="q-mt-sm" />
             <q-linear-progress size="25px" :value="100 - submissionStatus.percent" color="secondary" class="q-mt-sm" />
@@ -313,22 +320,25 @@ watchEffect(async () => {
         <div v-else class="q-pa-sm form--container" style="width: 90%">
             <q-form @submit="onSubmit(collectionInfo)" @reset="onReset" class="q-gutter-md">
                 <section class="general-info">
-                    <h6>EmberBed Info</h6>
+                    <h6>EmberBed Info <sub>{{ collectionInfo.uuid }}</sub></h6>
                     <small>This is how we categorize your NFT collection on the platform.</small>
                     <q-separator dark spaced />
-                    <q-input dense dark filled v-model="collectionInfo.collectionName"
-                        placeholder="Name of Nft Collection" hide-hint
+                    <q-input dense dark filled v-model="collectionInfo.collectionName" hide-hint
                         hint="Collection Name: Bored Ape Yacht Club, DeGods, etc. " lazy-rules
                         :rules="[val => val && val.length > 0 || 'This Must Have a Value']" />
                     <div class="verify-collection--div">
                         <q-input class="verify-collection--input" dense dark filled hide-hint
-                            hint="Check out Metaplex Collection Standards for More Info."
-                            v-model="collectionInfo.collectionAddress" placeholder="Verified Collection Address" />
-                        <span>
+                            v-model="collectionInfo.collectionAddress" placeholder="Verified Collection Address">
                             <q-btn icon="info" @click="handleShowWhyVerify()" />
-                            <q-btn v-if="!collectionInfo.collectionAddress" class="center" target="_blank" dark flat
-                                icon="policy" href="https://collections.metaplex.com" />
-                            <q-tooltip> Verify Your Collection on Metaplex</q-tooltip>
+                        </q-input>
+                        <span>
+                            <div>
+
+                                <q-btn v-if="!collectionInfo.collectionAddress" class="center" target="_blank" dark flat
+                                    icon="policy" href="https://collections.metaplex.com/create-collection"
+                                    label="Create Collection On Metaplex" />
+                                <q-tooltip> Verify Your Collection on Metaplex</q-tooltip>
+                            </div>
 
                         </span>
                     </div>
@@ -337,11 +347,9 @@ watchEffect(async () => {
                 <q-separator dark spaced />
                 <q-space />
                 <section class="tokenInfo">
-
                     <h6>Reward Token Info</h6>
                     <span class="flex justify-between">
                         <small>What token is your community staking for?</small>
-
                     </span>
                     <q-separator dark spaced />
                     <small v-if="!collectionInfo.rewardSymbol">
@@ -351,19 +359,18 @@ watchEffect(async () => {
                     </small>
                     <div class="flex justify-around">
                         <q-toggle dark v-model="manualSplEntryToggle" class="special"
-                            onchange="()=> findSplToken.key = '' && findSplToken.val = ''"
-                            label="Manual Token Entry?" />
+                            onchange="()=> findSplToken.key = '' && findSplToken.val = ''" label="Manual Token Entry?" />
                     </div>
-                    <div class="flex justify-around" v-if="!manualSplEntryToggle">
+                    <div class="flex justify-around spl-search" v-if="!manualSplEntryToggle">
                         <span class="splToken-query" v-if="!findSplToken.info?.length">
                             <q-select dense dark v-model="findSplToken.key" :options="findSplToken.options" />
                             <q-input dense dark v-model="findSplToken.val" />
                             <q-btn :disable="!findSplToken.key || !findSplToken.val || findSplToken.loading" dark dense
                                 icon="search" @click="handleFindSplTokenInfo()" />
-                            <q-icon name="info" color="accent">
-                                <q-tooltip>Search Metaplex Registry For Your Token</q-tooltip>
-                            </q-icon>
                         </span>
+                        <q-tooltip>Search Metaplex Registry For Your Token</q-tooltip>
+
+
                     </div>
 
                     <div class="token--container" :class="$q.screen.lt.md ? 'flex justify-around' : void 0"
@@ -394,13 +401,10 @@ watchEffect(async () => {
                                 <q-avatar size="75px" :icon="`img:${findSplToken.info[0].logoURI}`" />
                             </q-item-section>
                             <!-- <q-img fit="contain" :src="findSplToken.info[0].logoURI" ratio="1:1" /> -->
-
                             <q-item-section>
-
                                 {{ findSplToken.info[0].name }}
                             </q-item-section>
                         </q-item>
-
                         <q-input dark dense readonly v-model="collectionInfo.rewardMint" label="Mint Address" />
                         <q-input dark dense readonly v-model="collectionInfo.rewardSymbol" label="Token Symbol" />
                         <q-item-section side>
@@ -408,21 +412,13 @@ watchEffect(async () => {
                                 label="Reset Token Info" @click="handleSplTokenClick()" />
                         </q-item-section>
                     </div>
-                    <q-item>
 
-                        <q-btn flat icon-color="accent" icon="info" @click="fireDialogShow = true">
-                            <q-tooltip>
-                                Allow your community to stake for $FIRE tokens.
-                            </q-tooltip>
-                        </q-btn>
-                    </q-item>
-                    <q-toggle dark v-if="findSplToken.info?.length == 1 || manualSplEntryToggle"
-                        v-model="collectionInfo.fireEligible" class="special" color="accent"
+                    <q-toggle dark v-model="collectionInfo.fireEligible" class="special" color="accent"
                         label="$FIRE Redemption?" />
                     <q-input v-if="collectionInfo.rewardSymbol && collectionInfo.rewardMint" class="rate" type="number"
                         v-model="collectionInfo.ratePerDay" dark label="Rate Per day" />
                     <div>
-                        <q-btn v-if="showSubmit" dark label="Submit" type="submit" color="primary" />
+                        <q-btn :disable="!showSubmit" dark label="Submit" type="submit" color="primary" />
                         <q-btn dark label="Reset" type="reset" color="secondary" flat class="q-ml-sm" />
                     </div>
                 </section>
@@ -454,7 +450,7 @@ watchEffect(async () => {
                         </q-item-section>
                     </q-item>
                     <!-- </q-card-section>
-                <q-card-section> -->
+                                                                                                                                                                                            <q-card-section> -->
                     <q-item class="fire-item">
                         <q-item-section class="fire-title text-subtitle1">
                             Why Might This Be a Good Idea?
@@ -544,7 +540,7 @@ watchEffect(async () => {
 
     & a {
         flex: 0 0 auto;
-        padding: 8px;
+        padding: 1rem;
         // box-shadow: -1px 0px 1.5px $accent;
         // align-self: flex-start;
         // align-items: flex-start;
@@ -583,6 +579,10 @@ watchEffect(async () => {
     & .select-btn {
         flex: 0 0 90%;
     }
+}
+
+.spl-search {
+    width: 100%;
 }
 
 .dialog {

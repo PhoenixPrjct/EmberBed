@@ -10,7 +10,6 @@ export interface DepositToRewardAtaArgs {
 
 export interface DepositToRewardAtaAccounts {
   tokenPoa: PublicKey
-  statePda: PublicKey
   mint: PublicKey
   funder: PublicKey
   funderAta: PublicKey
@@ -27,7 +26,6 @@ export function depositToRewardAta(
 ) {
   const keys: Array<AccountMeta> = [
     { pubkey: accounts.tokenPoa, isSigner: false, isWritable: true },
-    { pubkey: accounts.statePda, isSigner: false, isWritable: true },
     { pubkey: accounts.mint, isSigner: false, isWritable: false },
     { pubkey: accounts.funder, isSigner: true, isWritable: true },
     { pubkey: accounts.funderAta, isSigner: false, isWritable: true },

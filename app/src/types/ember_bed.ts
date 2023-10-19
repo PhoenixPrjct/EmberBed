@@ -241,14 +241,9 @@ export type EmberBed = {
           "pda": {
             "seeds": [
               {
-                "kind": "account",
-                "type": "publicKey",
-                "path": "reward_mint"
-              },
-              {
                 "kind": "const",
                 "type": "string",
-                "value": "EmberBed"
+                "value": "ebtreasury"
               },
               {
                 "kind": "const",
@@ -306,11 +301,6 @@ export type EmberBed = {
                 "path": "reward_mint"
               },
               {
-                "kind": "arg",
-                "type": "string",
-                "path": "_collection_name"
-              },
-              {
                 "kind": "const",
                 "type": "string",
                 "value": "state"
@@ -325,12 +315,7 @@ export type EmberBed = {
         },
         {
           "name": "tokenPoa",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -371,6 +356,10 @@ export type EmberBed = {
           "type": "bool"
         },
         {
+          "name": "nftCollectionPubkey",
+          "type": "string"
+        },
+        {
           "name": "phoenixCollectionRelation",
           "type": "string"
         }
@@ -391,11 +380,6 @@ export type EmberBed = {
         },
         {
           "name": "tokenPoa",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
           "isMut": false,
           "isSigner": false
         },
@@ -438,6 +422,14 @@ export type EmberBed = {
         {
           "name": "newManager",
           "type": "string"
+        },
+        {
+          "name": "nftCollectionPubkey",
+          "type": "string"
+        },
+        {
+          "name": "uuid",
+          "type": "string"
         }
       ]
     },
@@ -446,11 +438,6 @@ export type EmberBed = {
       "accounts": [
         {
           "name": "tokenPoa",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "statePda",
           "isMut": true,
           "isSigner": false
         },
@@ -740,6 +727,10 @@ export type EmberBed = {
             "type": "u8"
           },
           {
+            "name": "uuid",
+            "type": "string"
+          },
+          {
             "name": "ratePerDay",
             "type": "u32"
           },
@@ -816,24 +807,6 @@ export type EmberBed = {
           {
             "name": "isInitialized",
             "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "userAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "user",
-            "type": "publicKey"
-          },
-          {
-            "name": "stakeStatusPks",
-            "type": {
-              "vec": "publicKey"
-            }
           }
         ]
       }
@@ -955,6 +928,9 @@ export type EmberBed = {
             "name": "Founder"
           },
           {
+            "name": "Evo"
+          },
+          {
             "name": "Member"
           },
           {
@@ -996,7 +972,10 @@ export type EmberBed = {
       "name": "NotFireEligible",
       "msg": "Not Eligible for FIRE Token"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
+  }
 };
 
 export const IDL: EmberBed = {
@@ -1242,14 +1221,9 @@ export const IDL: EmberBed = {
           "pda": {
             "seeds": [
               {
-                "kind": "account",
-                "type": "publicKey",
-                "path": "reward_mint"
-              },
-              {
                 "kind": "const",
                 "type": "string",
-                "value": "EmberBed"
+                "value": "ebtreasury"
               },
               {
                 "kind": "const",
@@ -1307,11 +1281,6 @@ export const IDL: EmberBed = {
                 "path": "reward_mint"
               },
               {
-                "kind": "arg",
-                "type": "string",
-                "path": "_collection_name"
-              },
-              {
                 "kind": "const",
                 "type": "string",
                 "value": "state"
@@ -1326,12 +1295,7 @@ export const IDL: EmberBed = {
         },
         {
           "name": "tokenPoa",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
-          "isMut": false,
+          "isMut": true,
           "isSigner": false
         },
         {
@@ -1372,6 +1336,10 @@ export const IDL: EmberBed = {
           "type": "bool"
         },
         {
+          "name": "nftCollectionPubkey",
+          "type": "string"
+        },
+        {
           "name": "phoenixCollectionRelation",
           "type": "string"
         }
@@ -1392,11 +1360,6 @@ export const IDL: EmberBed = {
         },
         {
           "name": "tokenPoa",
-          "isMut": false,
-          "isSigner": false
-        },
-        {
-          "name": "nftCollectionAddress",
           "isMut": false,
           "isSigner": false
         },
@@ -1439,6 +1402,14 @@ export const IDL: EmberBed = {
         {
           "name": "newManager",
           "type": "string"
+        },
+        {
+          "name": "nftCollectionPubkey",
+          "type": "string"
+        },
+        {
+          "name": "uuid",
+          "type": "string"
         }
       ]
     },
@@ -1447,11 +1418,6 @@ export const IDL: EmberBed = {
       "accounts": [
         {
           "name": "tokenPoa",
-          "isMut": true,
-          "isSigner": false
-        },
-        {
-          "name": "statePda",
           "isMut": true,
           "isSigner": false
         },
@@ -1741,6 +1707,10 @@ export const IDL: EmberBed = {
             "type": "u8"
           },
           {
+            "name": "uuid",
+            "type": "string"
+          },
+          {
             "name": "ratePerDay",
             "type": "u32"
           },
@@ -1817,24 +1787,6 @@ export const IDL: EmberBed = {
           {
             "name": "isInitialized",
             "type": "bool"
-          }
-        ]
-      }
-    },
-    {
-      "name": "userAccount",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "user",
-            "type": "publicKey"
-          },
-          {
-            "name": "stakeStatusPks",
-            "type": {
-              "vec": "publicKey"
-            }
           }
         ]
       }
@@ -1956,6 +1908,9 @@ export const IDL: EmberBed = {
             "name": "Founder"
           },
           {
+            "name": "Evo"
+          },
+          {
             "name": "Member"
           },
           {
@@ -1997,5 +1952,8 @@ export const IDL: EmberBed = {
       "name": "NotFireEligible",
       "msg": "Not Eligible for FIRE Token"
     }
-  ]
+  ],
+  "metadata": {
+    "address": "2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5"
+  }
 };

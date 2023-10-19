@@ -20,6 +20,7 @@ pub fn phoenix_relation_value(relation: &PhoenixRelation) -> u64 {
     match relation {
         PhoenixRelation::None => 0,
         PhoenixRelation::Founder => 10,
+        PhoenixRelation::Evo =>8,
         PhoenixRelation::Member => 7,
         PhoenixRelation::EmberBed => 1,
         PhoenixRelation::Saved => 2,

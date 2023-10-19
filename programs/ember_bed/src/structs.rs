@@ -21,7 +21,6 @@ pub struct Stake<'info> {
     pub user: Signer<'info>,
     #[account(mut)]
     pub user_reward_ata: Box<Account<'info, TokenAccount>>,
-    // pub phoenix_wallet: AccountInfo<'info>,
     #[account(
         mut, 
         associated_token::mint = nft_mint_address, 
@@ -38,14 +37,7 @@ pub struct Stake<'info> {
         space = std::mem::size_of::<UserStakeInfo>() + 8
     )]
     pub stake_status: Box<Account<'info, UserStakeInfo>>,
-    // #[account(
-    //     init_if_needed,
-    //     payer = user,
-    //     seeds = [user.key.as_ref()],
-    //     bump,
-    //     space = std::mem::size_of::<UserAccount>() + 1024
-    // )]
-    // pub user_account_pda: Account<'info, UserAccount>,
+
     #[account(mut)]
     pub collection_reward_info: Box<Account<'info, CollectionRewardInfo>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
@@ -76,11 +68,11 @@ pub struct RedeemReward<'info> {
     pub reward_wallet: Box<Account<'info, TokenAccount>>,
     #[account(
         mut,
-        seeds = [reward_mint.key.as_ref(), collection_name.as_ref(), b"state".as_ref()],
+        seeds = [reward_mint.to_account_info().key.as_ref(), collection_name.as_ref(), b"state".as_ref()],
         bump,)]
     pub collection_reward_info: Account<'info, CollectionRewardInfo>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub reward_mint: AccountInfo<'info>,
+    pub reward_mint: Account<'info, Mint>,
     pub token_program: Program<'info, Token>,
     // pub metadata_program: UncheckedAccount<'info>,
     pub system_program: Program<'info, System>,
@@ -151,6 +143,7 @@ pub struct ManagerWithdrawal<'info> {
 #[derive(Default)]
 pub struct CollectionRewardInfo {
     pub bump: u8,
+    pub uuid: String,
     pub rate_per_day: u32,
     pub reward_wallet: Pubkey,
     pub reward_symbol: String,
@@ -176,21 +169,22 @@ pub struct FireRewardInfo {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String )]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String, _nft_collection_pubkey: String)]
 pub struct InitializeStatePda<'info> {
     #[account(
         init_if_needed,
         payer = funder,
         seeds = [reward_mint.key().as_ref(), _collection_name.as_ref(), b"state".as_ref()],
         bump,
-        space = std::mem::size_of::<CollectionRewardInfo>() + 8
+        space = std::mem::size_of::<CollectionRewardInfo>() + 64
     )]
     pub state_pda: Account<'info, CollectionRewardInfo>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
     pub reward_mint: AccountInfo<'info>,
-    pub token_poa: Box<Account<'info, TokenAccount>>,
-    /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub nft_collection_address: AccountInfo<'info>,
+    #[account(mut)]
+    pub token_poa: Account<'info, TokenAccount>,
+    // /// CHECK: This is not dangerous because we don't read or write to this account.
+    // pub nft_collection_address: AccountInfo<'info>,
     #[account(mut)]
     pub funder: Signer<'info>,
     #[account(mut)]
@@ -199,7 +193,7 @@ pub struct InitializeStatePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String , _new_manager:String)]
+#[instruction(_bump : u8,_rate:u32, _reward_symbol: String, _collection_name: String, _fire_eligible: bool, _phoenix_relation: String , _new_manager:String , _collection_address: String)]
 pub struct UpdateStatePda<'info> {
     #[account(mut)]
     pub state_pda: Account<'info, CollectionRewardInfo>,
@@ -207,7 +201,7 @@ pub struct UpdateStatePda<'info> {
     pub reward_mint: AccountInfo<'info>,
     pub token_poa: Box<Account<'info, TokenAccount>>,
     /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub nft_collection_address: AccountInfo<'info>,
+    // pub nft_collection_address: AccountInfo<'info>,
     #[account(mut)]
     pub funder: Signer<'info>,
     // #[account(mut)]
@@ -216,12 +210,12 @@ pub struct UpdateStatePda<'info> {
 }
 
 #[derive(Accounts)]
-#[instruction(_bump : u8)]
+#[instruction(_bump : u8, _nfts_held: u8)]
 pub struct InitializeFirePDA<'info> {
     #[account(
         init_if_needed,
         payer = funder,
-        seeds = [reward_mint.key().as_ref(), FIRE_COLLECTION_NAME.as_ref(), b"fstate".as_ref()],
+        seeds = [b"ebtreasury".as_ref(), b"fstate".as_ref()],
         bump,
         space = std::mem::size_of::<FireRewardInfo>() + 8
     )]
@@ -239,11 +233,8 @@ pub struct InitializeFirePDA<'info> {
 #[derive(Accounts)]
 #[instruction(amount:u64)]
 pub struct DepositToFirePda<'info> {
-    #[account(
-        mut
-    )]
+    #[account(mut)]
     pub token_poa: Account<'info, TokenAccount>,
-
     #[account(mut)]
     pub fire_pda: Account<'info, FireRewardInfo>,
     pub mint: Account<'info, Mint>,
@@ -264,8 +255,8 @@ pub struct DepositToTokenPda<'info> {
     )]
     pub token_poa: Account<'info, TokenAccount>,
 
-    #[account(mut)]
-    pub state_pda: Account<'info, CollectionRewardInfo>,
+    // #[account(mut)]
+    // pub state_pda: Account<'info, CollectionRewardInfo>,
     pub mint: Account<'info, Mint>,
     #[account(mut)]
     pub funder: Signer<'info>,
@@ -275,14 +266,6 @@ pub struct DepositToTokenPda<'info> {
     pub rent: Sysvar<'info, Rent>,
     pub token_program: Program<'info, Token>,
 }
-
-// #[derive(Accounts)]
-// pub struct InitializeFireInfo<'info> {
-//     /// CHECK
-//     pub user: Signer<'info>,
-//     #[account(mut)]
-//     pub fire_info: Account<'info, FireInfo>,
-// }
 
 #[derive(Accounts)]
 #[instruction(_bump_fire:u8, nfts_held:u8)]
@@ -300,19 +283,12 @@ pub struct RedeemFire<'info> {
     pub user_reward_ata: Account<'info, TokenAccount>,
     #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
-    /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub fire_mint: AccountInfo<'info>,
+    /// CHECK::This is not dangerous because we don't read or write to this account.
+    pub fire_mint: Box<Account<'info, Mint>>,
     #[account(mut)]
     pub fire_info: Account<'info, FireRewardInfo>,
     #[account(mut)]
     pub collection_info: Account<'info, CollectionRewardInfo>,
     pub token_program: Program<'info, Token>,
     pub system_program: Program<'info, System>,
-}
-
-#[account]
-#[derive(Default)]
-pub struct UserAccount {
-    pub user: Pubkey,
-    pub stake_status_pks: Vec<Pubkey>,
 }

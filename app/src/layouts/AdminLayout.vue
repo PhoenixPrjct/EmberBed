@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import { WalletMultiButton } from "solana-wallets-vue";
-import { useUserStore } from "src/stores/userStore";
+import { useUserStore } from "src/stores/user_store";
 import { watchEffect, ComputedRef } from "vue";
 import { useRouter } from "vue-router";
 import { useWallet } from "solana-wallets-vue"
@@ -20,10 +20,12 @@ watchEffect(() => {
         <q-header elevated>
             <q-toolbar>
                 <q-toolbar-title style="font-variant: small-caps;">
-                    <q-avatar square>
-                        <img src="@/assets/logo_only.png" alt="Logo">
-                    </q-avatar>
-                    <q-btn type="a" dark flat to="/">
+                    <q-btn dark to="/" flat>
+                        <q-avatar square>
+                            <img src="@/assets/logo_only.png" alt="Logo">
+                        </q-avatar>
+                    </q-btn>
+                    <q-btn type="a" dark flat to="/admin">
                         EmberBed: &nbsp;
                         <span class="admin">
                             Admin

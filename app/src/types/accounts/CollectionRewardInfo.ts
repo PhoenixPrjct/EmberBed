@@ -6,6 +6,7 @@ import { PROGRAM_ID } from "../programId"
 
 export interface CollectionRewardInfoFields {
   bump: number
+  uuid: string
   ratePerDay: number
   rewardWallet: PublicKey
   rewardSymbol: string
@@ -20,6 +21,7 @@ export interface CollectionRewardInfoFields {
 
 export interface CollectionRewardInfoJSON {
   bump: number
+  uuid: string
   ratePerDay: number
   rewardWallet: string
   rewardSymbol: string
@@ -34,6 +36,7 @@ export interface CollectionRewardInfoJSON {
 
 export class CollectionRewardInfo {
   readonly bump: number
+  readonly uuid: string
   readonly ratePerDay: number
   readonly rewardWallet: PublicKey
   readonly rewardSymbol: string
@@ -51,6 +54,7 @@ export class CollectionRewardInfo {
 
   static readonly layout = borsh.struct([
     borsh.u8("bump"),
+    borsh.str("uuid"),
     borsh.u32("ratePerDay"),
     borsh.publicKey("rewardWallet"),
     borsh.str("rewardSymbol"),
@@ -65,6 +69,7 @@ export class CollectionRewardInfo {
 
   constructor(fields: CollectionRewardInfoFields) {
     this.bump = fields.bump
+    this.uuid = fields.uuid
     this.ratePerDay = fields.ratePerDay
     this.rewardWallet = fields.rewardWallet
     this.rewardSymbol = fields.rewardSymbol
@@ -120,6 +125,7 @@ export class CollectionRewardInfo {
 
     return new CollectionRewardInfo({
       bump: dec.bump,
+      uuid: dec.uuid,
       ratePerDay: dec.ratePerDay,
       rewardWallet: dec.rewardWallet,
       rewardSymbol: dec.rewardSymbol,
@@ -136,6 +142,7 @@ export class CollectionRewardInfo {
   toJSON(): CollectionRewardInfoJSON {
     return {
       bump: this.bump,
+      uuid: this.uuid,
       ratePerDay: this.ratePerDay,
       rewardWallet: this.rewardWallet.toString(),
       rewardSymbol: this.rewardSymbol,
@@ -152,6 +159,7 @@ export class CollectionRewardInfo {
   static fromJSON(obj: CollectionRewardInfoJSON): CollectionRewardInfo {
     return new CollectionRewardInfo({
       bump: obj.bump,
+      uuid: obj.uuid,
       ratePerDay: obj.ratePerDay,
       rewardWallet: new PublicKey(obj.rewardWallet),
       rewardSymbol: obj.rewardSymbol,

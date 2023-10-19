@@ -3,13 +3,12 @@ import { Nft } from "@metaplex-foundation/js"
 import { PublicKey } from "@solana/web3.js"
 import type {
     Adapter, WalletReadyState, WalletName,
-    WalletNotReadyError,
-    WalletNotConnectedError, MessageSignerWalletAdapterProps, SignerWalletAdapterProps, WalletAdapterProps
+    MessageSignerWalletAdapterProps, SignerWalletAdapterProps, WalletAdapterProps
 } from "@solana/wallet-adapter-base";
 import { Ref } from "vue";
-import { writeFileSync } from "fs";
-import { join } from "path";
 
+
+export * from './ember_bed'
 export * from './accounts'
 export * from './errors'
 export * from './types'
@@ -26,7 +25,8 @@ export type CollectionInfo = {
     fireEligible: boolean,
     phoenixRelation?: { kind: string },
     rewardSymbol: string,
-    rewardMint: string
+    rewardMint: string,
+    uuid?: string,
 }
 
 export interface AnchorWallet {
@@ -103,6 +103,7 @@ export type DBCollectionInfo = {
     manager: string;
     name: string;
     hashlist: string[];
+    collectionAddress?: string;
     style: {
         icon: string,
         colors: {
@@ -216,7 +217,12 @@ export type Accounts = {
     userAccountPDA: PublicKey,
     nftCollectionAddress: PublicKey,
     funderTokenAta: PublicKey
-    rewardWallet: PublicKey
+    rewardWallet: PublicKey,
+    firePoa?: PublicKey,
+    firePda?: PublicKey,
+    fireMint?: PublicKey,
+    fireBump?: number,
+    userFireAta?: PublicKey,
 }
 
 
@@ -231,6 +237,7 @@ export interface MutableTokenInfo {
 }
 
 export interface EditCollectionInfo {
+    uuid: string;
     ratePerDay: number
     rewardWallet: string
     rewardSymbol: string
@@ -239,6 +246,7 @@ export interface EditCollectionInfo {
     fireEligible: boolean
     rewardMint: string
     manager: string
+    collectionSize?: number;
 
 }
 export class EditCollectionInfo {
@@ -250,8 +258,10 @@ export class EditCollectionInfo {
     fireEligible: boolean;
     rewardMint: string;
     manager: string;
+    uuid: string;
+    collectionSize?: number;
 
-    constructor(ratePerDay: number, rewardWallet: string, rewardSymbol: string, collectionName: string, collectionAddress: string, fireEligible: boolean, rewardMint: string, manager: string) {
+    constructor(ratePerDay: number, rewardWallet: string, rewardSymbol: string, collectionName: string, collectionAddress: string, fireEligible: boolean, rewardMint: string, manager: string, uuid: string, collectionSize?: number) {
         this.ratePerDay = ratePerDay;
         this.rewardWallet = rewardWallet;
         this.rewardSymbol = rewardSymbol;
@@ -260,6 +270,8 @@ export class EditCollectionInfo {
         this.fireEligible = fireEligible;
         this.rewardMint = rewardMint;
         this.manager = manager;
+        this.uuid = uuid;
+        this.collectionSize = collectionSize;
     }
 }
 

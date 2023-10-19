@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useServerAPI } from 'src/api/server-api';
-import { useChainAPI } from 'src/api/chain-api';
-import { ref, watchEffect } from 'vue';
-import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types'
-import { useRoute } from 'vue-router';
-import UserNftTray from 'src/components/UserNftTray.vue';
-import { PublicKey } from '@solana/web3.js';
+import { useServerAPI } from "src/api/server-api";
+import { useChainAPI } from "src/api/chain-api";
+import { ref, watchEffect } from "vue";
+import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from "src/types"
+import { useRoute } from "vue-router";
+import UserNftTray from "src/components/UserNftTray.vue";
+import { PublicKey } from "@solana/web3.js";
 
 const { server_api } = useServerAPI();
 const { connection } = useChainAPI();
@@ -26,8 +26,8 @@ watchEffect(async () => {
         if (!dbInfo.value) return themeLoaded.value = true;
         theme.value = dbInfo.value.style
         !theme.value ?
-            styles.value.chips = `width: 175px; text-align:center; color:#ffffff; box-shadow:  0 0 3px 1px #ffffff; font-variant: small-caps;` :
-            styles.value.chips = `width: 175px; text-align:center; color:${theme.value.colors.primary}; box-shadow:  0 0 0 1px ${theme.value.colors.secondary}; font-variant: small-caps;`
+            styles.value.chips = `width: 175px;justify-content: center; text-align:center; color:#ffffff; box-shadow:  0 0 3px 1px #ffffff; font-variant: small-caps;` :
+            styles.value.chips = `width: 175px; justify-content: center; text-align:center; color:${theme.value.colors.secondary}; box-shadow:  0 0 0 1px ${theme.value.colors.accent}; font-variant: small-caps;`
         themeLoaded.value = true;
     }
     if (!pdaInfo.value) {
@@ -43,22 +43,21 @@ watchEffect(async () => {
         <q-spinner size="50%" />
     </div>
     <q-page v-else class="page"
-        :style="`background-image: url(${theme?.icon}); background-position:center; background-size:contain; background-repeat: no-repeat;`">
+        :style="`background-color: ${theme?.colors.primary}; background-image: url(${theme?.icon}); background-position:center; background-size:cover; background-repeat: no-repeat;`">
         <div class="wrapper">
 
             <section class="section">
                 <div class="flex justify-around">
-                    <!-- <q-item> -->
-                    <!-- <q-item-section style="background-color:#1d1d1d50">
+                    <q-item>
+                        <q-item-section style="background-color:#1d1d1d50">
                             <h5 style="color:white">
-                                {{ pdaInfo?.collectionName }}
+                                {{ pdaInfo }}
                             </h5>
-                        </q-item-section> -->
-                    <!-- </q-item> -->
+                        </q-item-section>
+                    </q-item>
                     <span class="chips special">
-
                         <q-chip dark square :style="styles.chips" class="special"
-                            :label="dbInfo?.hashlist ? `Collection Size: ${dbInfo?.hashlist.length}` : 'Collection Size: Not Available'" />
+                            :label="(dbInfo?.hashlist.length && dbInfo?.hashlist.length > 0) ? `Size: ${dbInfo?.hashlist.length}` : 'Size: Not Specified'" />
                         <q-chip dark square :style="styles.chips" class="special"
                             :label="pdaInfo?.rewardSymbol ? `Token: ${pdaInfo?.rewardSymbol}` : 'Token: Not Available'" />
                         <q-chip dark square :style="styles.chips" class="special"
@@ -100,6 +99,10 @@ main {
     align-items: center;
     gap: 1.25rem 1.25rem;
     padding: 1rem;
-    // border-radius: 0.5rem;
+    width: 100%; // border-radius: 0.5rem;
+}
+
+.chips>* {
+    justify-content: center;
 }
 </style>

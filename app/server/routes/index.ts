@@ -4,7 +4,10 @@ const router = express.Router();
 
 
 router.use('/api', api);
-router.get('/', (req, res) => { })
+router.get('/test', (req, res) => {
+    res.status(200).json({ success: 'Connected to EmberBed Server' })
+})
+// router.get('/', (req, res) => { })
 
 
 export default router

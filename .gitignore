@@ -5,7 +5,10 @@
 .DS_Store
 .crates
 
+_target
+_target_BAK
 target
+.coderrect
 
 **/*.rs.bk
 
@@ -27,3 +30,14 @@ app/src/solana/wallets/**.ts
 _backup.ts
 not_anything.ts
 app/src/solana/wallets/**.ts
+app/server/simpl3r_hashlist.json
+phoenixdev.json
+.env
+Zero_Evo_Hashlist.json
+PrjctTokenAuthority.json
+app/src/solana/types/_ember_bed.ts
+Hydra.json
+app/src/dev/ZERO_EVO_EB_COLLECTION_DEV.json
+app/src/solana/types/__ember_bed.ts
+app/src/types/__ember_ber.ts
+app/src/types/_ember_bed.ts

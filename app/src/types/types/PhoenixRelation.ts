@@ -72,14 +72,37 @@ export class Founder {
   }
 }
 
+export interface EvoJSON {
+  kind: "Evo"
+}
+
+export class Evo {
+  static readonly discriminator = 3
+  static readonly kind = "Evo"
+  readonly discriminator = 3
+  readonly kind = "Evo"
+
+  toJSON(): EvoJSON {
+    return {
+      kind: "Evo",
+    }
+  }
+
+  toEncodable() {
+    return {
+      Evo: {},
+    }
+  }
+}
+
 export interface MemberJSON {
   kind: "Member"
 }
 
 export class Member {
-  static readonly discriminator = 3
+  static readonly discriminator = 4
   static readonly kind = "Member"
-  readonly discriminator = 3
+  readonly discriminator = 4
   readonly kind = "Member"
 
   toJSON(): MemberJSON {
@@ -100,9 +123,9 @@ export interface EmberBedJSON {
 }
 
 export class EmberBed {
-  static readonly discriminator = 4
+  static readonly discriminator = 5
   static readonly kind = "EmberBed"
-  readonly discriminator = 4
+  readonly discriminator = 5
   readonly kind = "EmberBed"
 
   toJSON(): EmberBedJSON {
@@ -123,9 +146,9 @@ export interface NoneJSON {
 }
 
 export class None {
-  static readonly discriminator = 5
+  static readonly discriminator = 6
   static readonly kind = "None"
-  readonly discriminator = 5
+  readonly discriminator = 6
   readonly kind = "None"
 
   toJSON(): NoneJSON {
@@ -156,6 +179,9 @@ export function fromDecoded(obj: any): types.PhoenixRelationKind {
   if ("Founder" in obj) {
     return new Founder()
   }
+  if ("Evo" in obj) {
+    return new Evo()
+  }
   if ("Member" in obj) {
     return new Member()
   }
@@ -182,6 +208,9 @@ export function fromJSON(
     case "Founder": {
       return new Founder()
     }
+    case "Evo": {
+      return new Evo()
+    }
     case "Member": {
       return new Member()
     }
@@ -199,6 +228,7 @@ export function layout(property?: string) {
     borsh.struct([], "Affiliate"),
     borsh.struct([], "Saved"),
     borsh.struct([], "Founder"),
+    borsh.struct([], "Evo"),
     borsh.struct([], "Member"),
     borsh.struct([], "EmberBed"),
     borsh.struct([], "None"),

@@ -6,15 +6,16 @@ import { useServerAPI } from 'src/api/server-api';
 import * as types from 'src/types';
 import { PhoenixRelationKind } from 'src/types';
 import { ref, watchEffect } from 'vue'
-import { CopyClick, camelCaseToTitleCase } from 'src/helpers';
+import { CopyClick, camelCaseToTitleCase, isRelevant } from 'src/helpers';
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
 import { AddHashList, AddStyleDialog } from 'src/components'
 import { useRouter } from 'vue-router';
 import EditCollectionDialog from './EditCollectionDialog.vue';
-
+import WithdrawDialog from './WithdrawDialog.vue';
 type PR =
     | PhoenixRelationKind
     | types.PhoenixRelation.Affiliate
+    | types.PhoenixRelation.Evo
     | types.PhoenixRelation.Saved
     | types.PhoenixRelation.Founder
     | types.PhoenixRelation.Member
@@ -28,6 +29,7 @@ const dialogShow = ref(false);
 const hashListCardView = ref(false);
 const styleCardView = ref(false);
 const editCollectionView = ref(false);
+const withdrawDialog = ref(false);
 const styleReady = ref(false);
 const { connection, wallet } = useChainAPI();
 const { CollectionRewardInfo } = types
@@ -39,7 +41,9 @@ const collectionInfo = ref(_collectionInfo.value?.toJSON());
 
 
 watchEffect(async () => {
+    console.log({ collectionPDA: collectionRewardPDA.value.toBase58() })
     if (!collectionInfo.value && _collectionInfo.value) {
+        console.log({ CollectionRewardInfo: _collectionInfo.value })
         collectionInfo.value = _collectionInfo.value.toJSON();
     }
     if (props.collectionRewardPDA) {
@@ -100,23 +104,23 @@ function handleDialogShow() {
     dialogShow.value = true;
 }
 
-function isRelevant(k: string): boolean {
-    // console.log(k)
-    let result
-    switch (k) {
-        case 'bump':
-            result = false;
-            console.log('bump', result)
-            break;
-        case 'isInitialized':
-            result = false;
-            break;
-        default:
-            result = true;
-            break;
-    }
-    return result;
-}
+// function isRelevant(k: string): boolean {
+//     // console.log(k)
+//     let result
+//     switch (k) {
+//         case 'bump':
+//             result = false;
+//             console.log('bump', result)
+//             break;
+//         case 'isInitialized':
+//             result = false;
+//             break;
+//         default:
+//             result = true;
+//             break;
+//     }
+//     return result;
+// }
 
 
 function handleCollectionRouteClick(pda: string) {
@@ -146,7 +150,7 @@ function handleCollectionRouteClick(pda: string) {
 
             </q-item>
             <!-- </q-card-section>
-            <q-card-section> -->
+                                    <q-card-section> -->
 
             <q-item>
                 <q-item-label header class="card-section-title">
@@ -189,7 +193,7 @@ function handleCollectionRouteClick(pda: string) {
             <q-btn dark @click="handleDialogShow">Details</q-btn>
             <q-btn dark label="Edit Info" @click="() => editCollectionView = true" />
             <q-btn dark @click="handleCollectionRouteClick(collectionRewardPDA.toBase58())" label="Go to
-                Page" />
+                                        Page" />
         </q-card-actions>
     </q-card>
     <q-dialog v-model="dialogShow">
@@ -221,9 +225,10 @@ function handleCollectionRouteClick(pda: string) {
             </q-card-section>
             <q-separator dark spaced />
             <q-card-actions class="collection-add-ons"
-                v-if="collectionInfo?.manager == wallet.publicKey.toBase58() && collectionInfo?.collectionName && collectionRewardPDA">
+                v-if="collectionInfo?.manager == wallet?.publicKey.toBase58() && collectionInfo?.collectionName && collectionRewardPDA">
                 <q-btn dark label="Add Hashlist" @click="handleAddHashlistClick()" />
                 <q-btn dark label="Customization" :disable="!styleReady" @click="styleCardView = true" />
+                <q-btn dark :label="`Withdraw ${collectionInfo.rewardSymbol}`" @click="withdrawDialog = true" />
             </q-card-actions>
         </q-card>
     </q-dialog>
@@ -236,6 +241,10 @@ function handleCollectionRouteClick(pda: string) {
     <q-dialog v-model="styleCardView" full-width>
         <AddStyleDialog :pda="collectionRewardPDA.toBase58()" :collectionName="collectionInfo!.collectionName"
             :style="collectionStyle!" />
+    </q-dialog>
+    <q-dialog v-model="withdrawDialog" full-width>
+        <WithdrawDialog v-if="collectionInfo" :collection="collectionInfo" :pda="collectionRewardPDA.toBase58()"
+            :collectionName="collectionInfo.collectionName" />
     </q-dialog>
 </template>
 <style lang="scss" scoped>

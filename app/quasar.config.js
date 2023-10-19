@@ -20,7 +20,7 @@ module.exports = configure(function (/* ctx */) {
       // include = [],
       // exclude = [],
       // rawOptions = {},
-      warnings: true,
+      warnings: false,
       errors: true
     },
 
@@ -33,7 +33,8 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       'sw',
       'axios',
-      'store'
+      'pinia',
+      // 'chain-api'
 
     ],
 
@@ -41,7 +42,25 @@ module.exports = configure(function (/* ctx */) {
     css: [
       'app.sass'
     ],
+    // optimizeDeps: { // 👈 optimizedeps
+    //   esbuildOptions: {
+    //     target: "esnext", 
+    //     // Node.js global to browser globalThis
+    //     define: {
+    //       global: 'globalThis'
+    //     },
+    //     supported: { 
+    //       bigint: true 
+    //     },
+    //   }
+    // }, 
 
+    build: {
+      target: ["esnext"], // 👈 build.target
+      transpile: [
+        'big-integer-library', // Add any packages that use big integer literals
+      ],
+    },
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
@@ -59,11 +78,11 @@ module.exports = configure(function (/* ctx */) {
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#build
     build: {
       target: {
-        browser: ['es2022', 'es2019', 'edge88', 'firefox78', 'chrome87', 'safari13.1'],
+        browser: ['esnext'],
         node: 'node16'
       },
       alias: {
-        "@": path.join(__dirname, './src/')
+        "@": path.join(__dirname, 'src')
       },
 
       vueRouterMode: 'hash', // available values: 'hash', 'history'
@@ -76,11 +95,13 @@ module.exports = configure(function (/* ctx */) {
       // publicPath: '/',
       // analyze: true,
       env: {
+        // NODE_ENV: process.env.NODE_ENV || 'development',
+        // QUICK_NODE_HTTP: process.env.QUICK_NODE_HTTP || null,
 
       },
       // rawDefine: {}
       // ignorePublicFolder: true,
-      // minify: false,
+      minify: true,
       polyfillModulePreload: true,
       // distDir
 
@@ -129,16 +150,16 @@ module.exports = configure(function (/* ctx */) {
     animations: [],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#sourcefiles
-    // sourceFiles: {
-    //   rootComponent: 'src/App.vue',
-    //   router: 'src/router/index',
-    //   store: 'src/store/index',
-    //   registerServiceWorker: 'src-pwa/register-service-worker',
-    //   serviceWorker: 'src-pwa/custom-service-worker',
-    //   pwaManifestFile: 'src-pwa/manifest.json',
-    //   electronMain: 'src-electron/electron-main',
-    //   electronPreload: 'src-electron/electron-preload'
-    // },
+    sourceFiles: {
+      //   rootComponent: 'src/App.vue',
+      //   router: 'src/router/index',
+      store: 'src/stores/index',
+      //   registerServiceWorker: 'src-pwa/register-service-worker',
+      //   serviceWorker: 'src-pwa/custom-service-worker',
+      //   pwaManifestFile: 'src-pwa/manifest.json',
+      //   electronMain: 'src-electron/electron-main',
+      //   electronPreload: 'src-electron/electron-preload'
+    },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
@@ -153,7 +174,7 @@ module.exports = configure(function (/* ctx */) {
       // manualStoreHydration: true,
       // manualPostHydrationTrigger: true,
 
-      prodPort: 3000, // The default port that the production server should use
+      prodPort: 9000, // The default port that the production server should use
       // (gets superseded if process.env.PORT is specified at runtime)
 
       middlewares: [
@@ -162,18 +183,18 @@ module.exports = configure(function (/* ctx */) {
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
-    pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
-      injectPwaMetaTags: true,
-      swFilename: 'sw.js',
-      manifestFilename: 'manifest.json',
-      useCredentialsForManifestTag: false,
-      // useFilenameHashes: true,
-      // extendGenerateSWOptions (cfg) {}
-      // extendInjectManifestOptions (cfg) {},
-      // extendManifestJson (json) {}
-      // extendPWACustomSWConf (esbuildConf) {}
-    },
+    // pwa: {
+    //   workboxMode: 'generateSW', // or 'injectManifest'
+    //   injectPwaMetaTags: true,
+    //   swFilename: 'sw.js',
+    //   manifestFilename: 'manifest.json',
+    //   useCredentialsForManifestTag: false,
+    // useFilenameHashes: true,
+    // extendGenerateSWOptions (cfg) {}
+    // extendInjectManifestOptions (cfg) {},
+    // extendManifestJson (json) {}
+    // extendPWACustomSWConf (esbuildConf) {}
+    // },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
     cordova: {
@@ -210,7 +231,7 @@ module.exports = configure(function (/* ctx */) {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'app'
+        appId: 'EmberBed'
       }
     },
 

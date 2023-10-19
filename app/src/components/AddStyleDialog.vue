@@ -20,7 +20,7 @@ async function sendStyleToDb() {
     try {
 
         if (!styleRef.value) return
-        const result = await server_api.collection.add.style(props.pda, wallet.value.publicKey.toBase58(), styleRef.value)
+        const result = await server_api.collection.add.style(props.pda, wallet.value!.publicKey.toBase58(), styleRef.value)
         if (!result) throw new Error(result.message);
         notify({
             type: 'success',
@@ -83,7 +83,6 @@ watchEffect(() => {
             <q-btn dark flat label="cancel" v-close-popup />
         </q-card-actions>
     </q-card>
-
 </template>
 <style lang="scss" scoped>
 .label {

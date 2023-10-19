@@ -5,7 +5,7 @@ import { useChainAPI } from 'src/api/chain-api';
 import CollectionCard from './CollectionCard.vue';
 
 import { ProgramAccount } from '@project-serum/anchor';
-import { EmberBed } from 'src/solana/types/ember_bed';
+import { EmberBed } from 'src/types/ember_bed'
 import { CollectionRewardInfoJSON } from 'src/types';
 
 type OnChainInfo = CollectionRewardInfoJSON & { statePDA: PublicKey }
@@ -14,32 +14,7 @@ const { wallet, api, program } = useChainAPI();
 defineProps<{
     collectionPDAs: ProgramAccount<EmberBed>[],
 }>()
-const $q = useQuasar();
-async function handleCopyClick(value: string) {
-    try {
-        await copyToClipboard(value)
-        return $q.notify({
-            color: 'green-10',
-            textColor: 'white',
-            icon: 'clipboard',
-            group: 'saved group',
-            message: `Successfully copied to clipboard`,
-            position: 'top'
 
-        })
-
-    } catch (err) {
-        // console.log(err)
-        return $q.notify({
-            color: 'red-10',
-            textColor: 'white',
-            icon: 'warning',
-            message: `So that didn't work. . . sorry`,
-            position: 'top'
-
-        })
-    }
-}
 
 
 

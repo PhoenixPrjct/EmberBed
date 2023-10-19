@@ -4,7 +4,7 @@ import { Keypair, PublicKey } from '@solana/web3.js';
 // import { useWorkspace, initWorkspace } from 'src/composables';
 // import { fundKP } from '../../solana/fundWallet'
 import { QNotifyCreateOptions, useQuasar } from 'quasar';
-import { useChainAPI } from '../../api/chain-api';
+import { useChainAPI } from 'src/api/chain-api';
 import axios from 'src/boot/axios';
 import { CollectionInfo, CollectionRewardInfo, Accounts, CollectionRewardInfoJSON, CollectionRewardInfoFields, PhoenixRelation, UserStakeInfo } from '../../types';
 
@@ -48,20 +48,19 @@ watchEffect(async () => {
     console.log(onChainInfo.value)
     if (!collectionPDAs.value?.length) {
         const collectionsRaw = await program.value.account.collectionRewardInfo.all()
-        if (wallet.value?.publicKey.toBase58() == 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') {
-            await collectionsRaw.map((acct: ProgramAccount) => {
+        // if (wallet.value?.publicKey.toBase58() == 'DwK72SPFqZfPvnoUThk2BAjPxBMeDa2aPT7k8FAyCz8q') {
+        //     await collectionsRaw.map((acct: ProgramAccount) => {
+        //         collectionPDAs.value = [...collectionPDAs.value, acct];
+        //     })
+        // } else {
+        await collectionsRaw.map((acct: ProgramAccount) => {
+            console.log('DashPasge:57', acct.account)
+            if (acct.account.manager.toBase58() == walletString) {
                 collectionPDAs.value = [...collectionPDAs.value, acct];
-            })
-        } else {
-            await collectionsRaw.map((acct: ProgramAccount) => {
-                console.log(acct.account)
-                if (acct.account.manager.toBase58() == walletString) {
-                    collectionPDAs.value = [...collectionPDAs.value, acct];
-                }
+            }
 
-            })
-            return;
-        }
+        })
+        return;
     }
 })
 
