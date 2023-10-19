@@ -21,6 +21,9 @@ declare_id!("2a1oeKBQddr2jgGB7MfvqHdEwi24KEcTS2Fbf5PvQTi5");
 
 #[program]
 pub mod ember_bed {
+    use anchor_spl::token::{ TokenAccount, Mint };
+    use spl_token::ui_amount_to_amount;
+
     use super::*;
 
     pub fn stake(ctx: Context<Stake>, collection_reward_pda: Pubkey) -> Result<()> {
@@ -500,6 +503,9 @@ pub mod ember_bed {
         let timestamp = Clock::get().unwrap().unix_timestamp;
         let fire_poa = &ctx.accounts.fire_poa;
         let fire_mint = get_fire_token();
+
+        let decimals = ctx.accounts.fire_mint.decimals;
+        msg!("Decimals: {}", decimals);
         if !ctx.accounts.stake_status.is_initialized {
             msg!("Account is not initialized");
             return err!(StakeError::UnintializedAccount);
@@ -528,14 +534,14 @@ pub mod ember_bed {
         let fire_rate: u64 = relation * (BASE_RATE as u64);
         msg!("Fire Rate: {:?}", fire_rate);
 
-        let raw_rate_per_second = (fire_rate as f32) / (86400 as f32);
+        let raw_rate_per_second = (fire_rate as f64) / (86400 as f64);
         msg!("Raw Rate Per Second: {}", raw_rate_per_second);
         // let rate_per_second = (raw_rate_per_second * (LPS as f32)) as u64;
         // msg!("Rate per second: {}", rate_per_second);
 
-        let staked_duration = (timestamp - stake_status.last_stake_redeem) as f32;
+        let staked_duration = (timestamp - stake_status.last_stake_redeem) as f64;
         msg!("StakeDuration: {}", staked_duration);
-        let rewards_earned = (raw_rate_per_second * staked_duration) as u64;
+        let rewards_earned = raw_rate_per_second * staked_duration;
         msg!("Rewards Earned: {}", rewards_earned);
         if timestamp == 0 || stake_status.last_stake_redeem == 0 {
             msg!("NFT Not Initialized Properly");
@@ -548,7 +554,7 @@ pub mod ember_bed {
         let signer = &[&seeds[..]];
         msg!("Fire POA: {}", fire_poa.key());
         msg!("FIRE ACCOUNT Balance: {}", ctx.accounts.fire_poa.amount.to_string());
-        msg!("Fire Mint {}:", fire_info.reward_mint.key());
+        msg!("Fire Mint {} \n {}:", fire_info.reward_mint.key(), fire_mint.key());
         let transfer_instruction = Transfer {
             from: fire_poa.to_account_info(),
             to: user_reward_ata.to_account_info(),
@@ -558,8 +564,17 @@ pub mod ember_bed {
             ctx.accounts.token_program.to_account_info(),
             transfer_instruction
         ).with_signer(signer);
-        anchor_spl::token::transfer(cpi_ctx, rewards_earned)?;
-        msg!("Successfully Transferred");
+        if decimals == 0 {
+            anchor_spl::token::transfer(cpi_ctx, ui_amount_to_amount(rewards_earned, 0))?;
+            msg!("Successfully Transferred");
+        } else {
+            let transfer_amount = anchor_spl::token::spl_token::ui_amount_to_amount(
+                rewards_earned,
+                decimals
+            );
+            anchor_spl::token::transfer(cpi_ctx, transfer_amount)?;
+            msg!("Successfully Transferred");
+        }
         ctx.accounts.stake_status.last_stake_redeem = timestamp;
         msg!("Last Redeem Set to {}", ctx.accounts.stake_status.last_stake_redeem);
         Ok(())

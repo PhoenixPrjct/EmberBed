@@ -283,8 +283,8 @@ pub struct RedeemFire<'info> {
     pub user_reward_ata: Account<'info, TokenAccount>,
     #[account(mut)]
     pub stake_status: Account<'info, UserStakeInfo>,
-    /// CHECK: This is not dangerous because we don't read or write to this account.
-    pub fire_mint: AccountInfo<'info>,
+    /// CHECK::This is not dangerous because we don't read or write to this account.
+    pub fire_mint: Box<Account<'info, Mint>>,
     #[account(mut)]
     pub fire_info: Account<'info, FireRewardInfo>,
     #[account(mut)]
