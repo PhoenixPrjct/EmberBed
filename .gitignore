@@ -41,3 +41,6 @@ app/src/dev/ZERO_EVO_EB_COLLECTION_DEV.json
 app/src/solana/types/__ember_bed.ts
 app/src/types/__ember_ber.ts
 app/src/types/_ember_bed.ts
+tests/*
+tests/emberBed.ts
+tests/emberBed.ts

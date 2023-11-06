@@ -35,3 +35,6 @@ yarn-error.log*
 .env
 ./src/solana/devWallet.ts
 quasar.config.js
+
+tests/*
+tests/emberBed.ts
