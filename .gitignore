@@ -44,3 +44,5 @@ app/src/types/_ember_bed.ts
 tests/*
 tests/emberBed.ts
 tests/emberBed.ts
+app/quasar.config.js
+app/quasar.config.js

@@ -2,20 +2,20 @@ import { getOrCreateAssociatedTokenAccount, Account, getAssociatedTokenAddress }
 import { PublicKey, Connection, clusterApiUrl, SystemProgram, Transaction } from "@solana/web3.js";
 import { EBWallet, devKeyPair, ProgramWallet } from "../../src/dev/walletKPs";
 import * as types from "../../src/types";
-import { CC } from "../controllers"
+// import { CC } from "../controllers"
 import "dotenv"
 import { VersionedTransaction } from "@solana/web3.js";
 import { TransactionMessage } from "@solana/web3.js";
-import { type } from "os";
+// import { type } from "os";
 import { _ } from "app/dist/spa/assets/logo_only.976939b9";
 
 function getConnection() {
-    // if (process.env.NODE_ENV === "production" && process.env.QUICK_NODE_HTTP) {
-    //     return new Connection(process.env.QUICK_NODE_HTTP)
-    // } else {
-    return new Connection(clusterApiUrl("devnet"))
+      if (process.env.NODE_ENV === "production" && process.env.QUICK_NODE_HTTP) {
+        return new Connection(process.env.QUICK_NODE_HTTP)
+    } else {
+        return new Connection(clusterApiUrl("devnet"))
 
-    // }
+    }
 }
 const connection = getConnection();
 // console.log({ connection: connection.rpcEndpoint })

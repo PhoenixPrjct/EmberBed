@@ -52,7 +52,7 @@ async function getNftMeta(uri: string, mint: string) {
         const meta = await axios.get(uri);
         console.log(mint, meta.data);
         return meta.data;
-    } catch (e) {
+    } catch (e: any) {
         if (e.response && e.response.status === 404) {
             console.log('NFT metadata not found:', uri, `\n For Token ${mint}`);
             return null;
