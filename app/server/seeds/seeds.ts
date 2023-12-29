@@ -2,7 +2,7 @@ import { getOrCreateAssociatedTokenAccount, Account, getAssociatedTokenAddress }
 import { PublicKey, Connection, clusterApiUrl, SystemProgram, Transaction } from "@solana/web3.js";
 import { EBWallet, devKeyPair, ProgramWallet } from "../../src/dev/walletKPs";
 import * as types from "../../src/types";
-// import { CC } from "../controllers"
+import { CC } from "../controllers"
 import "dotenv"
 import { VersionedTransaction } from "@solana/web3.js";
 import { TransactionMessage } from "@solana/web3.js";
@@ -10,7 +10,7 @@ import { TransactionMessage } from "@solana/web3.js";
 import { _ } from "app/dist/spa/assets/logo_only.976939b9";
 
 function getConnection() {
-      if (process.env.NODE_ENV === "production" && process.env.QUICK_NODE_HTTP) {
+    if (process.env.NODE_ENV === "production" && process.env.QUICK_NODE_HTTP) {
         return new Connection(process.env.QUICK_NODE_HTTP)
     } else {
         return new Connection(clusterApiUrl("devnet"))
@@ -18,8 +18,9 @@ function getConnection() {
     }
 }
 const connection = getConnection();
-// console.log({ connection: connection.rpcEndpoint })
+console.log({ connection: connection.rpcEndpoint })
 async function getFunderATA(rewardToken: PublicKey) {
+    console.log(rewardToken.toString())
     const ata = await getAssociatedTokenAddress(rewardToken, EBWallet.publicKey);
     // console.log({ ata: ata.toJSON() });
     return ata;
@@ -45,14 +46,16 @@ async function generateSeedInfo(name: "Evo" | "Founder" | "Member" | "Saved") {
     let rewardToken: PublicKey;
     switch (name) {
         case "Evo":
-            rewardToken = new PublicKey("")
+            console.log(`Generating Evo Seed Info`)
+            rewardToken = new PublicKey(/*"HrrkiF68AQdho5FCUsj43dAPdw7ncJpXb1QQeN6yFAzB"*/ "3R2WbQmpsTZYy7nSckrWZkW2mYiLYPVsaPQb9H5Ya5Za")
             const EvoPdaAndBump = await getPDA(rewardToken, "PrjctEvo");
             pda = EvoPdaAndBump.pda;
             bump = EvoPdaAndBump.bump;
             const EvoRewardWallet = await (await getRewardWallet(rewardToken, pda)).address
+            console.log({ EvoRewardWallet: EvoRewardWallet.toBase58() })
             seed = {
                 uuid: pda.toBase58(),
-                collectionAddress: new PublicKey(""),
+                collectionAddress: new PublicKey("EMQay3A9h22VpQzusmyrsbJTYJtGig2532J2eLNUSnXu"),
                 bump: bump,
                 rewardMint: rewardToken,
                 collectionName: "PrjctEvo",
@@ -64,8 +67,10 @@ async function generateSeedInfo(name: "Evo" | "Founder" | "Member" | "Saved") {
                 isInitialized: true,
                 rewardWallet: EvoRewardWallet
             }
+            console.log({ EVO_SEED: seed })
             break;
         case "Founder":
+            console.log(`Generating Founder Seed Info`)
             rewardToken = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
             const FounderInfo = await getPDA(rewardToken, "PrjctFounder");
             pda = FounderInfo.pda;
@@ -88,6 +93,7 @@ async function generateSeedInfo(name: "Evo" | "Founder" | "Member" | "Saved") {
             }
             break;
         case "Member":
+            console.log(`Generating Member Seed Info`)
             rewardToken = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
             const MemberInfo = await getPDA(rewardToken, "PrjctMember");
             pda = MemberInfo.pda;
@@ -112,6 +118,7 @@ async function generateSeedInfo(name: "Evo" | "Founder" | "Member" | "Saved") {
             break;
 
         case "Saved":
+            console.log(`Generating Saved Seed Info`)
             rewardToken = new PublicKey("F1rEZqWk1caUdaCwyHMWhxv5ouuzPW8sgefwBhzdhGaw")
             const SavedInfo = await getPDA(rewardToken, "PrjctSaved");
             pda = SavedInfo.pda;
@@ -189,14 +196,17 @@ async function generateFireAccount(name = "Fire") {
 
 export async function createPDA(name: "Evo" | "Member" | "Founder" | "Saved" | "Fire"): Promise<String | unknown> {
     try {
+        console.log(`\n CREATEPDA Starting \n`)
         if (name === "Fire") {
             console.log("Creating fire account")
             return await generateFireAccount();
         }
-        // console.log({ EBWallet: EBWallet.publicKey.toBase58() })
+        console.log({ EBWalletTE_PDA: EBWallet.publicKey.toBase58() })
         const { phoenixRelation, collectionName, rewardSymbol, ratePerDay, collectionAddress, rewardWallet, rewardMint, bump, statePda } = await generateSeedInfo(name)
         const funderAta = await getFunderATA(new PublicKey(rewardMint))
-        // console.log({ funderAta: funderAta.toJSON() })
+        const creationInfo = { phoenixRelation, collectionName, rewardSymbol, ratePerDay, collectionAddress, rewardWallet, rewardMint, bump, statePda, funderAta }
+        console.dir({ creationInfo: creationInfo })
+        console.log({ funderAta: funderAta.toJSON() })
         const colAddress = collectionAddress ? collectionAddress.toJSON() : ""
         // let nftCollectionAddress: PublicKey = null as unknown as PublicKey
         const accounts: types.InitializeStatePdaAccounts = {
@@ -222,7 +232,7 @@ export async function createPDA(name: "Evo" | "Member" | "Founder" | "Saved" | "
         if (exists) {
             console.log("PDA already exists")
             console.log({ exists_state: exists.data.toJSON() })
-            // CC.create({ pda: statePda.toBase58(), manager: EBWallet.publicKey.toBase58(), collection: collectionName, reward_wallet: rewardWallet.toBase58(), vca: collectionAddress?.toString() })
+            CC.create({ pda: statePda.toBase58(), manager: EBWallet.publicKey.toBase58(), collection: collectionName, reward_wallet: rewardWallet.toBase58(), vca: collectionAddress?.toString() })
             return statePda.toBase58();
         }
 

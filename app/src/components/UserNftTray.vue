@@ -17,11 +17,13 @@ import { TOKEN_PROGRAM_ID } from "@solana/spl-token"
 import { SystemProgram, PublicKey } from '@solana/web3.js';
 import { chargeFeeTx, getStakingFee, getExplorerURL } from 'src/helpers';
 import { FIRE_INFO, FIRE_MINT_PUB } from "src/helpers/constants";
-
+import { useUserStore } from "stores/user_store";
 const { notify } = useQuasar();
 const route = useRoute();
 const router = useRouter();
 
+
+const userStore = useUserStore();
 const loading = ref(false);
 const { api, connection } = useChainAPI();
 const props = defineProps<{
@@ -239,7 +241,8 @@ async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: Col
         const bumpFire = accounts.fireBump!
         const collectionName = ebCollection.info.collectionName
         stakingAction.value = { message: `Redeeming for $FIRE`, percent: 0.75 }
-        const redeemTx = await api.value?.redeemFire(redeemAccts, bumpFire, 0, collectionName);
+        const nftsHeld = userStore.getHeld
+        const redeemTx = await api.value?.redeemFire(redeemAccts, bumpFire, nftsHeld, collectionName);
         if (!redeemTx) throw new Error('TX Failed, Please Refresh The Page');
         stakingAction.value = { message: `Complete`, percent: 1 }
         notify({
@@ -247,8 +250,8 @@ async function redeemFire(nft: EBNft, ebCollection: { loaded: boolean, info: Col
             type: 'success',
             icon: 'grade',
             color: 'accent',
-            message: `Redeemed ${ebCollection.info.rewardSymbol}`,
-            caption: getExplorerURL(redeemTx),
+            message: `Redeemed $FIRE`,
+            caption: getExplorerURL(redeemTx.tx),
             position: 'top',
             timeout: 10000
         })

@@ -1,7 +1,7 @@
 import { Keypair } from '@solana/web3.js'
-import devPk from '../../../phoenixdev.json'
-import PrjctSecret from '../../../PrjctTokenAuthority.json'
-import ProgramSecret from '../../../Hydra.json'
+import devPk from '../../../Wallet_Info/phoenixdev.json'
+import PrjctSecret from '../../../Wallet_Info/PrjctTokenAuthority.json'
+import ProgramSecret from '../../../Wallet_Info/Hydra.json'
 
 const getKeyPair = (seed: number[]) => {
     const secret = Uint8Array.from(seed)

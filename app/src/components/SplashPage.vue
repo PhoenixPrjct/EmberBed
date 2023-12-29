@@ -33,7 +33,7 @@ async function handleAdminClick(pk: PublicKey) {
 }
 watchEffect(() => {
     if (wallet.value?.publicKey && userStore.getType !== 'Admin') {
-        userStore.setUser(wallet.value.publicKey.toBase58(), 'User');
+        userStore.setUser(wallet.value.publicKey.toBase58(), 'User',0);
     }
 
 })

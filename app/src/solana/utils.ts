@@ -335,15 +335,15 @@ export function getAPI(program: Program<EmberBed>) {
         const stakeState = stakeStatusInfo?.toJSON().stakeState
         return { tx: tx, stakeStatus: stakeState }
     }
-    async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, nftsHeld?: number, collectionName?: string) {
+    async function redeemFire(accounts: RedeemFireAccounts, bumpFire: number, nftsHeld?: number, collectionName?: string): Promise<{ tx: string, stakeStatus: StakeStateJSON | null }> {
         bumpFire = (await FIRE_INFO).FIRE_BUMP
         console.log({ bumpFire, nftsHeld, collectionName, mint: accounts.fireMint.toBase58() })
         const fireTxPromise = program.methods.redeemFire(bumpFire, 0).accounts({ ...accounts })
         const fireTx = fireTxPromise;
         const sig = await fireTx.rpc();
         console.log("Redeem tx:")
-        console.log(getExplorerURL(sig));
-        return sig;
+        console.log(sig);
+        return { tx: sig, stakeStatus: null as unknown as StakeStateJSON }
 
     };
     async function redeemReward(accounts: RedeemRewardAccounts, collectionName: string, bumpState: number) {

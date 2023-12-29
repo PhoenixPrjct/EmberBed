@@ -1,6 +1,6 @@
 import { createPDA } from "./seeds";
 type seedName = "Evo" | "Founder" | "Member" | "Saved" | "Fire"
-const collectionsToAdd: seedName[] = ["Fire"]
+const collectionsToAdd: seedName[] = [/*"Fire",*/ "Evo"]
 
 collectionsToAdd.forEach(async (name) => {
     console.log({ name })

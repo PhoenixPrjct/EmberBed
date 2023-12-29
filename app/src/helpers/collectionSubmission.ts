@@ -73,6 +73,7 @@ export function getStakingFee(kind: string) {
             amount = 0.0095
             break;
     }
+    console.log({ Unstaking_Fee: amount })
     return amount;
 }
 // * TODO: Implement once collections are added.
@@ -103,7 +104,7 @@ export function getStakingFee(kind: string) {
 
 export async function chargeFeeTx(user: PublicKey, amount: number) {
     if (!user) throw new Error('No public key provided, did you connect your wallet?')
-    console.log(`Initialization Fee = ${amount} SOL`);
+    console.log(`Initialization Fee = ${Math.round(amount * LAMPORTS_PER_SOL)/LAMPORTS_PER_SOL} SOL`);
     const PhoenixWallet = useChainAPI().programWallet.publicKey
     try {
         const latestBlockHash = await connection.getLatestBlockhash();
@@ -113,7 +114,7 @@ export async function chargeFeeTx(user: PublicKey, amount: number) {
             SystemProgram.transfer({
                 fromPubkey: user,
                 toPubkey: PhoenixWallet,
-                lamports: amount * LAMPORTS_PER_SOL,
+                lamports: Math.round(amount * LAMPORTS_PER_SOL),
             }))
         const sig = await wallet.sendTransaction(transaction, connection)
         if (!sig) throw new Error('Transaction failed: ' + JSON.stringify(sig))

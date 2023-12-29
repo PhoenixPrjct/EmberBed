@@ -225,7 +225,7 @@ export const CC = {
     },
     updateCollection: async (pda: string, wallet: string, data: CollectionRewardInfoJSON, collection_size?: number) => {
         try {
-
+            console.log("Editing Collection", pda)
             const files = await readdirSync(join(__dirname, `../collections`));
             if (files.includes(pda + '.json')) {
                 const fileContents = await readFileSync(
