@@ -83,19 +83,3 @@
         "yarn": ">= 1.21.1"
     }
 }
-  
-{
-    "scripts": {
-        "lint:fix": "prettier */*.js \"*/**/*{.js,.ts}\" -w",
-        "lint": "prettier */*.js \"*/**/*{.js,.ts}\" --check",
-        "test": "ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
-    },
-    "dependencies": {
-        "@metaplex-foundation/beet": "^0.7.1",
-        "@metaplex-foundation/js": "^0.17.0",
-        "@metaplex-foundation/mpl-token-metadata": "^2.3.3",
-        "@project-serum/anchor": "^0.25.0",
-        "@solana/spl-token": "^0.3.5",
-        "@solana/web3.js": "^1.64.0"
-    },
-}
