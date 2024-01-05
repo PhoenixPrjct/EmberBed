@@ -15,7 +15,7 @@
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,,html,md,json}\" --ignore-path .gitignore",
     "test": "echo \"No test specified\" && exit 0",
-    "heroku-postbuild": "echo \"POST BUILD SCRIPT\" && yarn && yarn build"
+    "heroku-postbuild": "echo \"POST BUILD SCRIPT\" && yarn && yarn --cwd ./app build"
   },
   "dependencies": {
     "@metaplex-foundation/beet": "^0.7.1",
