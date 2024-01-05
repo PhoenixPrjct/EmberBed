@@ -1,16 +1,16 @@
 
 // import { Admin, Collection, User } from '../../models'
-import express from "express";
+import express, { Request, Response } from "express";
 import { CC } from '../../controllers';
 const router = express.Router();
 
 
-router.get("/", async (req, res) => {
+router.get("/", async (req: Request, res: Response) => {
     const { status, response } = await CC.getAll();
     res.status(status).send(response);
 })
 
-// router.get("/owner/:wallet", async (req, res) => {
+// router.get("/owner/:wallet", async (req:Request, res:Response) => {
 //     const { wallet } = req.params;
 //     const { status, response } = await CC.getByOwner(wallet);
 //     res.status(status).send(response);
@@ -28,7 +28,7 @@ router.get("/", async (req, res) => {
  * @returns {object} an object containing the status and response
  */
 router.post("/new",
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         try {
             const { collection, manager, pda, reward_wallet, vca } = req.body;
             const { status, response } = await CC.create({ ...req.body })
@@ -46,7 +46,7 @@ router.post("/new",
  * @param {object} data the data to update the collection with
  * @returns {object} an object containing the status and response
  */
-async (req, res) => {
+async (req: Request, res: Response) => {
     try {
         console.log('update')
         const { pda, wallet, data } = req.body
@@ -66,7 +66,7 @@ async (req, res) => {
  * @returns {object} an object containing the status and response
  */
 router.post('/update',
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         try {
             console.log('update')
             const { pda, wallet, data } = req.body
@@ -87,7 +87,7 @@ router.post('/update',
  * @returns {object} an object containing the status and response
  */
 router.post('/style/add',
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         console.log('Adding Style')
         const { wallet, pda, style } = req.body;
         const { status, response } = await CC.addStyle(pda, wallet, style);
@@ -101,7 +101,7 @@ router.post('/style/add',
  * @returns {object} an object containing the status and response
  */
 router.get('/hashlist/:pda',
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         const { pda } = req.params;
         console.log(pda);
         const { status, response } = await CC.getHashlist(pda);
@@ -116,7 +116,7 @@ router.get('/hashlist/:pda',
  * @returns {object} an object containing the status and response
  */
 router.post('/hashlist/add',
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         const { hashlist, wallet, name, pda } = req.body;
         const { status, response } = await CC.addHashlist(wallet, name, hashlist, pda)
         res.status(status).send(response);
@@ -128,7 +128,7 @@ router.post('/hashlist/add',
  * @returns {object} an object containing the status and response
  */
 router.get('/info/:pda',
-    async (req, res) => {
+    async (req: Request, res: Response) => {
         const { pda } = req.params;
         console.log(`Getting Info for ${pda}`)
         const { status, response } = await CC.getByPDA(pda)
@@ -141,7 +141,7 @@ router.get('/info/:pda',
 * @param {string} pda the PDA of the collection to delete
 * @returns {object} an object containing the status and response
 */
-router.delete("/:pda", async (req, res) => {
+router.delete("/:pda", async (req: Request, res: Response) => {
     const { status, response } = await CC.deleteByPDA(req.params.pda)
     res.status(status).send(response);
 })
