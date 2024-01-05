@@ -9,12 +9,13 @@
     "dev": "concurrently \"yarn watch\" \"quasar dev\"",
     "watch": "nodemon ./server/server.ts",
     "server": "ts-node ./server/server.ts",
-    "serve": "quasar serve --history",
-    "start": "quasar dev",
+    "serve": "echo \"HEY\" && quasar run serve ./",
+    "start": "ts-node ./server/server.ts",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' quasar build",
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "echo \"No test specified\" && exit 0",
+    "heroku-postbuild": "yarn && yarn build"
   },
   "dependencies": {
     "@metaplex-foundation/beet": "^0.7.1",

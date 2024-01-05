@@ -28,10 +28,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // if (!process.env.IS_DEV) {
-app.use(express.static(path.join(__dirname, "../dist", "spa")))
+app.use(express.static(path.join(__dirname + "/dist/spa")))
 app.use(routes);
 app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../dist', 'spa', 'index.html'))
+    console.log(path.join(__dirname, 'dist', 'spa', 'index.html'))
+    res.sendFile(path.join(__dirname, 'dist', 'spa', 'index.html'))
 })
 // }
 
