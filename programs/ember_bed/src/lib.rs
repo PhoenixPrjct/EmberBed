@@ -84,19 +84,6 @@ pub mod ember_bed {
         // }
 
         ctx.accounts.stake_status.stake_state = StakeState::Staked;
-        // if ctx.accounts.stake_status.stake_state == StakeState::Staked {
-        //     let pubkey = ctx.accounts.nft_mint_address.key();
-        //     ctx.accounts.user_account_pda.
-        //     let nft_pks = &mut ctx.accounts.user_account_pda.stake_status_pks;
-        //     if !nft_pks.contains(&pubkey) {
-        //         nft_pks.push(pubkey);
-        //     }
-
-        //     msg!("NFTs staked by user: {}", nft_pks.len());
-        //     for item in nft_pks {
-        //         msg!("{}", item);
-        //     }
-        // }
         //   Messages to confirm info passed to program
         msg!("NFT token account: {:?}", ctx.accounts.stake_status.user_nft_ata);
         msg!("User pubkey: {:?}", ctx.accounts.stake_status.user_pubkey);
@@ -244,23 +231,6 @@ pub mod ember_bed {
 
         Ok(())
     }
-
-    // pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
-    //     msg!("Initializing fire pda");
-    //     ctx.accounts.fire_pda.bump = _bump;
-    //     ctx.accounts.fire_pda.collection_name = FIRE_COLLECTION_NAME.to_string();
-    //     ctx.accounts.fire_pda.reward_symbol = FIRE_SYMBOL.to_string();
-    //     ctx.accounts.fire_pda.manager = ctx.accounts.funder.key();
-    //     ctx.accounts.fire_pda.reward_wallet = ctx.accounts.token_poa.key();
-    //     ctx.accounts.fire_pda.is_initialized = true;
-
-    //     msg!(
-    //         "Successfully Initialized {} -- State: {}",
-    //         ctx.accounts.fire_pda.key(),
-    //         ctx.accounts.fire_pda.is_initialized
-    //     );
-    //     Ok(())
-    // }
 
     pub fn initialize_fire_pda(ctx: Context<InitializeFirePDA>, _bump: u8) -> Result<()> {
         msg!("Initializing fire pda");

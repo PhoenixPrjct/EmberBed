@@ -9,6 +9,7 @@
     "dev": "concurrently \"yarn watch\" \"quasar dev\"",
     "watch": "nodemon ./server/server.ts",
     "server": "ts-node ./server/server.ts",
+    "serve": "quasar serve --history",
     "start": "quasar dev",
     "build": "NODE_OPTIONS='--max-old-space-size=8192' quasar build",
     "lint": "eslint --ext .js,.ts,.vue ./",
