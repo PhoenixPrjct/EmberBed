@@ -28,12 +28,14 @@ app.use(bodyParser.text());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+
+const distPath = path.join(__dirname + "../../dist/spa")
 // if (!process.env.IS_DEV) {
-app.use(express.static(path.join(__dirname + "/dist/spa")))
+app.use(express.static(distPath));
 app.use(routes);
 app.get('/*', (req: Request, res: Response) => {
-    console.log({ DIRNAME: __dirname })
-    res.sendFile(path.join(__dirname, 'dist', 'spa', 'index.html'))
+    console.log({ DIRNAME: distPath })
+    res.sendFile(path.join(distPath, 'index.html'))
 })
 // }
 
