@@ -6,17 +6,16 @@
     "author": "Wetesy <wetesy51@gmail.com>",
     "private": true,
     "scripts": {
-        "dev": "concurrently \"yarn watch\" \"quasar dev\"",
-        "watch": "nodemon ./app/server/server.ts",
+        "start": "npm run server",
         "server": "ts-node ./app/server/server.ts",
-        "serve": "quasar serve",
-        "start": "quasar dev",
-        "build": "NODE_OPTIONS='--max-old-space-size=8192' quasar build",
+        "client-dev": "quasar dev",
+        "client-build": "cd app && quasar build",
         "lint": "eslint --ext .js,.ts,.vue ./",
         "format": "prettier --write \"**/*.{js,ts,vue,,html,md,json}\" --ignore-path .gitignore",
         "test": "echo \"No test specified\" && exit 0",
         "heroku-postbuild": "echo \"POST BUILD SCRIPT\" && yarn && yarn --cwd ./app build"
     },
+    "main": "./app/server/server.ts",
     "dependencies": {
         "@metaplex-foundation/beet": "^0.7.1",
         "@metaplex-foundation/js": "^0.17.9",
