@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "quasar dev",
-    "build": "quasar build"
+    "build": "NODE_OPTIONS='--max-old-space-size=4096' quasar build"
   },
   "main": "./server/server.ts",
   "dependencies": {
