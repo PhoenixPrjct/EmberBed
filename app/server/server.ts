@@ -1,4 +1,5 @@
 import express from "express";
+import { Request, Response } from "express";
 import routes from './routes';
 // import * as db from "./config/connection";
 import * as path from "path";
@@ -30,7 +31,7 @@ app.use(express.json());
 // if (!process.env.IS_DEV) {
 app.use(express.static(path.join(__dirname + "/dist/spa")))
 app.use(routes);
-app.get('/*', (req, res) => {
+app.get('/*', (req: Request, res: Response) => {
     console.log(path.join(__dirname, 'dist', 'spa', 'index.html'))
     res.sendFile(path.join(__dirname, 'dist', 'spa', 'index.html'))
 })
