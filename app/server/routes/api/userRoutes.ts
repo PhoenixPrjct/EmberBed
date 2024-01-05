@@ -8,7 +8,8 @@ router.get("/", (req, res) => {
 
 router.get("/nft/collection/:tokenMint", async (req, res) => {
     const tokenMint = req.params.tokenMint;
-    const { status, response } = await GC.searchForNftCollection(tokenMint);
+    const { status, response } = await GC.searchHashlistForNftCollection(tokenMint);
+    console.log({ status, response })
     res.status(status).json(response);
 
 });

@@ -15,7 +15,7 @@ export const GC = {
             return { status: 500, e }
         }
     },
-    searchForNftCollection: async (tokenMint: string): Promise<{ status: number, response: string | false }> => {
+    searchHashlistForNftCollection: async (tokenMint: string): Promise<{ status: number, response: string | false }> => {
         try {
             // Get a list of all the hashlist files
             const hashlistFiles = await readdirSync(path.join(__dirname, `../collections`))

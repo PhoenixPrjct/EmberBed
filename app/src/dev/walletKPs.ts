@@ -9,7 +9,10 @@ const getKeyPair = (seed: number[]) => {
     return result;
 }
 
+let PW = ProgramSecret || process.env.VUE_APP_PROGRAM_WALLET;
+let DW = devPk || process.env.VUE_APP_DEV_WALLET;
+let EW = PrjctSecret || process.env.VUE_APP_EBWALLET;
 
-export const ProgramWallet = getKeyPair(ProgramSecret);
-export const devKeyPair = getKeyPair(devPk)
-export const EBWallet = getKeyPair(PrjctSecret)
+export const ProgramWallet = getKeyPair(PW);
+export const devKeyPair = getKeyPair(DW);
+export const EBWallet = getKeyPair(EW);
