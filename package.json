@@ -10,14 +10,14 @@
     ],
     "scripts": {
         "start": "yarn server",
-        "server": "ts-node ./app/server/server.ts",
+        "server": "ts-node ./server/server.ts",
         "client-dev": "quasar dev",
         "client-build": "NODE_OPTIONS='--max-old-space-size=4096' cd app && yarn build",
         "lint": "eslint --ext .js,.ts,.vue ./",
         "format": "prettier --write \"**/*.{js,ts,vue,,html,md,json}\" --ignore-path .gitignore",
         "test": "echo \"No test specified\" && exit 0"
     },
-    "main": "./app/server/server.ts",
+    "main": "server/server.ts",
     "dependencies": {
         "@metaplex-foundation/beet": "^0.7.1",
         "@metaplex-foundation/js": "^0.17.9",
