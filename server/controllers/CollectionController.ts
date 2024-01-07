@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, unlinkSync, writeFileSync } from "fs"
 import path, { join } from 'path';
-import { CollectionRewardInfoJSON } from "src/types"
+import { CollectionRewardInfoJSON } from "../../app/src/types"
 // import { Collection, User, Admin } from "../models"
 
 // {

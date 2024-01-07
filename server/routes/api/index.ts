@@ -3,7 +3,7 @@ import express, { Request, Response } from "express";
 import userRoutes from './userRoutes'
 import collectionRoutes from './collectionRoutes'
 import { GC } from "../../controllers";
-// import { PhoenixRelation, PhoenixRelationKind } from "src/types";
+// import { PhoenixRelation, PhoenixRelationKind } from "../../app/src/types";
 const router = express.Router();
 
 router.get("/", (req: Request, res: Response) => {
