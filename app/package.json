@@ -6,7 +6,7 @@
   "author": "Wetesy <wetesy51@gmail.com>",
   "private": true,
   "scripts": {
-    "start": "quasar dev",
+    "start": "yarn install && quasar dev",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' quasar build"
   },
   "main": "./server/server.ts",
