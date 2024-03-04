@@ -2,7 +2,7 @@ import { getConnection, useChainAPI } from "src/api/chain-api";
 import { CollectionRewardInfoJSON, CollectionRewardInfo } from "src/types";
 import { Connection, LAMPORTS_PER_SOL, PublicKey, SystemProgram, Transaction } from "@solana/web3.js";
 import { useWallet } from "solana-wallets-vue";
-import { program } from "@project-serum/anchor/dist/cjs/native/system";
+// import { program } from "@project-serum/anchor/dist/cjs/native/system";
 
 const connection = new Connection(getConnection());;
 const wallet = useWallet();
@@ -104,7 +104,7 @@ export function getStakingFee(kind: string) {
 
 export async function chargeFeeTx(user: PublicKey, amount: number) {
     if (!user) throw new Error('No public key provided, did you connect your wallet?')
-    console.log(`Initialization Fee = ${Math.round(amount * LAMPORTS_PER_SOL)/LAMPORTS_PER_SOL} SOL`);
+    console.log(`Initialization Fee = ${Math.round(amount * LAMPORTS_PER_SOL) / LAMPORTS_PER_SOL} SOL`);
     const PhoenixWallet = useChainAPI().programWallet.publicKey
     try {
         const latestBlockHash = await connection.getLatestBlockhash();
@@ -129,7 +129,7 @@ export async function chargeFeeTx(user: PublicKey, amount: number) {
         return { success: false, error: confirmation.value.err };
     } catch (err: any) {
         console.dir(err)
-        return { success: false, error: err.mesage };
+        return { success: false, error: err.message };
 
     }
 }

@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 
-const distPath = path.join(__dirname, "..", "/dist/spa")
+const distPath = path.join(__dirname, "../dist/")
 // if (!process.env.IS_DEV) {
 app.use(express.static(distPath));
 app.use(routes);
@@ -42,7 +42,8 @@ app.get('/*', (req: Request, res: Response) => {
 app.use(history())
 // db.default.once('open', () => {
 app.listen(PORT, () => {
-    // console.log({ IS_DEV: process.env.NODE_ENV })
+    console.log({ distPAth: distPath })
+    console.log({ IS_DEV: process.env.NODE_ENV })
     console.log(`🌍 Now listening on localhost:${PORT}`)
 
 })

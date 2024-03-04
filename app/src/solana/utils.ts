@@ -13,7 +13,7 @@ import { EmberBed, Accounts, AnchorWallet, CollectionRewardInfo, UnstakeAccounts
 
 import {
     Metaplex,
-    bundlrStorage,
+    irysStorage,
     keypairIdentity,
 } from "@metaplex-foundation/js"
 import { getExplorerURL } from 'src/helpers';
@@ -22,14 +22,13 @@ import { Ref } from 'vue';
 import { EBWallet } from 'src/dev/walletKPs';
 import { InitializeFirePdaAccounts, InitializeFirePdaArgs } from 'src/types/instructions/initializeFirePda';
 import { FIRE_INFO, FIRE_MINT_PUB } from 'src/helpers/constants';
-
 const wallet: Ref<AnchorWallet | undefined> = useAnchorWallet();
 
 export function getAPI(program: Program<EmberBed>) {
     const connection = program.provider.connection;
     const metaplex = Metaplex.make(connection)
         .use(keypairIdentity(EBWallet))
-        .use(bundlrStorage());
+        .use(irysStorage());
 
 
     async function getStatePda(RewTok: PublicKey, collectionName: string): Promise<{ pda: web3.PublicKey, bump: number }> {

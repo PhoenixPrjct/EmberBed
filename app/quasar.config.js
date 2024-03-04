@@ -42,18 +42,22 @@ module.exports = configure(function (/* ctx */) {
     css: [
       'app.sass'
     ],
-    // optimizeDeps: { // 👈 optimizedeps
-    //   esbuildOptions: {
-    //     target: "esnext", 
-    //     // Node.js global to browser globalThis
-    //     define: {
-    //       global: 'globalThis'
-    //     },
-    //     supported: { 
-    //       bigint: true 
-    //     },
-    //   }
-    // }, 
+    optimizeDeps: { // 👈 optimizedeps
+      exclude: [
+        // Add your external dependencies here
+        "@trezor/connect-common/src/messageChannel/abstract"
+      ],
+      esbuildOptions: {
+        target: "esnext",
+        // Node.js global to browser globalThis
+        define: {
+          global: 'globalThis'
+        },
+        supported: {
+          bigint: true
+        },
+      }
+    },
 
     build: {
       target: ["esnext"], // 👈 build.target
@@ -103,7 +107,7 @@ module.exports = configure(function (/* ctx */) {
       // ignorePublicFolder: true,
       minify: true,
       polyfillModulePreload: true,
-      distDir: '../dist',
+      distDir: './dist',
 
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
@@ -113,7 +117,13 @@ module.exports = configure(function (/* ctx */) {
         [nodePolyfills({
           protocolImports: true,
         })]
-      ]
+      ],
+      rollupOptions: {
+
+        external: ['@particle-network/auth'],
+
+
+      }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer

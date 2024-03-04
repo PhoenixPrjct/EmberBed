@@ -5,13 +5,18 @@ import { AnyARecord } from "dns";
 // import { InitializeFirePdaAccounts } from "src/types/instructions/initializeFirePda";
 const connection = getConnection();
 export async function getAllEBCollections() {
-  if (!useChainAPI) return []
-  const { program } = useChainAPI();
-  if (!program.value) return
-  const collections = await program.value.account.collectionRewardInfo.all()
-  collections.forEach(col => console.log({ name: col.account.collectionName, pda: col.publicKey.toBase58() }))
-  const collectionNames = collections.map(col => col.account.collectionName);
-  return collectionNames
+  try {
+
+    if (!useChainAPI) return []
+    const { program } = useChainAPI();
+    if (!program.value) return
+    const collections = await program.value.account.collectionRewardInfo.all()
+    collections.forEach(col => console.log({ name: col.account.collectionName, pda: col.publicKey.toBase58() }))
+    const collectionNames = collections.map(col => col.account.collectionName);
+    return collectionNames
+  } catch (err) {
+    return err
+  }
 }
 
 export function getExplorerURL(sig: string) {
