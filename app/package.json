@@ -17,7 +17,7 @@
     "test": "echo \"No test specified\" && exit 0",
     "heroku-postbuild": "echo \"POST BUILD SCRIPT\" && yarn && yarn build"
   },
-  "main": "./server/server.ts",
+  "main": "../server/server.ts",
   "dependencies": {
     "@metaplex-foundation/beet": "^0.7.2",
     "@metaplex-foundation/js": "^0.20.1",
