@@ -10,7 +10,7 @@
     ],
     "scripts": {
         "start": "yarn server",
-        "server": "ts-node ./app/server/server.ts",
+        "server": "ts-node ./server/server.ts",
         "client-dev": "quasar dev",
         "client-build": "NODE_OPTIONS='--max-old-space-size=4096' cd app && yarn build",
         "lint": "eslint --ext .js,.ts,.vue ./",
@@ -18,7 +18,7 @@
         "test": "echo \"No test specified\" && exit 0",
         "heroku-postbuild": "echo \"POST BUILD SCRIPT\" && yarn && yarn client-build"
     },
-    "main": "./app/server/server.ts",
+    "main": "server/server.ts",
     "dependencies": {
         "@metaplex-foundation/beet": "^0.7.2",
         "@metaplex-foundation/js": "^0.20.1",

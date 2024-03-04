@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, writeFileSync } from "fs";
 import path from "path";
-import { PhoenixRelationKind } from "src/types";
+import { PhoenixRelationKind } from "../../app/src/types";
 
 export const GC = {
     getRelations: async () => {

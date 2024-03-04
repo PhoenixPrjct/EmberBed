@@ -2,7 +2,7 @@ import axios from 'axios';
 import { createGlobalState } from '@vueuse/core'
 import { CollectionRewardInfo, CollectionRewardInfoJSON, DBCollectionInfo } from 'src/types';
 export function _createServerAPI() {
-  let baseURL = 'http://localhost:3000/api';
+  let baseURL = '/api' //http://localhost:3000/api';
   if (process.env.NODE_ENV === 'production') {
     baseURL = '/api';
     console.log({ baseURL });
