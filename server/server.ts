@@ -29,7 +29,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 
-const distPath = path.join(__dirname, "../dist/")
+const distPath = path.join(__dirname, "../app/dist/")
 // if (!process.env.IS_DEV) {
 app.use(express.static(distPath));
 app.use(routes);
